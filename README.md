@@ -1,19 +1,7 @@
-# 🎈 Blank app template
+# Welcome to streamlit
 
-A simple Streamlit app template for you to modify!
+This is the app you get when you run `streamlit hello`, extracted as its own app.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+Edit [Hello.py](./Hello.py) to customize this app to your heart's desire. ❤️
 
-### How to run it on your own machine
-
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+Check it out on [Streamlit Community Cloud](https://st-hello-app.streamlit.app/)
