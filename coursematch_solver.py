@@ -3,7 +3,7 @@ import json
 
 example_input = {
     "budget": 5000,
-    "credit_units": 5.5,
+    "max_credits": 5.5,
     "courses": [
         {"uniqueid": 19, "utility": 50},
         {"uniqueid": 20, "utility": 60},
