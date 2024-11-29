@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import datetime
 from itertools import product
+from pulp import LpMaximize, LpProblem, LpVariable, lpSum
 
 example_input = {
     "budget": 5000,
@@ -108,7 +109,7 @@ class PreProcessor(object):
             days = self.get_days(days_code)
             time_class = self.get_time_class(start_time, stop_time)
 
-            combinations = [x+y+z for x in terms for y in days for z in time_class]
+            combinations = ["ct_"+x+y+z for x in terms for y in days for z in time_class]
             classes[index] = combinations
             for c in combinations:
                 all_classes.add(c)
@@ -190,8 +191,8 @@ class CourseMatchSolver(object):
         selected = self.solveLP()
         selected_data = self.pack(selected)
 
-        #return selected_data
-        return example_output
+        return selected_data
+        #return example_output
     
     def unpack(self, data):
         self.budget = data["budget"]
@@ -212,7 +213,47 @@ class CourseMatchSolver(object):
         pass
 
     def solveLP(self):
-        return []
+        # Define the linear programming problem
+        prob = LpProblem("Course_Scheduler", LpMaximize)
+
+        # Create binary variables for each row
+        row_vars = {row["uniqueid"]: LpVariable(f"x_{row['uniqueid']}", cat="Binary") for _, row in self.df.iterrows()}
+
+        # Objective function: Maximize the sum of utilities times credits for selected courses
+        prob += lpSum(row_vars[row["uniqueid"]] * row["utilities"] * row["credit_unit"] for _, row in self.df.iterrows()), "Total_Utility"
+
+        # Constraints
+        # 1. Budget constraint: Sum of prices for selected courses must not exceed the budget
+        prob += lpSum([row['price'] * row_vars[row['uniqueid']] for _, row in self.df.iterrows()]) <= self.budget, "Budget_Constraint"
+
+        # 2. Course unit constraint: Sum of credit_units for selected courses must not exceed the max_credits
+        prob += lpSum([row['credit_unit'] * row_vars[row['uniqueid']] for _, row in self.df.iterrows()]) <= self.max_credits, "Max_Credit_Constraint"
+
+        # 3. Constraints to ensure no duplicate course_id is selected
+        for course_id in self.df["course_id"].unique():
+            prob += (
+                lpSum(row_vars[row["uniqueid"]] for _, row in self.df.iterrows() if row["course_id"] == course_id) <= 1,
+                f"Max_One_{course_id}",
+            )
+
+        # 4. Constraints to ensure no two courses at the same time is selected
+        for col in self.df.columns:
+            if col.startswith("ct_"):
+                prob += (
+                    lpSum(row_vars[row["uniqueid"]] for _, row in self.df.iterrows() if row[col] == 1) <= 1,
+                    f"No_Overlap_{col}",
+                )
+
+        # Solve the problem
+        prob.solve()
+
+        # Extract the selected rows
+        selected_rows = [row["uniqueid"] for _, row in self.df.iterrows() if row_vars[row["uniqueid"]].varValue == 1]
+
+        # Print the results
+        print("Selected Rows:")
+        print(self.df[self.df["uniqueid"].isin(selected_rows)])
+        return selected_rows
     
     def pack(self, data):
         return data
