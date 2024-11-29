@@ -23,7 +23,6 @@ example_input = {
         {"uniqueid": 127, "utility": 60},
         {"uniqueid": 129, "utility": 60},
         {"uniqueid": 154, "utility": 60},
-        {"uniqueid": 154, "utility": 60},
         {"uniqueid": 155, "utility": 60},
         {"uniqueid": 171, "utility": 60},
         {"uniqueid": 172, "utility": 60},
