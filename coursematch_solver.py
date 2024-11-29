@@ -57,14 +57,36 @@ class PreProcessor(object):
         self.preprocess_primary_section_id()
         self.preprocess_class_time()
         print(self.df)
+        return self.df
 
     def drop_unused_columns(self):
-        columns_to_drop = ['term', 'title', 'instructor', 'start_date', 'end_date', 'credit_unit', 'capacity']
+        columns_to_drop = ['term', 'title', 'instructor', 'start_date', 'end_date', 'capacity']
         self.df = self.df.drop(columns=columns_to_drop)
 
     def preprocess_primary_section_id(self):
+        def rename_course_id(course_id):
+            map = {
+                "STAT6130": "FC_STAT",
+                "STAT6210": "FC_STAT",
+                "WHCP6160": "FC_WHCP",
+                "WHCP6180": "FC_WHCP",
+                "ACCT6110": "FC_ACCT",
+                "ACCT6130": "FC_ACCT",
+                "FNCE6110": "FC_FNCE",
+                "FNCE6210": "FC_FNCE",
+                "FNCE6130": "FC_MACRO",
+                "FNCE6230": "FC_MACRO",
+                "MGMT6110": "FC_MGMT",
+                "MGMT6120": "FC_MGMT",
+                "MKTG6120": "FC_MKTG",
+                "MKTG6130": "FC_MKTG",
+            }
+            if course_id in map.keys():
+                return map[course_id]
+            return course_id
+
         def split_primary_section_id(section_id):
-            course_id = section_id[:8]
+            course_id = rename_course_id(section_id[:8])
             section_code = section_id[8:]
             return course_id, section_code
 
