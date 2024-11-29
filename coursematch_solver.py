@@ -62,10 +62,16 @@ class CourseMatchSolver(object):
         return example_output
     
     def unpack(self, data):
-        pass
+        self.budget = data["budget"]
+        self.max_credits = data["max_credits"]
+        self.courses = data["courses"]
+        self.uniqueids = [course["uniqueid"] for course in self.courses]
+        self.utilities = [course["utility"] for course in self.courses]
     
     def mergeData(self):
-        pass
+        self.df = self.source_data[self.source_data['uniqueid'].isin(self.uniqueids)]
+        self.df['utilities'] = self.utilities
+        #print(self.df)
 
     def setupPrice(self):
         pass
