@@ -44,11 +44,38 @@ example_output = {
     ]
 }
 
+class PreProcessor(object):
+    def __init__(self):
+        pass
+
+    def preprocess(self, df):
+        self.df = df
+        #print(self.df)
+        self.drop_unused_columns()
+        self.preprocess_primary_section_id()
+        self.preprocess_part_of_term()
+        self.preprocess_time_of_course()
+        print(self.df)
+
+    def drop_unused_columns(self):
+        pass
+
+    def preprocess_primary_section_id(self):
+        pass
+
+    def preprocess_part_of_term(self):
+        pass
+
+    def preprocess_time_of_course(self):
+        pass
+
 class CourseMatchSolver(object):
     def __init__(self, sourceXlsx, candidates):
         self.source = sourceXlsx
         self.candidates = candidates
         self.source_data = pd.read_excel(sourceXlsx)
+
+        self.preprocessor = PreProcessor()
 
     def solve(self):
         self.unpack(self.candidates)
@@ -71,12 +98,12 @@ class CourseMatchSolver(object):
     def mergeData(self):
         self.df = self.source_data[self.source_data['uniqueid'].isin(self.uniqueids)]
         self.df['utilities'] = self.utilities
-        #print(self.df)
 
     def setupPrice(self):
         pass
 
     def preprocess(self):
+        self.df = self.preprocessor.preprocess(self.df)
         pass
 
     def solveLP(self):
