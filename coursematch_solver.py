@@ -81,6 +81,37 @@ class PreProcessor(object):
                 "MGMT6120": "FC_MGMT",
                 "MKTG6120": "FC_MKTG",
                 "MKTG6130": "FC_MKTG",
+                # Cross-listed
+                "ACCT7970": "TABS", # Taxes and Business Strategy
+                "FNCE7970": "TABS",
+                "BEPP7630": "EMAP", # Energy Markets and Policy
+                "OIDD7630": "EMAP",
+                "LGST8050": "AABT", # Antitrust and Big Tech
+                "MKTG7600": "AABT",
+                "LGST8060": "NEGO", # Negotiations
+                "MGMT6910": "NEGO",
+                "OIDD6910": "NEGO",
+                "LGST8090": "SBM", # Sports Business Management
+                "MGMT8150": "SBM",
+                "MGMT7290": "IPSIDE", # Intellectual Property Strategy for the Innovation-Driven Enterprise
+                "LGST7290": "IPSIDE",
+                "OIDD6900": "MDM", # Managerial Decision Making
+                "MGMT6900": "MDM",
+                "OIDD6930": "INFL", # Influence
+                "LGST6930": "INFL",
+                "OIDD7610": "RAEM", # Risk Analysis and Environmental Management
+                "BEPP7610": "RAEM",
+                "REAL7080": "HM", # Housing Markets
+                "BEPP7080": "HM",
+                "REAL7210": "REIAF", # Real Estate Investment: Analysis and Financing
+                "FNCE7210": "REIAF",
+                "REAL8040": "REL", # Real Estate Law
+                "LGST8040": "REL",
+                "REAL8360": "IHC", # International Housing Comparisons
+                "BEPP8360": "IHC",
+                "STAT7770": "IPDS", # Introduction to Python for Data Science
+                "OIDD7770": "IPDS",
+                #"MKTG7120": "DAMD", # Data and Analysis for Marketing Decisions - only section id differs
             }
             if course_id in map.keys():
                 return map[course_id]
