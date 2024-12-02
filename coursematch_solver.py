@@ -7,6 +7,7 @@ from pulp import LpMaximize, LpProblem, LpVariable, lpSum
 example_input = {
     "budget": 5000,
     "max_credits": 5.5,
+    "seed": 1,
     "courses": [
         {"uniqueid": 19, "utility": 50},
         {"uniqueid": 20, "utility": 60},
@@ -47,7 +48,16 @@ example_output = {
     ]
 }
 
+class RandomManager(object):
+    rand_z_table_filepath = "z_score_table.xlsx"
+    def __init__(self):
+        self.ztable = pd.read_excel(self.rand_z_table_filepath)
+
+    def getRandZSeries(self, seed):
+        return self.ztable[seed]
+
 class PreProcessor(object):
+    START_OF_UNIQUEID = 1
     def __init__(self):
         pass
 
@@ -206,6 +216,19 @@ class PreProcessor(object):
             return [map[start_time], map[new_start_time]]
         return [map[start_time]]
 
+    def setupPrice(self, df, seed):
+        randomManager = RandomManager()
+        z_series = randomManager.getRandZSeries(seed)
+        # price = price_predicted + resid_mean + z * resid_stdev
+        df['price'] = pd.Series(dtype="float")
+        for index, row in df.iterrows():
+            idx = row['uniqueid'] - PreProcessor.START_OF_UNIQUEID
+            df.loc[index, 'price'] = row['price_predicted'] + row['resid_mean'] + z_series[idx] * row['resid_stdev']
+
+        self.df = df
+
+        return df
+
 class CourseMatchSolver(object):
     def __init__(self, sourceXlsx, candidates):
         self.source = sourceXlsx
@@ -217,7 +240,6 @@ class CourseMatchSolver(object):
     def solve(self):
         self.unpack(self.candidates)
         self.mergeData()
-        self.setupPrice()
         self.preprocess()
         selected = self.solveLP()
         selected_data = self.pack(selected)
@@ -228,6 +250,7 @@ class CourseMatchSolver(object):
     def unpack(self, data):
         self.budget = data["budget"]
         self.max_credits = data["max_credits"]
+        self.seed = data["seed"]
         self.courses = data["courses"]
         self.uniqueids = [course["uniqueid"] for course in self.courses]
         self.utilities = [course["utility"] for course in self.courses]
@@ -236,12 +259,9 @@ class CourseMatchSolver(object):
         self.df = self.source_data[self.source_data['uniqueid'].isin(self.uniqueids)]
         self.df['utilities'] = self.utilities
 
-    def setupPrice(self):
-        pass
-
     def preprocess(self):
         self.df = self.preprocessor.preprocess(self.df)
-        pass
+        self.df = self.preprocessor.setupPrice(self.df, self.seed)
 
     def solveLP(self):
         # Define the linear programming problem
