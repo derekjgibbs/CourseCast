@@ -1,4 +1,6 @@
 import streamlit as st
+from coursematch_solver import CourseMatchSolver
+
 
 st.set_page_config(layout="wide")  # Add this as the first st command
 
@@ -25,6 +27,43 @@ with st.sidebar:
         help="Set your maximum credit units"
     )
 
+    # Add a run button to the sidebar
+    if st.sidebar.button("Run 1x", type="primary"):
+        # Filter courses with utility > 0
+        courses_with_utility = st.session_state.utility_data[
+            st.session_state.utility_data['Utility'] > 0
+        ]
+        
+        # Create the solver input message
+        solver_input = {
+            "budget": tokens,  # Using the tokens input from sidebar
+            "max_credits": max_credits,  # Using the max_credits input from sidebar
+            "courses": [
+                {
+                    "uniqueid": row['primary_section_id'],
+                    "utility": row['Utility']
+                }
+                for _, row in courses_with_utility.iterrows()
+            ]
+        }
+        
+        # For debugging - you can remove this later
+        st.sidebar.write("Solver Input:")
+        st.sidebar.json(solver_input)
+        
+        # TODO: Call your solver function here
+        # result = solve_optimization(solver_input)
+        # Create CourseMatchSolver instance and solve
+        try:
+            cms = CourseMatchSolver("data_spring_2025.xlsx", solver_input)
+            selected = cms.solve()
+            
+            # Display results
+            st.sidebar.write("Selected Courses:")
+            st.sidebar.write(selected)
+        except Exception as e:
+            st.sidebar.error(f"Error running solver: {str(e)}")
+
 st.title("CourseCast v1.0")
 st.write(
     "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
@@ -39,8 +78,8 @@ if 'utility_data' not in st.session_state:
     df = pd.read_excel("data_spring_2025.xlsx")
     df['department'] = df['primary_section_id'].str[:4]
     df['quarter'] = df['part_of_term'].map({
-        '3': 'Q3',
-        '4': 'Q4',
+        3: 'Q3',
+        4: 'Q4',
         'S': 'Full',
         'Modular': 'Block'
     })
@@ -153,23 +192,6 @@ if search:
 if hide_zero:
     filtered_data = filtered_data[filtered_data['Utility'] > 0]
 
-# Format meeting times and dates
-def format_meetings(row):
-    days = row['days_code']
-    start = row['start_time_24hr']
-    end = row['stop_time_24hr']
-    quarter = row['quarter']
-    start_date = pd.to_datetime(row['start_date']).strftime('%d %b')
-    end_date = pd.to_datetime(row['end_date']).strftime('%d %b')
-    
-    time_str = f"{days} {start} - {end}"
-    if quarter in ['Q3', 'Q4']:
-        return f"{time_str}\n{quarter}, {start_date} - {end_date}"
-    else:
-        return f"{time_str}\n{quarter}, {start_date} - {end_date}"
-
-filtered_data['Meetings'] = filtered_data.apply(format_meetings, axis=1)
-
 # Display the edited data frame
 edited_df = st.data_editor(
     filtered_data[[
@@ -188,7 +210,6 @@ edited_df = st.data_editor(
     column_config={
         "Utility": st.column_config.NumberColumn(
             "Utility",
-            help="Rate this course from 0-100",
             min_value=0,
             max_value=100,
             step=1,
@@ -247,11 +268,19 @@ edited_df = st.data_editor(
     use_container_width=True,
 )
 
+# Add a save button
+if st.button("Save Utility Values"):
+    if edited_df is not None:
+        utility_updates = edited_df.set_index('primary_section_id')['Utility']
+        mask = st.session_state.utility_data['primary_section_id'].isin(utility_updates.index)
+        st.session_state.utility_data.loc[mask, 'Utility'] = st.session_state.utility_data.loc[mask, 'primary_section_id'].map(utility_updates)
+        st.success("Utility values saved successfully!")
+
 # Update the master dataset with any edits
-for index, row in edited_df.iterrows():
-    course_id = row['primary_section_id']
-    new_utility = row['Utility']
-    st.session_state.utility_data.loc[
-        st.session_state.utility_data['primary_section_id'] == course_id,
-        'Utility'
-    ] = new_utility
+# for index, row in edited_df.iterrows():
+#    course_id = row['primary_section_id']
+#    new_utility = row['Utility']
+#    st.session_state.utility_data.loc[
+#        st.session_state.utility_data['primary_section_id'] == course_id,
+#        'Utility'
+#    ] = new_utility
