@@ -4,7 +4,22 @@ from coursematch_solver import CourseMatchSolver
 from montecarlo import MonteCarloSimulator
 import random
 
-st.set_page_config(layout="wide")  # Add this as the first st command
+st.set_page_config(
+    page_title="Wharton CourseCast",
+    page_icon="📚",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'About': "Wharton CourseCast - Course Planning & Optimization Tool"
+    }
+)
+
+st.markdown(
+    """
+    <meta name="description" content="Wharton CourseCast - Course Planning & Optimization Tool. Use Wharton CourseCast to plan your courses for the upcoming semester with up-to-date course information, professor evaluations, and more.">
+    """,
+    unsafe_allow_html=True,
+)
 
 # Add sidebar
 with st.sidebar:
