@@ -36,17 +36,14 @@ example_input = {
     ]
 }
 
-example_output = {
-    "uniqueids": [
-        21,
-        24,
-        79,
-        98,
-        113,
-        172,
-        185
-    ]
-}
+example_output = [
+    {'uniqueid': 21, 'price': 1258.9679285778896},
+    {'uniqueid': 24, 'price': 706.3930827369703},
+    {'uniqueid': 75, 'price': 196.68656664628475},
+    {'uniqueid': 98, 'price': 800.2654499782218},
+    {'uniqueid': 114, 'price': -31.28029216364526},
+    {'uniqueid': 129, 'price': -47.11888824879937}
+]
 
 class RandomManager(object):
     rand_z_table_filepath = "z_score_table.xlsx"
