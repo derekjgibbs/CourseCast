@@ -220,7 +220,8 @@ class PreProcessor(object):
         df['price'] = pd.Series(dtype="float")
         for index, row in df.iterrows():
             idx = row['uniqueid'] - PreProcessor.START_OF_UNIQUEID
-            df.loc[index, 'price'] = max(0, row['price_predicted'] + row['resid_mean'] + z_series[idx] * row['resid_stdev'])
+            price = row['price_predicted'] + row['resid_mean'] + z_series[idx] * row['resid_stdev']
+            df.loc[index, 'price'] = min(4851, max(0, price))
 
         self.df = df
 
