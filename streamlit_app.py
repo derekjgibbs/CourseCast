@@ -127,43 +127,42 @@ filter_cols = st.columns([1.5, 2, 1, 1.5, 0.8, 0.8, 1.5])
 
 with filter_cols[0]:
     departments = ['All'] + sorted(st.session_state.utility_data['department'].unique().tolist())
-    selected_dept = st.selectbox('Department', departments, 
-                                index=departments.index(st.session_state.filters['department']))
+    selected_dept = st.selectbox('Department', departments, key='dept_select')
     st.session_state.filters['department'] = selected_dept
 
 with filter_cols[1]:
     instructors = ['All'] + sorted(st.session_state.utility_data['instructor'].unique().tolist())
-    selected_instructor = st.selectbox('Instructor', instructors,
-                                     index=instructors.index(st.session_state.filters['instructor']))
+    selected_instructor = st.selectbox('Instructor', instructors, key='instructor_select')
     st.session_state.filters['instructor'] = selected_instructor
 
 with filter_cols[2]:
     days = ['All'] + sorted(st.session_state.utility_data['days_code'].unique().tolist())
-    selected_days = st.selectbox('Day', days,
-                                index=days.index(st.session_state.filters['days']))
+    selected_days = st.selectbox('Day', days, key='days_select')
     st.session_state.filters['days'] = selected_days
 
 with filter_cols[3]:
-    times = ['All', 'Morning', 'Afternoon', 'Evening']
-    selected_time = st.selectbox('Time', times,
-                                index=times.index(st.session_state.filters['time']))
+    # Convert 24hr times to 12hr format for display
+    times_24hr = sorted(st.session_state.utility_data['start_time_24hr'].unique().tolist())
+    times_12hr = ['All'] + [t.strftime('%-I:%M %p') for t in times_24hr]
+    times_dict = dict(zip(times_12hr[1:], times_24hr))  # Create mapping excluding 'All'
+    
+    selected_time_12hr = st.selectbox('Time', times_12hr, key='time_select')
+    # Convert back to 24hr format for filtering
+    selected_time = times_dict.get(selected_time_12hr, 'All')
     st.session_state.filters['time'] = selected_time
 
 with filter_cols[4]:
     credits = ['All', '0.5', '1.0']
-    selected_credits = st.selectbox('CU', credits,
-                                  index=credits.index(st.session_state.filters['credits']))
+    selected_credits = st.selectbox('CU', credits, key='credits_select')
     st.session_state.filters['credits'] = selected_credits
 
 with filter_cols[5]:
     quarters = ['All', 'Q3', 'Q4', 'Full', 'Block']
-    selected_quarter = st.selectbox('Qtr', quarters,
-                                  index=quarters.index(st.session_state.filters['quarter']))
+    selected_quarter = st.selectbox('Qtr', quarters, key='quarter_select')
     st.session_state.filters['quarter'] = selected_quarter
 
 with filter_cols[6]:
-    hide_zero = st.checkbox('Hide Zero Utility', 
-                          value=st.session_state.filters['hide_zero'])
+    hide_zero = st.checkbox('Hide Zero Utility', key='hide_zero_select')
     st.session_state.filters['hide_zero'] = hide_zero
 
 
@@ -195,13 +194,7 @@ if selected_credits != 'All':
 if selected_quarter != 'All':
     filtered_data = filtered_data[filtered_data['quarter'] == selected_quarter]
 if selected_time != 'All':
-    time_filters = {
-        'Morning': (filtered_data['start_time_24hr'] < '12:00'),
-        'Afternoon': (filtered_data['start_time_24hr'] >= '12:00') & (filtered_data['start_time_24hr'] < '15:30'),
-        'Evening': (filtered_data['start_time_24hr'] >= '15:30')
-    }
-    if selected_time in time_filters:
-        filtered_data = filtered_data[time_filters[selected_time]]
+    filtered_data = filtered_data[filtered_data['start_time_24hr'] == selected_time]
 if search:
     filtered_data = filtered_data[
         filtered_data.astype(str).apply(
