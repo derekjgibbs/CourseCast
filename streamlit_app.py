@@ -1,6 +1,6 @@
 import streamlit as st
+import pandas as pd
 from coursematch_solver import CourseMatchSolver
-
 
 st.set_page_config(layout="wide")  # Add this as the first st command
 
@@ -17,7 +17,7 @@ with st.sidebar:
         step=100,
         help="Set your token allocation"
     )
-
+    # Add credit input 
     max_credits = st.number_input(
         "Maximum Credit Units",
         min_value=3.0,
@@ -25,6 +25,14 @@ with st.sidebar:
         value=5.0,  # default value
         step=0.5,
         help="Set your maximum credit units"
+    )
+
+    # Add seed input
+    seed = st.number_input(
+        "Random Seed #",
+        min_value=1,
+        max_value=100,
+        step=1
     )
 
     # Add a run button to the sidebar
@@ -38,9 +46,10 @@ with st.sidebar:
         solver_input = {
             "budget": tokens,  # Using the tokens input from sidebar
             "max_credits": max_credits,  # Using the max_credits input from sidebar
+            "seed": seed, # Using seed input from sidebar
             "courses": [
                 {
-                    "uniqueid": row['primary_section_id'],
+                    "uniqueid": row['uniqueid'],
                     "utility": row['Utility']
                 }
                 for _, row in courses_with_utility.iterrows()
@@ -61,16 +70,20 @@ with st.sidebar:
             # Display results
             st.sidebar.write("Selected Courses:")
             st.sidebar.write(selected)
+
+             # Store the selected uniqueids in session state
+            st.session_state.selected_uniqueids = selected
+
         except Exception as e:
+            import traceback
             st.sidebar.error(f"Error running solver: {str(e)}")
+            st.sidebar.error("Full error trace:")
+            st.sidebar.code(traceback.format_exc())
 
 st.title("CourseCast v1.0")
 st.write(
     "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
 )
-
-import streamlit as st
-import pandas as pd
 
 # Initialize session state if needed
 if 'utility_data' not in st.session_state:
@@ -149,6 +162,7 @@ with filter_cols[6]:
                           value=st.session_state.filters['hide_zero'])
     st.session_state.filters['hide_zero'] = hide_zero
 
+
 # Reset button - now only resets filters
 if st.button("Reset", type="secondary"):
     st.session_state.filters = {
@@ -162,6 +176,7 @@ if st.button("Reset", type="secondary"):
         'hide_zero': False
     }
     st.rerun()
+
 
 # Apply filters to the session state data
 filtered_data = st.session_state.utility_data.copy()
@@ -204,7 +219,7 @@ edited_df = st.data_editor(
         'quarter',
         'instructor', 
         'credit_unit',
-        'price'
+        'price_predicted'
     ]],
     key="course_editor",
     column_config={
@@ -257,7 +272,7 @@ edited_df = st.data_editor(
             width="small",
             disabled=True
         ),
-        "price": st.column_config.NumberColumn(
+        "price_predicted": st.column_config.NumberColumn(
             "Price",
             width="medium",
             disabled=True,
@@ -276,11 +291,41 @@ if st.button("Save Utility Values"):
         st.session_state.utility_data.loc[mask, 'Utility'] = st.session_state.utility_data.loc[mask, 'primary_section_id'].map(utility_updates)
         st.success("Utility values saved successfully!")
 
-# Update the master dataset with any edits
-# for index, row in edited_df.iterrows():
-#    course_id = row['primary_section_id']
-#    new_utility = row['Utility']
-#    st.session_state.utility_data.loc[
-#        st.session_state.utility_data['primary_section_id'] == course_id,
-#        'Utility'
-#    ] = new_utility
+# Display selected courses if we have them
+if 'selected_uniqueids' in st.session_state and st.session_state.selected_uniqueids:
+    # Get the full information for selected courses
+    mask = st.session_state.utility_data['uniqueid'].isin(st.session_state.selected_uniqueids)
+    selected_courses = st.session_state.utility_data[mask]
+    
+    st.write("Selected Courses:")
+    st.dataframe(
+        selected_courses[[
+            'primary_section_id',
+            'title',
+            'days_code',
+            'start_time_24hr',
+            'stop_time_24hr',
+            'quarter',
+            'instructor',
+            'credit_unit',
+            'price_predicted',
+            'Utility'
+        ]],
+        column_config={
+            "primary_section_id": "Course",
+            "start_time_24hr": st.column_config.TimeColumn("Start", format="h:mm a"),
+            "stop_time_24hr": st.column_config.TimeColumn("End", format="h:mm a"),
+            "price_predicted": st.column_config.NumberColumn("Price", format="%d"),
+        },
+        hide_index=True,
+        use_container_width=True
+    )
+    
+    # Summary statistics
+    summary_cols = st.columns(3)
+    with summary_cols[0]:
+        st.metric("Total Credits", f"{selected_courses['credit_unit'].sum()}")
+    with summary_cols[1]:
+        st.metric("Total Price", f"{selected_courses['price_predicted'].sum():,.0f}")
+    with summary_cols[2]:
+        st.metric("Total Utility", f"{selected_courses['Utility'].sum()}")
