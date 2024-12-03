@@ -37,49 +37,52 @@ with st.sidebar:
 
     # Add a run button to the sidebar
     if st.sidebar.button("Run 1x", type="primary"):
-        # Filter courses with utility > 0
+        # Check if there are any courses with utility > 0
         courses_with_utility = st.session_state.utility_data[
             st.session_state.utility_data['Utility'] > 0
         ]
         
-        # Create the solver input message
-        solver_input = {
-            "budget": tokens,  # Using the tokens input from sidebar
-            "max_credits": max_credits,  # Using the max_credits input from sidebar
-            "seed": seed, # Using seed input from sidebar
-            "courses": [
-                {
-                    "uniqueid": row['uniqueid'],
-                    "utility": row['Utility']
-                }
-                for _, row in courses_with_utility.iterrows()
-            ]
-        }
+        if len(courses_with_utility) == 0:
+            st.sidebar.error("Please add utility values to at least one course and click 'Save Utility Values' before running the solver.")
+        else:
+            # Create the solver input message
+            solver_input = {
+                "budget": tokens,
+                "max_credits": max_credits,
+                "seed": seed,
+                "courses": [
+                    {
+                        "uniqueid": row['uniqueid'],
+                        "utility": row['Utility']
+                    }
+                    for _, row in courses_with_utility.iterrows()
+                ]
+            }
         
-        # For debugging - you can remove this later
-        st.sidebar.write("Solver Input:")
-        st.sidebar.json(solver_input)
-        
-        # TODO: Call your solver function here
-        # result = solve_optimization(solver_input)
-        # Create CourseMatchSolver instance and solve
-        try:
-            cms = CourseMatchSolver("data_spring_2025.xlsx", solver_input)
-            selected = cms.solve()
+            # For debugging - you can remove this later
+            # st.sidebar.write("Solver Input:")
+            # st.sidebar.json(solver_input)
             
-            # Display results
-            st.sidebar.write("Selected Courses:")
-            st.sidebar.write(selected)
+            # TODO: Call your solver function here
+            # result = solve_optimization(solver_input)
+            # Create CourseMatchSolver instance and solve
+            try:
+                cms = CourseMatchSolver("data_spring_2025.xlsx", solver_input)
+                selected = cms.solve()
+                
+                # Display results
+                st.sidebar.write("Selected Courses:")
+                st.sidebar.write(selected)
 
-            # Store both uniqueids and prices in session state
-            st.session_state.solver_results = selected  # Store the full solver results
-            st.session_state.selected_uniqueids = [item['uniqueid'] for item in selected]  # Extract just the uniqueids
+                # Store both uniqueids and prices in session state
+                st.session_state.solver_results = selected  # Store the full solver results
+                st.session_state.selected_uniqueids = [item['uniqueid'] for item in selected]  # Extract just the uniqueids
 
-        except Exception as e:
-            import traceback
-            st.sidebar.error(f"Error running solver: {str(e)}")
-            st.sidebar.error("Full error trace:")
-            st.sidebar.code(traceback.format_exc())
+            except Exception as e:
+                import traceback
+                st.sidebar.error(f"Error running solver: {str(e)}")
+                st.sidebar.error("Full error trace:")
+                st.sidebar.code(traceback.format_exc())
 
 st.title("CourseCast v1.0")
 st.write(
@@ -230,52 +233,53 @@ edited_df = st.data_editor(
             max_value=100,
             step=1,
             default=0,
+            width = "small"
         ),
         "primary_section_id": st.column_config.TextColumn(
             "Course",
-            width="medium",
+            width="none",
             disabled=True
         ),
         "title": st.column_config.TextColumn(
             "Title",
-            width="large",
+            width="none",
             disabled=True
         ),
         "days_code": st.column_config.TextColumn(
             "Days",
-            width="small",
+            width="none",
             disabled=True
         ),
         "start_time_24hr": st.column_config.TimeColumn(
             "Start",
-            width="small",
+            width="none",
             disabled=True,
             format="h:mm a"  # This will format like "9:30 AM"
         ),
         "stop_time_24hr": st.column_config.TimeColumn(
             "End",
-            width="small",
+            width="none",
             disabled=True,
             format="h:mm a"
         ),
         "quarter": st.column_config.TextColumn(
             "Term",
-            width="small",
+            width="none",
             disabled=True
         ),
         "instructor": st.column_config.TextColumn(
             "Instructor",
-            width="medium",
+            width="none",
             disabled=True
         ),
         "credit_unit": st.column_config.NumberColumn(
             "CU",
-            width="small",
+            width="none",
             disabled=True
         ),
         "price_predicted": st.column_config.NumberColumn(
-            "Price",
-            width="medium",
+            "Forecast Price",
+            width="none",
             disabled=True,
             format="%d"
         ),
@@ -309,6 +313,9 @@ if 'selected_uniqueids' in st.session_state and st.session_state.selected_unique
     mask = st.session_state.utility_data['uniqueid'].isin(st.session_state.selected_uniqueids)
     selected_courses = st.session_state.utility_data[mask]
     
+    # Update prices with solver prices
+    selected_courses['price_predicted'] = selected_courses['uniqueid'].map(solver_prices)
+    
     st.write("Selected Courses:")
     st.dataframe(
         selected_courses[[
@@ -320,24 +327,25 @@ if 'selected_uniqueids' in st.session_state and st.session_state.selected_unique
             'quarter',
             'instructor',
             'credit_unit',
-            'price_predicted',
+            'price_predicted',  # This will now show the solver's price
             'Utility'
         ]],
         column_config={
             "primary_section_id": "Course",
             "start_time_24hr": st.column_config.TimeColumn("Start", format="h:mm a"),
             "stop_time_24hr": st.column_config.TimeColumn("End", format="h:mm a"),
-            "price_predicted": st.column_config.NumberColumn("Price", format="%d"),
+            "price_predicted": st.column_config.NumberColumn("Est. Price", format="%d"),
         },
         hide_index=True,
         use_container_width=True
     )
     
-    # Summary statistics
+    # Summary statistics using the solver's prices
     summary_cols = st.columns(3)
     with summary_cols[0]:
         st.metric("Total Credits", f"{selected_courses['credit_unit'].sum()}")
     with summary_cols[1]:
         st.metric("Total Price", f"{selected_courses['price_predicted'].sum():,.0f}")
     with summary_cols[2]:
-        st.metric("Total Utility", f"{selected_courses['Utility'].sum()}")
+        weighted_utility = (selected_courses['Utility'] * selected_courses['credit_unit']).sum()
+        st.metric("Total Weighted Utility", f"{weighted_utility:,.0f}")
