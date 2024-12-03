@@ -298,13 +298,14 @@ class CourseMatchSolver(object):
         # Solve the problem
         prob.solve()
 
-        # Extract the selected rows
-        selected_rows = [row["uniqueid"] for _, row in self.df.iterrows() if row_vars[row["uniqueid"]].varValue == 1]
-
         # Print the results
         print("Selected Rows:")
+        selected_rows = [row["uniqueid"] for _, row in self.df.iterrows() if row_vars[row["uniqueid"]].varValue == 1]
         print(self.df[self.df["uniqueid"].isin(selected_rows)])
-        return selected_rows
+
+        # Extract the selected rows
+        result = [dict({"uniqueid": row["uniqueid"], "price": row["price"]}) for _, row in self.df.iterrows() if row_vars[row["uniqueid"]].varValue == 1]
+        return result
     
     def pack(self, data):
         return data
