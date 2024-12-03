@@ -71,8 +71,9 @@ with st.sidebar:
             st.sidebar.write("Selected Courses:")
             st.sidebar.write(selected)
 
-             # Store the selected uniqueids in session state
-            st.session_state.selected_uniqueids = selected
+            # Store both uniqueids and prices in session state
+            st.session_state.solver_results = selected  # Store the full solver results
+            st.session_state.selected_uniqueids = [item['uniqueid'] for item in selected]  # Extract just the uniqueids
 
         except Exception as e:
             import traceback
@@ -291,8 +292,19 @@ if st.button("Save Utility Values"):
         st.session_state.utility_data.loc[mask, 'Utility'] = st.session_state.utility_data.loc[mask, 'primary_section_id'].map(utility_updates)
         st.success("Utility values saved successfully!")
 
+# Add a divider and section for results
+st.divider()
+st.header("Optimization Results")
+
+# Add this near the top of your optimization results section
+results_section = st.empty()  # This creates an anchor point
+
 # Display selected courses if we have them
 if 'selected_uniqueids' in st.session_state and st.session_state.selected_uniqueids:
+     
+    # First, create a dictionary of uniqueid -> price from solver results
+    solver_prices = {item['uniqueid']: item['price'] for item in st.session_state.solver_results}  # Use session state instead of selected
+    
     # Get the full information for selected courses
     mask = st.session_state.utility_data['uniqueid'].isin(st.session_state.selected_uniqueids)
     selected_courses = st.session_state.utility_data[mask]
