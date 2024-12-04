@@ -4,7 +4,38 @@ from coursematch_solver import CourseMatchSolver
 from montecarlo import MonteCarloSimulator
 import random
 
-st.set_page_config(layout="wide")  # Add this as the first st command
+st.set_page_config(
+    page_title="Wharton CourseCast",
+    page_icon="📚",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'About': "Wharton CourseCast - Course Planning & Optimization Tool"
+    }
+)
+
+st.markdown(
+    """
+    <meta name="description" content="Wharton CourseCast - Course Planning & Optimization Tool. Use Wharton CourseCast to plan your courses for the upcoming semester with up-to-date course information, professor evaluations, and more.">
+    """,
+    unsafe_allow_html=True,
+)
+
+# Initialize session state if needed
+if 'utility_data' not in st.session_state:
+    # Load the data
+    df = pd.read_excel("data_spring_2025.xlsx")
+    df['department'] = df['primary_section_id'].str[:4]
+    df['quarter'] = df['part_of_term'].map({
+        3: 'Q3',
+        4: 'Q4',
+        'S': 'Full',
+        'Modular': 'Block'
+    })
+    
+    # Add Utility column
+    df.insert(0, 'Utility', 0)
+    st.session_state.utility_data = df
 
 # Add sidebar
 with st.sidebar:
@@ -145,11 +176,63 @@ with st.sidebar:
                 st.sidebar.error("Full error trace:")
                 st.sidebar.code(traceback.format_exc())
 
+    # Add table showing courses being passed to forecaster
+    st.write("### Current Course Inputs")
+    courses_with_utility = st.session_state.utility_data[
+        st.session_state.utility_data['Utility'] > 0
+    ]
+    
+    if len(courses_with_utility) > 0:
+        solver_input_courses = [
+            {
+                "Course": row['primary_section_id'],
+                "Utility": row['Utility']
+            }
+            for _, row in courses_with_utility.iterrows()
+        ]
+        
+        st.dataframe(
+            solver_input_courses,
+            column_config={
+                "Course": st.column_config.TextColumn(
+                    "Course",
+                    width="small"
+                ),
+                "Utility": st.column_config.NumberColumn(
+                    "Utility",
+                    width="small",
+                    format="%d"
+                )
+            },
+            hide_index=True,
+            use_container_width=True
+        )
+        
+        # Add clear button
+        if st.button("🗑️ Clear All Utility Values"):
+            # Reset all utility values to 0
+            st.session_state.utility_data['Utility'] = 0
+            st.rerun()
+    else:
+        st.info("No courses with saved utility")
 
+    st.divider()
+    
+    # Add download button at the bottom of sidebar
+    with open("data_spring_2025.xlsx", "rb") as file:
+        st.download_button(
+            label="Download Coursebook (XLSX)",
+            icon="📥",
+            data=file,
+            file_name="data_spring_2025.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            help="Download the complete course dataset as an Excel file",
+            use_container_width=True
+        )
 
-st.title("✨ CourseCast v1.0 ✨")
+st.title("CourseCast v1.0")
 
-with st.expander("Click here for instructions!"):
+with st.expander("⭐️ **CLICK ME! LEARN HOW TO USE THIS TOOL!** ⭐️"):
     st.markdown("""
     #### How to Use CourseCast
 
@@ -157,11 +240,11 @@ with st.expander("Click here for instructions!"):
     Unlike the "Top Schedules" tab in CourseMatch, this tool actually accounts for prices and variability.
     It's not perfect, but it's a start.
                 
-    If you have any feedback, please let me know via email at djgibbs@wharton.upenn.edu!
+    While this application works on mobile, I recommend using a desktop for a better experience. If you have any feedback, please let me know via email at djgibbs@wharton.upenn.edu!
 
-    CourseCast does five things:
+    In short, CourseCast does five things:
     1. Allows you to browse and filter course information 
-    2. Allows you to assign utility values to courses 
+    2. Allows you tso assign utility values to courses 
     3. Generates a price forecast based on historical data + uncertainty
     4. Solves the optimal schedule given prices, utility values, and constraints
     5. Simulates the schedule many times to see the probability of different outcomes
@@ -180,7 +263,7 @@ with st.expander("Click here for instructions!"):
        - Access the Course Browser by clicking the 'Course Browser' tab
        - Use the search bar for keyword search across all fields
        - Use dropdown filters for Department, Instructor, Days, Time, Credits, and Quarter
-       - Toggle 'Show Course Evaluations' to view Course Evaluations data and additional filtering options
+       - View course evaluation data including course quality, instructor ratings, difficulty, and workload
        - Click any column header to sort the table (ascending, descending, none)
 
     **Assign Utility Values**
@@ -216,23 +299,12 @@ tab1, tab2, tab3 = st.tabs(["Course Browser", "Schedule Forecast", "Schedule Sim
 # Move into tab1 (removing the welcome message since it's now above)
 with tab1:
     st.header("Course Information")
+    st.write("""
+                1. Use the table and filters below to browse the course and evaluation data (downloadable as CSV with button in upper right of table).
+                2. Input utility values and click the 'Save Utility Values' button below the table to preserve your changes.
+                3. Run the schedule forecaster by clicking 'Forecast Schedule (1x)' or 'Simulate Schedule (100x)' in the sidebar.
+    """)
     
-    # Initialize session state if needed
-    if 'utility_data' not in st.session_state:
-        # Load the data
-        df = pd.read_excel("data_spring_2025.xlsx")
-        df['department'] = df['primary_section_id'].str[:4]
-        df['quarter'] = df['part_of_term'].map({
-            3: 'Q3',
-            4: 'Q4',
-            'S': 'Full',
-            'Modular': 'Block'
-        })
-        
-        # Add Utility column
-        df.insert(0, 'Utility', 0)
-        st.session_state.utility_data = df
-
     # Initialize filter states if needed
     if 'filters' not in st.session_state:
         st.session_state.filters = {
@@ -296,56 +368,51 @@ with tab1:
         hide_zero = st.checkbox('Hide Zero Utility', key='hide_zero_select', label_visibility="visible")
         st.session_state.filters['hide_zero'] = hide_zero
 
-    # Separate row for toggles with tighter spacing
-    show_evals = st.toggle('Show Course Evaluations Data', value=False, key='show_evals')
+    eval_cols = st.columns(4)
+    
+    with eval_cols[0]:
+        min_course_quality = st.number_input(
+            'Min Course Quality',
+            min_value=0.0,
+            max_value=4.0,
+            value=0.0,
+            step=0.1,
+            key='min_course_quality'
+        )
+        st.session_state.filters['min_course_quality'] = min_course_quality
 
-    # Add evaluation filters when toggle is active
-    if show_evals:
-        eval_cols = st.columns(4)
-        
-        with eval_cols[0]:
-            min_course_quality = st.number_input(
-                'Min Course Quality',
-                min_value=0.0,
-                max_value=4.0,
-                value=0.0,
-                step=0.5,
-                key='min_course_quality'
-            )
-            st.session_state.filters['min_course_quality'] = min_course_quality
+    with eval_cols[1]:
+        min_instructor_quality = st.number_input(
+            'Min Instructor Quality',
+            min_value=0.0,
+            max_value=4.0,
+            value=0.0,
+            step=0.1,
+            key='min_instructor_quality'
+        )
+        st.session_state.filters['min_instructor_quality'] = min_instructor_quality
 
-        with eval_cols[1]:
-            min_instructor_quality = st.number_input(
-                'Min Instructor Quality',
-                min_value=0.0,
-                max_value=4.0,
-                value=0.0,
-                step=0.5,
-                key='min_instructor_quality'
-            )
-            st.session_state.filters['min_instructor_quality'] = min_instructor_quality
+    with eval_cols[2]:
+        max_difficulty = st.number_input(
+            'Max Difficulty',
+            min_value=0.0,
+            max_value=4.0,
+            value=4.0,
+            step=0.1,
+            key='max_difficulty'
+        )
+        st.session_state.filters['max_difficulty'] = max_difficulty
 
-        with eval_cols[2]:
-            max_difficulty = st.number_input(
-                'Max Difficulty',
-                min_value=0.0,
-                max_value=4.0,
-                value=4.0,
-                step=0.5,
-                key='max_difficulty'
-            )
-            st.session_state.filters['max_difficulty'] = max_difficulty
-
-        with eval_cols[3]:
-            max_workload = st.number_input(
-                'Max Workload',
-                min_value=0.0,
-                max_value=4.0,
-                value=4.0,
-                step=0.5,
-                key='max_workload'
-            )
-            st.session_state.filters['max_workload'] = max_workload
+    with eval_cols[3]:
+        max_workload = st.number_input(
+            'Max Workload',
+            min_value=0.0,
+            max_value=4.0,
+            value=4.0,
+            step=0.1,
+            key='max_workload'
+        )
+        st.session_state.filters['max_workload'] = max_workload
 
     # Modify the DataFrame columns based on toggle
     display_columns = [
@@ -358,29 +425,24 @@ with tab1:
         'quarter',
         'instructor', 
         'credit_unit',
-        'price_predicted'
-    ]
-
-    if show_evals:
-        eval_columns = [
-            'overall_course_quality',
-            'overall_instructor_quality',
-            'overall_difficulty',
-            'overall_work_required',
-            'instructor_1_course_quality',
-            'instructor_1_quality',
-            'instructor_1_difficulty',
-            'instructor_1_work_required',
-            'instructor_2_course_quality',
-            'instructor_2_quality',
-            'instructor_2_difficulty',
-            'instructor_2_work_required',
-            'instructor_3_course_quality',
-            'instructor_3_quality',
-            'instructor_3_difficulty',
-            'instructor_3_work_required'
-        ]
-        display_columns.extend(eval_columns)
+        'price_predicted',
+        'overall_course_quality',
+        'overall_instructor_quality',
+        'overall_difficulty',
+        'overall_work_required',
+        'instructor_1_course_quality',
+        'instructor_1_quality',
+        'instructor_1_difficulty',
+        'instructor_1_work_required',
+        'instructor_2_course_quality',
+        'instructor_2_quality',
+        'instructor_2_difficulty',
+        'instructor_2_work_required',
+        'instructor_3_course_quality',
+        'instructor_3_quality',
+        'instructor_3_difficulty',
+        'instructor_3_work_required'
+    ]  
 
     # Apply filters to the session state data
     filtered_data = st.session_state.utility_data.copy()
@@ -404,15 +466,14 @@ with tab1:
         ]
     if hide_zero:
         filtered_data = filtered_data[filtered_data['Utility'] > 0]
-    if show_evals:
-        if min_course_quality > 0:
-            filtered_data = filtered_data[filtered_data['overall_course_quality'] >= min_course_quality]
-        if min_instructor_quality > 0:
-            filtered_data = filtered_data[filtered_data['overall_instructor_quality'] >= min_instructor_quality]
-        if max_difficulty < 4:
-            filtered_data = filtered_data[filtered_data['overall_difficulty'] <= max_difficulty]
-        if max_workload < 4:
-            filtered_data = filtered_data[filtered_data['overall_work_required'] <= max_workload]
+    if min_course_quality > 0:
+        filtered_data = filtered_data[filtered_data['overall_course_quality'] >= min_course_quality]
+    if min_instructor_quality > 0:
+        filtered_data = filtered_data[filtered_data['overall_instructor_quality'] >= min_instructor_quality]
+    if max_difficulty < 4:
+        filtered_data = filtered_data[filtered_data['overall_difficulty'] <= max_difficulty]
+    if max_workload < 4:
+        filtered_data = filtered_data[filtered_data['overall_work_required'] <= max_workload]
 
     # Display the edited data frame
     edited_df = st.data_editor(
@@ -496,62 +557,62 @@ with tab1:
                 disabled=True
             ),
             "instructor_1_course_quality": st.column_config.NumberColumn(
-                "Inst 1 Course",
+                "Instr. 1 Course",
                 width="none",
                 disabled=True
             ),
             "instructor_1_quality": st.column_config.NumberColumn(
-                "Inst 1 Quality",
+                "Instr. 1 Quality",
                 width="none",
                 disabled=True
             ),
             "instructor_1_difficulty": st.column_config.NumberColumn(
-                "I1 Difficulty",
+                "Instr. 1 Difficulty",
                 width="none",
                 disabled=True
             ),
             "instructor_1_work_required": st.column_config.NumberColumn(
-                "I1 Work",
+                "Instr. 1 Work",
                 width="none",
                 disabled=True
             ),
             "instructor_2_course_quality": st.column_config.NumberColumn(
-                "I2 Course",
+                "Instr. 2 Course",
                 width="none",
                 disabled=True
             ),
             "instructor_2_quality": st.column_config.NumberColumn(
-                "I2 Quality",
+                "Instr. 2 Quality",
                 width="none",
                 disabled=True
             ),
             "instructor_2_difficulty": st.column_config.NumberColumn(
-                "I2 Difficulty",
+                "Instr. 2 Difficulty",
                 width="none",
                 disabled=True
             ),
             "instructor_2_work_required": st.column_config.NumberColumn(
-                "I2 Work",
+                "Instr. 2 Work",
                 width="none",
                 disabled=True
             ),
             "instructor_3_course_quality": st.column_config.NumberColumn(
-                "I3 Course",
+                "Instr. 3 Course",
                 width="none",
                 disabled=True
             ),
             "instructor_3_quality": st.column_config.NumberColumn(
-                "I3 Quality",
+                "Instr. 3 Quality",
                 width="none",
                 disabled=True
             ),
             "instructor_3_difficulty": st.column_config.NumberColumn(
-                "I3 Difficulty",
+                "Instr. 3 Difficulty",
                 width="none",
                 disabled=True
             ),
             "instructor_3_work_required": st.column_config.NumberColumn(
-                "I3 Work",
+                "Instr. 3 Work",
                 width="none",
                 disabled=True
             ),
@@ -561,12 +622,23 @@ with tab1:
     )
 
     # Add a save button
-    if st.button("Save Utility Values"):
+    if st.button("**SAVE UTILITY VALUES!** *YOU MUST SAVE UTILITY VALUES BEFORE CHANGING FILTERS OR YOU WILL LOSE YOUR PROGRESS!*", 
+                 type="primary", 
+                 use_container_width=True,
+                 icon="💾"):
         if edited_df is not None:
             utility_updates = edited_df.set_index('primary_section_id')['Utility']
             mask = st.session_state.utility_data['primary_section_id'].isin(utility_updates.index)
             st.session_state.utility_data.loc[mask, 'Utility'] = st.session_state.utility_data.loc[mask, 'primary_section_id'].map(utility_updates)
-            st.success("Utility values saved successfully!")
+            # Store a flag to show success message after rerun
+            st.session_state.show_save_success = True
+            st.rerun()
+
+    # Show success message if flag is set
+    if 'show_save_success' in st.session_state and st.session_state.show_save_success:
+        st.success('Utility values saved successfully!', icon="✅")
+        # Clear the flag
+        del st.session_state.show_save_success
 
 with tab2:
     st.header("Forecasted Schedule")
@@ -582,6 +654,7 @@ with tab2:
         uncertainty, actual clearing prices may vary. 
         
         Use this forecast as a planning tool, not as a guarantee of your final schedule.
+        **I recommend re-running the 'Forecast Schedule (1x)' multiple times to see how your schedule may change.**
     """)
 
     st.write("")
