@@ -45,9 +45,9 @@ with st.sidebar:
     tokens = st.number_input(
         "Number of Tokens",
         min_value=3000,
-        max_value=5500,
+        max_value=7000,
         value=4500,  # default value
-        step=100,
+        step=50,
         help="Set your token allocation"
     )
     # Add credit input 
