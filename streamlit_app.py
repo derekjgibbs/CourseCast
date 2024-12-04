@@ -53,7 +53,7 @@ with st.sidebar:
     # Add credit input 
     max_credits = st.number_input(
         "Maximum Credit Units",
-        min_value=3.0,
+        min_value=0.5,
         max_value=7.5,
         value=5.0,  # default value
         step=0.5,
