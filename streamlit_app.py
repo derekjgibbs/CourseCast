@@ -234,14 +234,26 @@ st.title("CourseCast v1.0")
 
 with st.expander("⭐️ **CLICK ME! LEARN HOW TO USE THIS TOOL!** ⭐️"):
     st.markdown("""
-    #### How to Use CourseCast
+    #### A Note from Derek
 
-    Hi there! I built this tool to better understand what I would get out of the CourseMatch algorithm. 
-    Unlike the "Top Schedules" tab in CourseMatch, this tool actually accounts for prices and variability.
-    It's not perfect, but it's a start.
+    Hi there! I built this tool to help you (and me) get more out of CourseMatch. 
+    CourseMatch is a powerful system that tries very hard to give you what it thinks you want, based on the utilities you provide.
+    The problem is that it's hard to translate what you want into the right utility values. 
+    You might end up with disappointing schedules simply because you didn't speak the CourseMatch "language" correctly.
+    This tool is designed to help bridge that gap. By showing you potential schedules,
+    CourseCast helps you build better intuition about how utility values translate to actual results.
+    And unlike the "Top Schedules" tab in CourseMatch, this tool actually accounts for prices and variability.
                 
-    While this application works on mobile, I recommend using a desktop for a better experience. If you have any feedback, please let me know via email at djgibbs@wharton.upenn.edu!
+    I hope this tool helps. Life is too short for crappy class schedules. Happy CourseCasting! 
+                     
+    --- Derek Gibbs (12/4/24)
+                
+    P.S. While this application works on mobile, I recommend using a desktop for a better experience. 
+    Also, huge thanks to Owen Kwon for his help in building this!
+    If you have any feedback or find any bugs, please let me know via email at djgibbs@wharton.upenn.edu.
 
+    ### CourseCast in a Nutshell              
+                
     In short, CourseCast does five things:
     1. Allows you to browse and filter course information 
     2. Allows you tso assign utility values to courses 
