@@ -452,8 +452,8 @@ with tab1:
         filtered_data = filtered_data[filtered_data['instructor'] == selected_instructor]
     if 'All' not in selected_day:
         filtered_data = filtered_data[filtered_data['days_code'].isin(selected_day)]
-    if 'All' not in selected_time_12hr:
-        filtered_data = filtered_data[filtered_data['start_time_24hr'].isin(selected_time)]
+    if selected_time_12hr != 'All':
+        filtered_data = filtered_data[filtered_data['start_time_24hr'] == selected_time]
     if selected_credits != 'All':
         filtered_data = filtered_data[filtered_data['credit_unit'] == float(selected_credits)]
     if 'All' not in selected_quarter:
