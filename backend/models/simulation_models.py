@@ -11,7 +11,7 @@ class SimulationRequest(BaseModel):
     """Request model for Monte Carlo simulation."""
     
     budget: float = Field(..., description="Maximum budget for courses")
-    max_credits: int = Field(..., description="Maximum credit hours")
+    max_credits: float = Field(..., description="Maximum credit hours")
     courses: List[CourseInput] = Field(..., description="List of courses with utilities")
     num_simulations: int = Field(default=50, description="Number of simulations to run")
     seed: Optional[int] = Field(default=None, description="Base seed for reproducibility")
