@@ -168,3 +168,15 @@ export const getUserById = query({
     }
   },
 });
+
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db
+      .query("users")
+      .order("desc")
+      .collect();
+    
+    return users;
+  },
+});
