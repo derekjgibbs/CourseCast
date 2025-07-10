@@ -280,4 +280,160 @@ describe('CourseCatalogTable', () => {
       expect(rows[1]).toHaveTextContent('ACCT6130001');
     });
   });
+
+  describe('Pagination functionality', () => {
+    const createManyMockCourses = (count: number): CourseDoc[] => {
+      return Array.from({ length: count }, (_, i) => ({
+        _id: `course${i + 1}` as any,
+        _creationTime: Date.now(),
+        course_id: `TEST${i + 1}`,
+        title: `Test Course ${i + 1}`,
+        department: 'TEST',
+        instructor: 'INSTRUCTOR',
+        days: 'MW',
+        start_time: '10:00',
+        end_time: '11:30',
+        term: 'Full',
+        credits: 1.0,
+        price_forecast: 2000,
+        price_std_dev: 150,
+        course_quality: 3.0,
+        instructor_quality: 3.0,
+        difficulty: 2.5,
+        work_required: 2.5,
+      }));
+    };
+
+    it('renders pagination controls when there are many courses', () => {
+      const manyCourses = createManyMockCourses(25);
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      // Should show pagination controls
+      expect(screen.getByText('Previous')).toBeInTheDocument();
+      expect(screen.getByText('Next')).toBeInTheDocument();
+      expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+    });
+
+    it('shows correct number of courses per page', () => {
+      const manyCourses = createManyMockCourses(25);
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      // Should show 10 courses per page (plus header row)
+      const rows = screen.getAllByRole('row');
+      expect(rows).toHaveLength(11); // 1 header + 10 data rows
+    });
+
+    it('navigates to next page when Next button is clicked', () => {
+      const manyCourses = createManyMockCourses(25);
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      // Initially on page 1
+      expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+      expect(screen.getByText('TEST1')).toBeInTheDocument();
+      
+      // Click Next
+      const nextButton = screen.getByText('Next');
+      fireEvent.click(nextButton);
+      
+      // Should be on page 2
+      expect(screen.getByText('Page 2 of 3')).toBeInTheDocument();
+      expect(screen.getByText('TEST11')).toBeInTheDocument(); // First course on page 2
+      expect(screen.queryByText('TEST1')).not.toBeInTheDocument();
+    });
+
+    it('navigates to previous page when Previous button is clicked', () => {
+      const manyCourses = createManyMockCourses(25);
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      // Go to page 2 first
+      const nextButton = screen.getByText('Next');
+      fireEvent.click(nextButton);
+      expect(screen.getByText('Page 2 of 3')).toBeInTheDocument();
+      
+      // Click Previous
+      const prevButton = screen.getByText('Previous');
+      fireEvent.click(prevButton);
+      
+      // Should be back on page 1
+      expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+      expect(screen.getByText('TEST1')).toBeInTheDocument();
+    });
+
+    it('disables Previous button on first page', () => {
+      const manyCourses = createManyMockCourses(25);
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      const prevButton = screen.getByText('Previous');
+      expect(prevButton).toBeDisabled();
+    });
+
+    it('disables Next button on last page', () => {
+      const manyCourses = createManyMockCourses(25);
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      // Navigate to last page
+      const nextButton = screen.getByText('Next');
+      fireEvent.click(nextButton); // Page 2
+      fireEvent.click(nextButton); // Page 3
+      
+      expect(screen.getByText('Page 3 of 3')).toBeInTheDocument();
+      expect(nextButton).toBeDisabled();
+    });
+
+    it('shows correct courses on last page with fewer items', () => {
+      const manyCourses = createManyMockCourses(25);
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      // Navigate to last page
+      const nextButton = screen.getByText('Next');
+      fireEvent.click(nextButton); // Page 2
+      fireEvent.click(nextButton); // Page 3
+      
+      // Page 3 should have 5 courses (25 total - 20 on first two pages)
+      const rows = screen.getAllByRole('row');
+      expect(rows).toHaveLength(6); // 1 header + 5 data rows
+      expect(screen.getByText('TEST21')).toBeInTheDocument(); // First course on page 3
+      expect(screen.getByText('TEST25')).toBeInTheDocument(); // Last course
+    });
+
+    it('does not show pagination controls for small datasets', () => {
+      render(<CourseCatalogTable courses={mockCourses} />); // Only 2 courses
+      
+      // Should not show pagination controls
+      expect(screen.queryByText('Previous')).not.toBeInTheDocument();
+      expect(screen.queryByText('Next')).not.toBeInTheDocument();
+      expect(screen.queryByText(/Page \d+ of \d+/)).not.toBeInTheDocument();
+    });
+
+    it('pagination works with search results', () => {
+      const manyCourses = createManyMockCourses(25);
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      // Search for courses (all have "Test Course" in title)
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      fireEvent.change(searchInput, { target: { value: 'Test Course' } });
+      
+      // Should still have pagination for filtered results
+      expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+      expect(screen.getByText('Previous')).toBeInTheDocument();
+      expect(screen.getByText('Next')).toBeInTheDocument();
+    });
+
+    it('resets to page 1 when search changes', () => {
+      const manyCourses = createManyMockCourses(25);
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      // Go to page 2
+      const nextButton = screen.getByText('Next');
+      fireEvent.click(nextButton);
+      expect(screen.getByText('Page 2 of 3')).toBeInTheDocument();
+      
+      // Search for something
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      fireEvent.change(searchInput, { target: { value: 'Test' } });
+      
+      // Should reset to page 1
+      expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+    });
+  });
 });

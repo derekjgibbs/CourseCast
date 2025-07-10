@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   createColumnHelper,
   flexRender,
@@ -11,6 +11,7 @@ import { CourseDoc } from '../../convex/types';
 
 interface CourseCatalogTableProps {
   courses: CourseDoc[];
+  pageSize?: number;
 }
 
 const columnHelper = createColumnHelper<CourseDoc>();
@@ -53,9 +54,10 @@ const columns = [
   }),
 ];
 
-const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses }) => {
+const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses, pageSize = 10 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredCourses = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -70,8 +72,28 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses }) => {
     );
   }, [courses, searchTerm]);
 
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // Calculate pagination values
+  const totalPages = Math.ceil(filteredCourses.length / pageSize);
+  const shouldShowPagination = filteredCourses.length > pageSize;
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedCourses = filteredCourses.slice(startIndex, endIndex);
+
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
   const table = useReactTable({
-    data: filteredCourses,
+    data: paginatedCourses,
     columns,
     state: {
       sorting,
@@ -146,6 +168,30 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses }) => {
           </tbody>
         </table>
       </div>
+
+      {shouldShowPagination && (
+        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+          <div className="flex items-center text-sm text-gray-700">
+            <span>Page {currentPage} of {totalPages}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+              className="px-3 py-1 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

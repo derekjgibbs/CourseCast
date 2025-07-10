@@ -1,10 +1,41 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 
 export const list = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("courses").collect();
+  },
+});
+
+export const listPaginated = query({
+  args: { 
+    paginationOpts: paginationOptsValidator,
+    searchTerm: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    let query = ctx.db.query("courses");
+    
+    // Apply search filter if provided
+    if (args.searchTerm) {
+      const searchLower = args.searchTerm.toLowerCase();
+      const allCourses = await query.collect();
+      const filtered = allCourses.filter(course => 
+        course.title.toLowerCase().includes(searchLower) ||
+        course.course_id.toLowerCase().includes(searchLower) ||
+        course.instructor.toLowerCase().includes(searchLower)
+      );
+      // Note: This is a simplified approach. For better performance with large datasets,
+      // consider implementing server-side filtering with database indexes
+      return {
+        page: filtered.slice(0, args.paginationOpts.numItems || 10),
+        isDone: filtered.length <= (args.paginationOpts.numItems || 10),
+        continueCursor: null,
+      };
+    }
+    
+    return await query.paginate(args.paginationOpts);
   },
 });
 
