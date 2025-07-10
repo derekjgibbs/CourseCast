@@ -13,7 +13,7 @@ Object.defineProperty(URL, 'revokeObjectURL', {
 
 // Make vi available globally
 import { vi } from 'vitest';
-global.vi = vi;
+(global as any).vi = vi;
 
 // Set up environment variables for Convex integration tests
 process.env.VITE_CONVEX_URL = 'https://glorious-mule-933.convex.cloud';
