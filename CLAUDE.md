@@ -117,3 +117,30 @@ The codebase is being redesigned for v2.0 with planned improvements:
 - Alternative implementations in `optimization_algorithm.py`
 - Input handling centralized in `inputs.py`
 - Historical data and exports in `data/` directory
+
+### Code Clarity
+
+    Class and method names must be self-documenting, short, and descriptive
+    Remove all hardcoded values - use configuration or constants instead
+    If you have a complicated expression, put the result of the expression or parts of the expression, in a temporary variable with a name that explains the purpose of the expression.
+
+### Code Organization
+
+    Eliminate duplicate code through extraction or abstraction
+    If you have a code fragment that can be grouped together, turn the fragment into a method whose name explains the purpose of the method.
+    Enforce maximum method length of 60 lines
+    Decompose complex methods into smaller, single-purpose functions
+    Break down large classes with excessive instance variables (>7-10)
+
+### Code Quality
+
+    Add runtime assertions to critical methods (minimum 2 per critical method)
+    Assertions should validate key assumptions about state and parameters
+    Consider consolidating scattered minor changes into cohesive classes
+
+### Design Priorities (in order)
+
+    Readability - Code should be immediately understandable
+    Simplicity - Choose the least complex solution
+    Maintainability - Optimize for future changes
+    Performance - Only optimize after the above are satisfied
