@@ -3,17 +3,24 @@
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from config import settings
 from logging_config import setup_logging, get_logger
+from services.data_service import DataService
+from services.optimization_service import OptimizationService
+from models.optimization_models import OptimizationRequest, OptimizationResponse
 
 
 # Set up logging
 setup_logging()
 logger = get_logger(__name__)
+
+# Initialize services
+data_service = DataService()
+optimization_service = OptimizationService(data_service=data_service)
 
 
 @asynccontextmanager
@@ -79,6 +86,38 @@ async def api_status() -> Dict[str, Any]:
             "simulation": f"{settings.api_v1_prefix}/simulate",
         },
     }
+
+
+@app.post(f"{settings.api_v1_prefix}/optimize", response_model=OptimizationResponse)
+async def optimize_courses(request: OptimizationRequest) -> OptimizationResponse:
+    """Optimize course selection using linear programming."""
+    try:
+        logger.info(
+            "Starting optimization",
+            budget=request.budget,
+            max_credits=request.max_credits,
+            course_count=len(request.courses),
+            seed=request.seed
+        )
+        
+        result = optimization_service.optimize(request)
+        
+        logger.info(
+            "Optimization completed",
+            status=result.optimization_status,
+            selected_courses=len([c for c in result.selected_courses if c.selected]),
+            total_cost=result.total_cost,
+            total_credits=result.total_credits
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error("Optimization failed", error=str(e), exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Optimization failed: {str(e)}"
+        )
 
 
 if __name__ == "__main__":
