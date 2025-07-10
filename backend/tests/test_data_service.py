@@ -55,10 +55,16 @@ class TestRandomManager:
         assert len(series) == 5
         assert list(series) == [0.1, 0.2, 0.3, 0.4, 0.5]
     
-    def test_get_rand_z_series_with_invalid_seed(self):
+    def test_get_rand_z_series_with_invalid_seed(self, temp_z_score_file):
         """Test getRandZSeries handles invalid seed gracefully."""
-        # RED: Should fail - method doesn't exist yet
-        pass
+        from services.data_service import RandomManager
+        
+        # Arrange
+        manager = RandomManager(temp_z_score_file)
+        
+        # Act & Assert
+        with pytest.raises(KeyError):
+            manager.getRandZSeries('invalid_seed')
     
     def test_z_table_file_not_found_raises_error(self):
         """Test that missing z-score table file raises appropriate error."""
@@ -71,13 +77,34 @@ class TestPreProcessor:
     
     def test_init_creates_preprocessor(self):
         """Test PreProcessor initialization."""
-        # RED: Should fail - PreProcessor doesn't exist yet
-        pass
+        from services.data_service import PreProcessor
+        
+        # Arrange & Act
+        preprocessor = PreProcessor()
+        
+        # Assert
+        assert preprocessor is not None
+        assert hasattr(preprocessor, 'config')
     
-    def test_preprocess_drops_unused_columns(self):
+    def test_preprocess_drops_unused_columns(self, sample_course_data):
         """Test that preprocess drops specified columns."""
-        # RED: Should fail - method doesn't exist yet
-        pass
+        from services.data_service import PreProcessor
+        
+        # Arrange
+        preprocessor = PreProcessor()
+        original_columns = set(sample_course_data.columns)
+        
+        # Act
+        result = preprocessor.preprocess(sample_course_data)
+        
+        # Assert
+        dropped_columns = {'term', 'title', 'instructor', 'start_date', 'end_date', 'capacity'}
+        remaining_columns = set(result.columns)
+        
+        assert dropped_columns.isdisjoint(remaining_columns)
+        assert 'primary_section_id' in remaining_columns
+        assert 'course_id' in remaining_columns
+        assert 'section_code' in remaining_columns
     
     def test_preprocess_primary_section_id_splits_correctly(self):
         """Test primary section ID preprocessing splits course_id and section_code."""
@@ -86,8 +113,32 @@ class TestPreProcessor:
     
     def test_preprocess_primary_section_id_maps_course_codes(self):
         """Test course ID mapping for cross-listed courses."""
-        # RED: Should fail - method doesn't exist yet
-        pass
+        from services.data_service import PreProcessor
+        
+        # Arrange
+        test_data = pd.DataFrame({
+            'primary_section_id': ['STAT6130001', 'ACCT7970002', 'MGMT6110003'],
+            'part_of_term': ['1', '2', 'F'],
+            'days_code': ['MW', 'TR', 'M'],
+            'start_time_24hr': [time(8, 30), time(10, 15), time(13, 45)],
+            'stop_time_24hr': [time(10, 15), time(12, 0), time(15, 30)],
+            'price_predicted': [1000.0, 1200.0, 1100.0],
+            'resid_mean': [100.0, 150.0, 120.0],
+            'resid_stdev': [50.0, 75.0, 60.0],
+            'uniqueid': [1, 2, 3]
+        })
+        preprocessor = PreProcessor()
+        
+        # Act
+        result = preprocessor.preprocess(test_data)
+        
+        # Assert
+        assert result.loc[0, 'course_id'] == 'FC_STAT'  # STAT6130 should map to FC_STAT
+        assert result.loc[1, 'course_id'] == 'TABS'     # ACCT7970 should map to TABS
+        assert result.loc[2, 'course_id'] == 'FC_MGMT'  # MGMT6110 should map to FC_MGMT
+        assert result.loc[0, 'section_code'] == '001'
+        assert result.loc[1, 'section_code'] == '002'
+        assert result.loc[2, 'section_code'] == '003'
     
     def test_preprocess_class_time_creates_conflict_fields(self):
         """Test class time preprocessing creates conflict detection fields."""
@@ -114,10 +165,23 @@ class TestPreProcessor:
         # RED: Should fail - method doesn't exist yet
         pass
     
-    def test_setup_price_calculates_correctly(self):
+    def test_setup_price_calculates_correctly(self, sample_course_data, temp_z_score_file):
         """Test price calculation with z-score."""
-        # RED: Should fail - method doesn't exist yet
-        pass
+        from services.data_service import PreProcessor
+        
+        # Arrange
+        preprocessor = PreProcessor()
+        processed_data = preprocessor.preprocess(sample_course_data)
+        
+        # Act
+        result = preprocessor.setupPrice(processed_data, 'seed1', temp_z_score_file)
+        
+        # Assert
+        assert 'price' in result.columns
+        # Price should be: price_predicted + resid_mean + z * resid_stdev
+        # For first row: 1000 + 100 + 0.1 * 50 = 1105
+        expected_price_0 = 1000.0 + 100.0 + 0.1 * 50.0
+        assert abs(result.loc[0, 'price'] - expected_price_0) < 0.01
     
     def test_setup_price_caps_at_min_max(self):
         """Test price calculation caps at 0 and 4851."""
