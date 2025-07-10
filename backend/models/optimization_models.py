@@ -16,6 +16,7 @@ class OptimizationRequest(BaseModel):
     """Request model for course optimization."""
     budget: float = Field(..., gt=0, description="Available budget for courses")
     max_credits: float = Field(..., gt=0, le=10, description="Maximum credit units allowed")
+    min_credits: float = Field(..., ge=0, description="Minimum utility threshold for courses")
     seed: int = Field(..., ge=0, description="Random seed for price calculation")
     courses: List[CourseInput] = Field(..., min_length=1, description="List of courses with utilities")
 
