@@ -27,7 +27,7 @@ class RandomManager:
         self.rand_z_table_filepath = z_table_filepath
         self.ztable = pd.read_excel(self.rand_z_table_filepath)
     
-    def getRandZSeries(self, seed: str) -> pd.Series:
+    def getRandZSeries(self, seed) -> pd.Series:
         """Get random Z-series for a given seed.
         
         Args:
@@ -131,6 +131,12 @@ class PreProcessor:
     
     def get_time_class(self, start_time: datetime.time, stop_time: datetime.time) -> List[str]:
         """Get time class codes for a given time period."""
+        # Handle both time objects and string representations
+        if isinstance(start_time, str):
+            start_time = pd.to_datetime(start_time).time()
+        if isinstance(stop_time, str):
+            stop_time = pd.to_datetime(stop_time).time()
+            
         start_dt = datetime.datetime.combine(datetime.datetime.today(), start_time)
         stop_dt = datetime.datetime.combine(datetime.datetime.today(), stop_time)
         duration = (stop_dt - start_dt).total_seconds() / 3600  # Hours
@@ -146,12 +152,12 @@ class PreProcessor:
             return [time_mapping.get(start_time, 'Z'), time_mapping.get(new_start_time, 'Z')]
         return [time_mapping.get(start_time, 'Z')]
     
-    def setupPrice(self, df: pd.DataFrame, seed: str, z_table_filepath: str = None) -> pd.DataFrame:
+    def setupPrice(self, df: pd.DataFrame, seed, z_table_filepath: str = None) -> pd.DataFrame:
         """Calculate final prices using z-score based Monte Carlo simulation.
         
         Args:
             df: Preprocessed course data DataFrame.
-            seed: Seed column name in the z-score table.
+            seed: Seed column name/number in the z-score table.
             z_table_filepath: Optional path to z-score table file.
             
         Returns:
@@ -232,7 +238,7 @@ class DataService:
         
         return df
     
-    def process_course_data(self, file_path: str, seed: str, sheet_name: str = None) -> pd.DataFrame:
+    def process_course_data(self, file_path: str, seed, sheet_name: str = None) -> pd.DataFrame:
         """Complete processing pipeline for course data.
         
         Args:
