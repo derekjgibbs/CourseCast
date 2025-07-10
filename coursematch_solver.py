@@ -1,7 +1,5 @@
 import pandas as pd
-import json
 import datetime
-from itertools import product
 from pulp import LpMaximize, LpProblem, LpVariable, lpSum
 
 example_input = {
@@ -33,34 +31,38 @@ example_input = {
         {"uniqueid": 184, "utility": 60},
         {"uniqueid": 185, "utility": 60},
         {"uniqueid": 186, "utility": 60},
-    ]
+    ],
 }
 
 example_output = [
-    {'uniqueid': 21, 'price': 1258.9679285778896},
-    {'uniqueid': 24, 'price': 706.3930827369703},
-    {'uniqueid': 75, 'price': 196.68656664628475},
-    {'uniqueid': 98, 'price': 800.2654499782218},
-    {'uniqueid': 114, 'price': -31.28029216364526},
-    {'uniqueid': 129, 'price': -47.11888824879937}
+    {"uniqueid": 21, "price": 1258.9679285778896},
+    {"uniqueid": 24, "price": 706.3930827369703},
+    {"uniqueid": 75, "price": 196.68656664628475},
+    {"uniqueid": 98, "price": 800.2654499782218},
+    {"uniqueid": 114, "price": -31.28029216364526},
+    {"uniqueid": 129, "price": -47.11888824879937},
 ]
+
 
 class RandomManager(object):
     rand_z_table_filepath = "z_score_table.xlsx"
+
     def __init__(self):
         self.ztable = pd.read_excel(self.rand_z_table_filepath)
 
     def getRandZSeries(self, seed):
         return self.ztable[seed]
 
+
 class PreProcessor(object):
     START_OF_UNIQUEID = 1
+
     def __init__(self):
         pass
 
     def preprocess(self, df):
         self.df = df
-        #print(self.df)
+        # print(self.df)
         self.drop_unused_columns()
         self.preprocess_primary_section_id()
         self.preprocess_class_time()
@@ -68,7 +70,14 @@ class PreProcessor(object):
         return self.df
 
     def drop_unused_columns(self):
-        columns_to_drop = ['term', 'title', 'instructor', 'start_date', 'end_date', 'capacity']
+        columns_to_drop = [
+            "term",
+            "title",
+            "instructor",
+            "start_date",
+            "end_date",
+            "capacity",
+        ]
         self.df = self.df.drop(columns=columns_to_drop)
 
     def preprocess_primary_section_id(self):
@@ -89,36 +98,36 @@ class PreProcessor(object):
                 "MKTG6120": "FC_MKTG",
                 "MKTG6130": "FC_MKTG",
                 # Cross-listed
-                "ACCT7970": "TABS", # Taxes and Business Strategy
+                "ACCT7970": "TABS",  # Taxes and Business Strategy
                 "FNCE7970": "TABS",
-                "BEPP7630": "EMAP", # Energy Markets and Policy
+                "BEPP7630": "EMAP",  # Energy Markets and Policy
                 "OIDD7630": "EMAP",
-                "LGST8050": "AABT", # Antitrust and Big Tech
+                "LGST8050": "AABT",  # Antitrust and Big Tech
                 "MKTG7600": "AABT",
-                "LGST8060": "NEGO", # Negotiations
+                "LGST8060": "NEGO",  # Negotiations
                 "MGMT6910": "NEGO",
                 "OIDD6910": "NEGO",
-                "LGST8090": "SBM", # Sports Business Management
+                "LGST8090": "SBM",  # Sports Business Management
                 "MGMT8150": "SBM",
-                "MGMT7290": "IPSIDE", # Intellectual Property Strategy for the Innovation-Driven Enterprise
+                "MGMT7290": "IPSIDE",  # Intellectual Property Strategy for the Innovation-Driven Enterprise
                 "LGST7290": "IPSIDE",
-                "OIDD6900": "MDM", # Managerial Decision Making
+                "OIDD6900": "MDM",  # Managerial Decision Making
                 "MGMT6900": "MDM",
-                "OIDD6930": "INFL", # Influence
+                "OIDD6930": "INFL",  # Influence
                 "LGST6930": "INFL",
-                "OIDD7610": "RAEM", # Risk Analysis and Environmental Management
+                "OIDD7610": "RAEM",  # Risk Analysis and Environmental Management
                 "BEPP7610": "RAEM",
-                "REAL7080": "HM", # Housing Markets
+                "REAL7080": "HM",  # Housing Markets
                 "BEPP7080": "HM",
-                "REAL7210": "REIAF", # Real Estate Investment: Analysis and Financing
+                "REAL7210": "REIAF",  # Real Estate Investment: Analysis and Financing
                 "FNCE7210": "REIAF",
-                "REAL8040": "REL", # Real Estate Law
+                "REAL8040": "REL",  # Real Estate Law
                 "LGST8040": "REL",
-                "REAL8360": "IHC", # International Housing Comparisons
+                "REAL8360": "IHC",  # International Housing Comparisons
                 "BEPP8360": "IHC",
-                "STAT7770": "IPDS", # Introduction to Python for Data Science
+                "STAT7770": "IPDS",  # Introduction to Python for Data Science
                 "OIDD7770": "IPDS",
-                #"MKTG7120": "DAMD", # Data and Analysis for Marketing Decisions - only section id differs
+                # "MKTG7120": "DAMD", # Data and Analysis for Marketing Decisions - only section id differs
             }
             if course_id in map.keys():
                 return map[course_id]
@@ -130,8 +139,8 @@ class PreProcessor(object):
             return course_id, section_code
 
         # Split into separate columns
-        self.df[['course_id', 'section_code']] = (
-            self.df['primary_section_id'].apply(lambda x: pd.Series(split_primary_section_id(x)))
+        self.df[["course_id", "section_code"]] = self.df["primary_section_id"].apply(
+            lambda x: pd.Series(split_primary_section_id(x))
         )
 
     def preprocess_class_time(self):
@@ -147,7 +156,9 @@ class PreProcessor(object):
             days = self.get_days(days_code)
             time_class = self.get_time_class(start_time, stop_time)
 
-            combinations = ["ct_"+x+y+z for x in terms for y in days for z in time_class]
+            combinations = [
+                "ct_" + x + y + z for x in terms for y in days for z in time_class
+            ]
             classes[index] = combinations
             for c in combinations:
                 all_classes.add(c)
@@ -164,49 +175,49 @@ class PreProcessor(object):
     def get_terms(self, part_of_term):
         part_of_term = str(part_of_term)
         map = {
-            '1': ['q1'],
-            '2': ['q2'],
-            '3': ['q3'],
-            '4': ['q4'],
-            'F': ['q1', 'q2'],
-            'S': ['q3', 'q4'],
-            'M': ['mod'],
-            'Modular': ['mod']
+            "1": ["q1"],
+            "2": ["q2"],
+            "3": ["q3"],
+            "4": ["q4"],
+            "F": ["q1", "q2"],
+            "S": ["q3", "q4"],
+            "M": ["mod"],
+            "Modular": ["mod"],
         }
         return map[part_of_term]
 
     def get_days(self, days_code):
         map = {
-            'M': ['M'],
-            'T': ['T'],
-            'W': ['W'],
-            'R': ['R'],
-            'F': ['F'],
-            'S': ['S'],
-            'U': ['U'],
-            'MW': ['M', 'W'],
-            'TR': ['T', 'R'],
-            'FS': ['F', 'S'],
-            'TBA': ['TBA']
+            "M": ["M"],
+            "T": ["T"],
+            "W": ["W"],
+            "R": ["R"],
+            "F": ["F"],
+            "S": ["S"],
+            "U": ["U"],
+            "MW": ["M", "W"],
+            "TR": ["T", "R"],
+            "FS": ["F", "S"],
+            "TBA": ["TBA"],
         }
         return map[days_code]
 
     def get_time_class(self, start_time, stop_time):
         start_dt = datetime.datetime.combine(datetime.datetime.today(), start_time)
         stop_dt = datetime.datetime.combine(datetime.datetime.today(), stop_time)
-        duration = (stop_dt - start_dt).total_seconds() / 3600 # HRs
+        duration = (stop_dt - start_dt).total_seconds() / 3600  # HRs
 
         map = {
-            datetime.time(8, 30, 00): 'A',
-            datetime.time(10, 15, 00): 'B',
-            datetime.time(12, 00, 00): 'C',
-            datetime.time(13, 45, 00): 'D',
-            datetime.time(15, 30, 00): 'E',
-            datetime.time(17, 15, 00): 'F',
-            datetime.time(19, 00, 00): 'G',
-            datetime.time(20, 45, 00): 'H',
-            datetime.time(22, 30, 00): 'I',
-            datetime.time(00, 00, 00): 'Z',
+            datetime.time(8, 30, 00): "A",
+            datetime.time(10, 15, 00): "B",
+            datetime.time(12, 00, 00): "C",
+            datetime.time(13, 45, 00): "D",
+            datetime.time(15, 30, 00): "E",
+            datetime.time(17, 15, 00): "F",
+            datetime.time(19, 00, 00): "G",
+            datetime.time(20, 45, 00): "H",
+            datetime.time(22, 30, 00): "I",
+            datetime.time(00, 00, 00): "Z",
         }
         if duration > 2:
             new_start_time = (start_dt + datetime.timedelta(hours=1, minutes=45)).time()
@@ -217,15 +228,20 @@ class PreProcessor(object):
         randomManager = RandomManager()
         z_series = randomManager.getRandZSeries(seed)
         # price = price_predicted + resid_mean + z * resid_stdev
-        df['price'] = pd.Series(dtype="float")
+        df["price"] = pd.Series(dtype="float")
         for index, row in df.iterrows():
-            idx = row['uniqueid'] - PreProcessor.START_OF_UNIQUEID
-            price = row['price_predicted'] + row['resid_mean'] + z_series[idx] * row['resid_stdev']
-            df.loc[index, 'price'] = min(4851, max(0, price))
+            idx = row["uniqueid"] - PreProcessor.START_OF_UNIQUEID
+            price = (
+                row["price_predicted"]
+                + row["resid_mean"]
+                + z_series[idx] * row["resid_stdev"]
+            )
+            df.loc[index, "price"] = min(4851, max(0, price))
 
         self.df = df
 
         return df
+
 
 class CourseMatchSolver(object):
     def __init__(self, sourceXlsx, candidates):
@@ -243,8 +259,8 @@ class CourseMatchSolver(object):
         selected_data = self.pack(selected)
 
         return selected_data
-        #return example_output
-    
+        # return example_output
+
     def unpack(self, data):
         self.budget = data["budget"]
         self.max_credits = data["max_credits"]
@@ -252,10 +268,10 @@ class CourseMatchSolver(object):
         self.courses = data["courses"]
         self.uniqueids = [course["uniqueid"] for course in self.courses]
         self.utilities = [course["utility"] for course in self.courses]
-    
+
     def mergeData(self):
-        self.df = self.source_data[self.source_data['uniqueid'].isin(self.uniqueids)]
-        self.df['utilities'] = self.utilities
+        self.df = self.source_data[self.source_data["uniqueid"].isin(self.uniqueids)]
+        self.df["utilities"] = self.utilities
 
     def preprocess(self):
         self.df = self.preprocessor.preprocess(self.df)
@@ -266,22 +282,54 @@ class CourseMatchSolver(object):
         prob = LpProblem("Course_Scheduler", LpMaximize)
 
         # Create binary variables for each row
-        row_vars = {row["uniqueid"]: LpVariable(f"x_{row['uniqueid']}", cat="Binary") for _, row in self.df.iterrows()}
+        row_vars = {
+            row["uniqueid"]: LpVariable(f"x_{row['uniqueid']}", cat="Binary")
+            for _, row in self.df.iterrows()
+        }
 
         # Objective function: Maximize the sum of utilities times credits for selected courses
-        prob += lpSum(row_vars[row["uniqueid"]] * row["utilities"] * row["credit_unit"] for _, row in self.df.iterrows()), "Total_Utility"
+        prob += (
+            lpSum(
+                row_vars[row["uniqueid"]] * row["utilities"] * row["credit_unit"]
+                for _, row in self.df.iterrows()
+            ),
+            "Total_Utility",
+        )
 
         # Constraints
         # 1. Budget constraint: Sum of prices for selected courses must not exceed the budget
-        prob += lpSum([row['price'] * row_vars[row['uniqueid']] for _, row in self.df.iterrows()]) <= self.budget, "Budget_Constraint"
+        prob += (
+            lpSum(
+                [
+                    row["price"] * row_vars[row["uniqueid"]]
+                    for _, row in self.df.iterrows()
+                ]
+            )
+            <= self.budget,
+            "Budget_Constraint",
+        )
 
         # 2. Course unit constraint: Sum of credit_units for selected courses must not exceed the max_credits
-        prob += lpSum([row['credit_unit'] * row_vars[row['uniqueid']] for _, row in self.df.iterrows()]) <= self.max_credits, "Max_Credit_Constraint"
+        prob += (
+            lpSum(
+                [
+                    row["credit_unit"] * row_vars[row["uniqueid"]]
+                    for _, row in self.df.iterrows()
+                ]
+            )
+            <= self.max_credits,
+            "Max_Credit_Constraint",
+        )
 
         # 3. Constraints to ensure no duplicate course_id is selected
         for course_id in self.df["course_id"].unique():
             prob += (
-                lpSum(row_vars[row["uniqueid"]] for _, row in self.df.iterrows() if row["course_id"] == course_id) <= 1,
+                lpSum(
+                    row_vars[row["uniqueid"]]
+                    for _, row in self.df.iterrows()
+                    if row["course_id"] == course_id
+                )
+                <= 1,
                 f"Max_One_{course_id}",
             )
 
@@ -289,7 +337,12 @@ class CourseMatchSolver(object):
         for col in self.df.columns:
             if col.startswith("ct_"):
                 prob += (
-                    lpSum(row_vars[row["uniqueid"]] for _, row in self.df.iterrows() if row[col] == 1) <= 1,
+                    lpSum(
+                        row_vars[row["uniqueid"]]
+                        for _, row in self.df.iterrows()
+                        if row[col] == 1
+                    )
+                    <= 1,
                     f"No_Overlap_{col}",
                 )
 
@@ -298,16 +351,24 @@ class CourseMatchSolver(object):
 
         # Print the results
         print("Selected Rows:")
-        selected_rows = [row["uniqueid"] for _, row in self.df.iterrows() if row_vars[row["uniqueid"]].varValue == 1]
+        selected_rows = [
+            row["uniqueid"]
+            for _, row in self.df.iterrows()
+            if row_vars[row["uniqueid"]].varValue == 1
+        ]
         print(self.df[self.df["uniqueid"].isin(selected_rows)])
 
         # Extract the selected rows
-        result = [dict({"uniqueid": row["uniqueid"], "price": row["price"]}) for _, row in self.df.iterrows() if row_vars[row["uniqueid"]].varValue == 1]
+        result = [
+            dict({"uniqueid": row["uniqueid"], "price": row["price"]})
+            for _, row in self.df.iterrows()
+            if row_vars[row["uniqueid"]].varValue == 1
+        ]
         return result
-    
+
     def pack(self, data):
         return data
-    
+
 
 if __name__ == "__main__":
     cms = CourseMatchSolver("data_spring_2025.xlsx", example_input)

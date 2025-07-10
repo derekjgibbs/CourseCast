@@ -8,13 +8,14 @@ including course information, preprocessing results, and price forecasting data.
 from datetime import datetime, time
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field, field_validator, ConfigDict
-import pandas as pd
 
 
 class CourseData(BaseModel):
     """Model for raw course data from Excel files."""
-    
-    primary_section_id: str = Field(..., description="Primary section ID in format COURSE####SEC")
+
+    primary_section_id: str = Field(
+        ..., description="Primary section ID in format COURSE####SEC"
+    )
     term: Optional[str] = Field(None, description="Academic term")
     title: Optional[str] = Field(None, description="Course title")
     instructor: Optional[str] = Field(None, description="Instructor name")
@@ -27,23 +28,24 @@ class CourseData(BaseModel):
     capacity: Optional[int] = Field(None, description="Course capacity")
     price_predicted: float = Field(..., description="Predicted price for the course")
     resid_mean: float = Field(..., description="Residual mean for price prediction")
-    resid_stdev: float = Field(..., description="Residual standard deviation for price prediction")
+    resid_stdev: float = Field(
+        ..., description="Residual standard deviation for price prediction"
+    )
     uniqueid: int = Field(..., description="Unique identifier for the course section")
-    
+
     model_config = ConfigDict(
-        json_encoders={
-            time: lambda v: v.isoformat(),
-            datetime: lambda v: v.isoformat()
-        }
+        json_encoders={time: lambda v: v.isoformat(), datetime: lambda v: v.isoformat()}
     )
 
 
 class ProcessedCourseData(BaseModel):
     """Model for processed course data after preprocessing."""
-    
+
     primary_section_id: str
     course_id: str = Field(..., description="Processed course ID (may be mapped)")
-    section_code: str = Field(..., description="Section code extracted from primary_section_id")
+    section_code: str = Field(
+        ..., description="Section code extracted from primary_section_id"
+    )
     part_of_term: str
     days_code: str
     start_time_24hr: time
@@ -52,25 +54,26 @@ class ProcessedCourseData(BaseModel):
     resid_mean: float
     resid_stdev: float
     uniqueid: int
-    price: Optional[float] = Field(None, description="Final calculated price with uncertainty")
-    
+    price: Optional[float] = Field(
+        None, description="Final calculated price with uncertainty"
+    )
+
     # Dynamic class time fields will be added during processing
-    class_time_fields: Dict[str, int] = Field(default_factory=dict, description="Class time conflict fields")
-    
+    class_time_fields: Dict[str, int] = Field(
+        default_factory=dict, description="Class time conflict fields"
+    )
+
     model_config = ConfigDict(
-        json_encoders={
-            time: lambda v: v.isoformat(),
-            datetime: lambda v: v.isoformat()
-        }
+        json_encoders={time: lambda v: v.isoformat(), datetime: lambda v: v.isoformat()}
     )
 
 
 class ZScoreTable(BaseModel):
     """Model for Z-score table data."""
-    
+
     data: Dict[str, List[float]] = Field(..., description="Z-score table data by seed")
-    
-    @field_validator('data')
+
+    @field_validator("data")
     @classmethod
     def validate_data(cls, v):
         if not v:
@@ -80,10 +83,10 @@ class ZScoreTable(BaseModel):
 
 class PreprocessingConfig(BaseModel):
     """Configuration for data preprocessing."""
-    
+
     drop_columns: List[str] = Field(
-        default=['term', 'title', 'instructor', 'start_date', 'end_date', 'capacity'],
-        description="Columns to drop during preprocessing"
+        default=["term", "title", "instructor", "start_date", "end_date", "capacity"],
+        description="Columns to drop during preprocessing",
     )
     course_id_mapping: Dict[str, str] = Field(
         default_factory=lambda: {
@@ -132,65 +135,67 @@ class PreprocessingConfig(BaseModel):
             "STAT7770": "IPDS",
             "OIDD7770": "IPDS",
         },
-        description="Mapping of course IDs to standardized names"
+        description="Mapping of course IDs to standardized names",
     )
     term_mapping: Dict[str, List[str]] = Field(
         default_factory=lambda: {
-            '1': ['q1'],
-            '2': ['q2'],
-            '3': ['q3'],
-            '4': ['q4'],
-            'F': ['q1', 'q2'],
-            'S': ['q3', 'q4'],
-            'M': ['mod'],
-            'Modular': ['mod']
+            "1": ["q1"],
+            "2": ["q2"],
+            "3": ["q3"],
+            "4": ["q4"],
+            "F": ["q1", "q2"],
+            "S": ["q3", "q4"],
+            "M": ["mod"],
+            "Modular": ["mod"],
         },
-        description="Mapping of part_of_term to quarter codes"
+        description="Mapping of part_of_term to quarter codes",
     )
     days_mapping: Dict[str, List[str]] = Field(
         default_factory=lambda: {
-            'M': ['M'],
-            'T': ['T'],
-            'W': ['W'],
-            'R': ['R'],
-            'F': ['F'],
-            'S': ['S'],
-            'U': ['U'],
-            'MW': ['M', 'W'],
-            'TR': ['T', 'R'],
-            'FS': ['F', 'S'],
-            'TBA': ['TBA']
+            "M": ["M"],
+            "T": ["T"],
+            "W": ["W"],
+            "R": ["R"],
+            "F": ["F"],
+            "S": ["S"],
+            "U": ["U"],
+            "MW": ["M", "W"],
+            "TR": ["T", "R"],
+            "FS": ["F", "S"],
+            "TBA": ["TBA"],
         },
-        description="Mapping of days codes to individual days"
+        description="Mapping of days codes to individual days",
     )
     time_mapping: Dict[str, str] = Field(
         default_factory=lambda: {
-            "08:30:00": 'A',
-            "10:15:00": 'B',
-            "12:00:00": 'C',
-            "13:45:00": 'D',
-            "15:30:00": 'E',
-            "17:15:00": 'F',
-            "19:00:00": 'G',
-            "20:45:00": 'H',
-            "22:30:00": 'I',
-            "00:00:00": 'Z',
+            "08:30:00": "A",
+            "10:15:00": "B",
+            "12:00:00": "C",
+            "13:45:00": "D",
+            "15:30:00": "E",
+            "17:15:00": "F",
+            "19:00:00": "G",
+            "20:45:00": "H",
+            "22:30:00": "I",
+            "00:00:00": "Z",
         },
-        description="Mapping of start times to class periods"
+        description="Mapping of start times to class periods",
     )
 
 
 class PriceForecastInput(BaseModel):
     """Input model for price forecasting."""
-    
+
     course_data: List[ProcessedCourseData]
     seed: str = Field(..., description="Seed for random number generation")
-    start_of_uniqueid: int = Field(default=1, description="Starting unique ID for indexing")
+    start_of_uniqueid: int = Field(
+        default=1, description="Starting unique ID for indexing"
+    )
 
 
 class PriceForecastOutput(BaseModel):
     """Output model for price forecasting results."""
-    
+
     updated_course_data: List[ProcessedCourseData]
     seed_used: str
     total_courses_processed: int
@@ -199,7 +204,9 @@ class PriceForecastOutput(BaseModel):
 
 class DataServiceError(BaseModel):
     """Error model for data service operations."""
-    
+
     error_type: str = Field(..., description="Type of error")
     error_message: str = Field(..., description="Detailed error message")
-    context: Optional[Dict[str, Any]] = Field(None, description="Additional error context")
+    context: Optional[Dict[str, Any]] = Field(
+        None, description="Additional error context"
+    )

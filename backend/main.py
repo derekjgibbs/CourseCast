@@ -3,9 +3,8 @@
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 import uvicorn
 
 from config import settings
