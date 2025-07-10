@@ -1,12 +1,61 @@
 import React, { useState, useMemo } from 'react';
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from '@tanstack/react-table';
 import { CourseDoc } from '../../convex/types';
 
 interface CourseCatalogTableProps {
   courses: CourseDoc[];
 }
 
+const columnHelper = createColumnHelper<CourseDoc>();
+
+const columns = [
+  columnHelper.accessor('course_id', {
+    header: 'Course ID',
+    cell: info => info.getValue(),
+  }),
+  columnHelper.accessor('title', {
+    header: 'Title',
+    cell: info => info.getValue(),
+  }),
+  columnHelper.accessor('department', {
+    header: 'Department',
+    cell: info => info.getValue(),
+  }),
+  columnHelper.accessor('instructor', {
+    header: 'Instructor',
+    cell: info => info.getValue(),
+  }),
+  columnHelper.accessor('days', {
+    header: 'Days',
+    cell: info => info.getValue(),
+  }),
+  columnHelper.accessor(row => `${row.start_time} - ${row.end_time}`, {
+    id: 'time',
+    header: 'Time',
+    cell: info => info.getValue(),
+  }),
+  columnHelper.accessor('credits', {
+    header: 'Credits',
+    cell: info => info.getValue(),
+    sortingFn: 'basic',
+  }),
+  columnHelper.accessor('price_forecast', {
+    header: 'Price Forecast',
+    cell: info => info.getValue(),
+    sortingFn: 'basic',
+  }),
+];
+
 const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const filteredCourses = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -20,6 +69,18 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses }) => {
       course.instructor.toLowerCase().includes(searchLower)
     );
   }, [courses, searchTerm]);
+
+  const table = useReactTable({
+    data: filteredCourses,
+    columns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    sortDescFirst: false,
+  });
 
   return (
     <div className="space-y-4">
@@ -35,41 +96,55 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses }) => {
       
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="px-4 py-2 text-left border-b">Course ID</th>
-            <th className="px-4 py-2 text-left border-b">Title</th>
-            <th className="px-4 py-2 text-left border-b">Department</th>
-            <th className="px-4 py-2 text-left border-b">Instructor</th>
-            <th className="px-4 py-2 text-left border-b">Days</th>
-            <th className="px-4 py-2 text-left border-b">Time</th>
-            <th className="px-4 py-2 text-left border-b">Credits</th>
-            <th className="px-4 py-2 text-left border-b">Price Forecast</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredCourses.length === 0 ? (
-            <tr>
-              <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
-                No courses found
-              </td>
-            </tr>
-          ) : (
-            filteredCourses.map((course) => (
-              <tr key={course._id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border-b">{course.course_id}</td>
-                <td className="px-4 py-2 border-b">{course.title}</td>
-                <td className="px-4 py-2 border-b">{course.department}</td>
-                <td className="px-4 py-2 border-b">{course.instructor}</td>
-                <td className="px-4 py-2 border-b">{course.days}</td>
-                <td className="px-4 py-2 border-b">{course.start_time} - {course.end_time}</td>
-                <td className="px-4 py-2 border-b">{course.credits}</td>
-                <td className="px-4 py-2 border-b">{course.price_forecast}</td>
+          <thead>
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id} className="bg-gray-100">
+                {headerGroup.headers.map(header => (
+                  <th key={header.id} className="px-4 py-2 text-left border-b">
+                    {header.isPlaceholder ? null : (
+                      <button
+                        className="flex items-center space-x-1 hover:bg-gray-200 p-1 rounded"
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        <span>
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                        </span>
+                        <span className="ml-1">
+                          {{
+                            asc: '↑',
+                            desc: '↓',
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </span>
+                      </button>
+                    )}
+                  </th>
+                ))}
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                  No courses found
+                </td>
+              </tr>
+            ) : (
+              table.getRowModel().rows.map(row => (
+                <tr key={row.id} className="hover:bg-gray-50">
+                  {row.getVisibleCells().map(cell => (
+                    <td key={cell.id} className="px-4 py-2 border-b">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

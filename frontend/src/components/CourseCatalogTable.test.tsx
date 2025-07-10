@@ -166,4 +166,118 @@ describe('CourseCatalogTable', () => {
       expect(screen.getByText('MGMT6110001')).toBeInTheDocument();
     });
   });
+
+  describe('Sorting functionality', () => {
+    it('renders sortable column headers with sort indicators', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      // Check that headers are clickable buttons
+      expect(screen.getByRole('button', { name: /course id/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /title/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /department/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /instructor/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /credits/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /price forecast/i })).toBeInTheDocument();
+    });
+
+    it('sorts courses by course ID ascending when header is clicked', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const courseIdHeader = screen.getByRole('button', { name: /course id/i });
+      fireEvent.click(courseIdHeader);
+      
+      const rows = screen.getAllByRole('row');
+      // First row should be header, second should be ACCT (comes before MGMT alphabetically)
+      expect(rows[1]).toHaveTextContent('ACCT6130001');
+      expect(rows[2]).toHaveTextContent('MGMT6110001');
+    });
+
+    it('sorts courses by course ID descending when header is clicked twice', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const courseIdHeader = screen.getByRole('button', { name: /course id/i });
+      fireEvent.click(courseIdHeader); // First click - ascending
+      fireEvent.click(courseIdHeader); // Second click - descending
+      
+      const rows = screen.getAllByRole('row');
+      // First row should be header, second should be MGMT (comes after ACCT alphabetically)
+      expect(rows[1]).toHaveTextContent('MGMT6110001');
+      expect(rows[2]).toHaveTextContent('ACCT6130001');
+    });
+
+    it('sorts courses by credits numerically', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const creditsHeader = screen.getByRole('button', { name: /credits/i });
+      fireEvent.click(creditsHeader);
+      
+      const rows = screen.getAllByRole('row');
+      // TanStack table sorts ascending by default: ACCT (1.0) before MGMT (1.5) 
+      // If this fails, debug the actual order being returned
+      expect(rows[1]).toHaveTextContent('ACCT6130001');
+      expect(rows[2]).toHaveTextContent('MGMT6110001');
+    });
+
+    it('sorts courses by price forecast numerically', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const priceHeader = screen.getByRole('button', { name: /price forecast/i });
+      fireEvent.click(priceHeader);
+      
+      const rows = screen.getAllByRole('row');
+      // First course should be ACCT (lower price: 1875), second should be MGMT (higher price: 2000)
+      expect(rows[1]).toHaveTextContent('ACCT6130001');
+      expect(rows[2]).toHaveTextContent('MGMT6110001');
+    });
+
+    it('shows sort direction indicators', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const courseIdHeader = screen.getByRole('button', { name: /course id/i });
+      
+      // Before clicking - no sort indicator or neutral
+      expect(courseIdHeader).toBeInTheDocument();
+      
+      // After clicking - should show ascending indicator
+      fireEvent.click(courseIdHeader);
+      expect(courseIdHeader).toHaveTextContent('↑');
+      
+      // After clicking again - should show descending indicator
+      fireEvent.click(courseIdHeader);
+      expect(courseIdHeader).toHaveTextContent('↓');
+    });
+
+    it('resets other column sorts when sorting by a different column', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const courseIdHeader = screen.getByRole('button', { name: /course id/i });
+      const titleHeader = screen.getByRole('button', { name: /title/i });
+      
+      // Sort by course ID first
+      fireEvent.click(courseIdHeader);
+      expect(courseIdHeader).toHaveTextContent('↑');
+      
+      // Sort by title - should reset course ID sort indicator
+      fireEvent.click(titleHeader);
+      expect(titleHeader).toHaveTextContent('↑');
+      expect(courseIdHeader).not.toHaveTextContent('↑');
+      expect(courseIdHeader).not.toHaveTextContent('↓');
+    });
+
+    it('maintains sort when searching', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      // Sort by course ID ascending
+      const courseIdHeader = screen.getByRole('button', { name: /course id/i });
+      fireEvent.click(courseIdHeader);
+      
+      // Search for courses - should maintain sort order
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      fireEvent.change(searchInput, { target: { value: 'A' } }); // Should match both courses with 'A'
+      
+      const rows = screen.getAllByRole('row');
+      // Should still be sorted by course ID (ACCT before MGMT)
+      expect(rows[1]).toHaveTextContent('ACCT6130001');
+    });
+  });
 });
