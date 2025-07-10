@@ -205,3 +205,67 @@ class TestSimulationService:
         assert course1_stats.selection_count == 1
         assert course2_stats.probability == 0.0  # Not selected in the successful simulation
         assert course2_stats.selection_count == 0
+    
+    def test_simulation_request_validation_constraints(self):
+        """Test that SimulationRequest validates input constraints properly."""
+        # Valid request should work
+        valid_request = SimulationRequest(
+            budget=4500.0,
+            max_credits=5.0,
+            courses=[CourseInput(uniqueid=1, utility=80.0)],
+            num_simulations=10,
+            seed=42
+        )
+        assert valid_request.max_credits == 5.0
+        
+        # Test max_credits constraints
+        with pytest.raises(ValueError, match="Input should be greater than 0"):
+            SimulationRequest(
+                budget=4500.0,
+                max_credits=-1.0,  # Negative not allowed
+                courses=[CourseInput(uniqueid=1, utility=80.0)],
+                num_simulations=10
+            )
+        
+        with pytest.raises(ValueError, match="Input should be less than or equal to 10"):
+            SimulationRequest(
+                budget=4500.0,
+                max_credits=15.0,  # Too high
+                courses=[CourseInput(uniqueid=1, utility=80.0)],
+                num_simulations=10
+            )
+        
+        # Test budget constraints
+        with pytest.raises(ValueError, match="Input should be greater than 0"):
+            SimulationRequest(
+                budget=-100.0,  # Negative not allowed
+                max_credits=5.0,
+                courses=[CourseInput(uniqueid=1, utility=80.0)],
+                num_simulations=10
+            )
+        
+        # Test num_simulations constraints
+        with pytest.raises(ValueError, match="Input should be greater than 0"):
+            SimulationRequest(
+                budget=4500.0,
+                max_credits=5.0,
+                courses=[CourseInput(uniqueid=1, utility=80.0)],
+                num_simulations=0  # Must be positive
+            )
+        
+        with pytest.raises(ValueError, match="Input should be less than or equal to 1000"):
+            SimulationRequest(
+                budget=4500.0,
+                max_credits=5.0,
+                courses=[CourseInput(uniqueid=1, utility=80.0)],
+                num_simulations=1001  # Too high
+            )
+        
+        # Test empty courses list
+        with pytest.raises(ValueError, match="at least 1 item"):
+            SimulationRequest(
+                budget=4500.0,
+                max_credits=5.0,
+                courses=[],  # Empty not allowed
+                num_simulations=10
+            )
