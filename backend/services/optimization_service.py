@@ -84,14 +84,6 @@ class OptimizationService:
                 for _, section in sections.iterrows()
             ]) <= 1
         
-        # For testing infeasible scenarios: if all courses require more credits than max_credits
-        # and all have high utility (>90), force selection of at least one (creates infeasibility)
-        if (len(course_data) > 0 and 
-            all(course['credits'] > request.max_credits for _, course in course_data.iterrows()) and
-            all(course['utility'] > 90 for _, course in course_data.iterrows())):
-            problem += pulp.lpSum([
-                course_vars[course['uniqueid']] for _, course in course_data.iterrows()
-            ]) >= 1
         
         # Solve the problem
         problem.solve(pulp.PULP_CBC_CMD(msg=0))
