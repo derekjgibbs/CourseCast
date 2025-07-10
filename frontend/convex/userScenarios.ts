@@ -1,5 +1,5 @@
 import { mutation, query } from "./_generated/server";
-import { ConvexError } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { 
   createUserScenarioValidator, 
   updateUserScenarioValidator,
@@ -88,7 +88,7 @@ export const createUserScenario = mutation({
 
 export const updateUserScenario = mutation({
   args: {
-    id: "string",
+    id: v.id("user_scenarios"),
     updates: updateUserScenarioValidator,
   },
   handler: async (ctx, args) => {
@@ -165,7 +165,7 @@ export const updateUserScenario = mutation({
 });
 
 export const deleteUserScenario = mutation({
-  args: { id: "string" },
+  args: { id: v.id("user_scenarios") },
   handler: async (ctx, args) => {
     const { id } = args;
     
@@ -187,8 +187,8 @@ export const deleteUserScenario = mutation({
 
 export const setActiveUserScenario = mutation({
   args: { 
-    id: "string",
-    user_id: "string" 
+    id: v.id("user_scenarios"),
+    user_id: v.id("users") 
   },
   handler: async (ctx, args) => {
     const { id, user_id } = args;
@@ -232,8 +232,8 @@ export const setActiveUserScenario = mutation({
 
 export const getUserScenarios = query({
   args: { 
-    user_id: "string",
-    limit: "number?",
+    user_id: v.id("users"),
+    limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { user_id, limit = 50 } = args;
@@ -253,7 +253,7 @@ export const getUserScenarios = query({
 });
 
 export const getActiveUserScenario = query({
-  args: { user_id: "string" },
+  args: { user_id: v.id("users") },
   handler: async (ctx, args) => {
     const { user_id } = args;
     
