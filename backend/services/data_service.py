@@ -93,32 +93,90 @@ class PreProcessor:
     
     def preprocess_class_time(self):
         """Create binary columns for class time conflict detection."""
-        all_classes = set()
-        classes = dict()
+        class_combinations = self._generate_class_combinations()
+        unique_classes = self._extract_unique_classes(class_combinations)
+        self._create_class_time_columns(unique_classes)
+        self._populate_class_time_columns(class_combinations)
+    
+    def _generate_class_combinations(self) -> dict:
+        """Generate class time combinations for each course row.
+        
+        Returns:
+            Dictionary mapping row indices to their class time combinations.
+        """
+        class_combinations = {}
         
         for index, row in self.df.iterrows():
-            part_of_term = row["part_of_term"]
-            days_code = row["days_code"]
-            start_time = row["start_time_24hr"]
-            stop_time = row["stop_time_24hr"]
+            combinations = self._build_class_time_combinations(
+                row["part_of_term"],
+                row["days_code"], 
+                row["start_time_24hr"],
+                row["stop_time_24hr"]
+            )
+            class_combinations[index] = combinations
             
-            terms = self.get_terms(part_of_term)
-            days = self.get_days(days_code)
-            time_class = self.get_time_class(start_time, stop_time)
+        return class_combinations
+    
+    def _build_class_time_combinations(self, part_of_term: str, days_code: str, 
+                                     start_time, stop_time) -> List[str]:
+        """Build class time combination strings for a single course.
+        
+        Args:
+            part_of_term: Academic term part (1,2,3,4,F,S,M,Modular)
+            days_code: Days when class meets (MW, TR, etc.)
+            start_time: Class start time
+            stop_time: Class stop time
             
-            combinations = ["ct_" + x + y + z for x in terms for y in days for z in time_class]
-            classes[index] = combinations
-            for c in combinations:
-                all_classes.add(c)
+        Returns:
+            List of class time combination strings (e.g., ['ct_q1MA', 'ct_q1WA'])
+        """
+        terms = self.get_terms(part_of_term)
+        days = self.get_days(days_code)
+        time_classes = self.get_time_class(start_time, stop_time)
         
-        # Make new columns filled with 0
-        for c in all_classes:
-            self.df[c] = 0
+        combinations = [
+            f"ct_{term}{day}{time_class}" 
+            for term in terms 
+            for day in days 
+            for time_class in time_classes
+        ]
         
-        # Mark 1 for each class_time
-        for index, row in self.df.iterrows():
-            for c in classes[index]:
-                self.df.loc[index, c] = 1
+        return combinations
+    
+    def _extract_unique_classes(self, class_combinations: dict) -> set:
+        """Extract all unique class time combinations from the data.
+        
+        Args:
+            class_combinations: Dictionary of class combinations per row
+            
+        Returns:
+            Set of all unique class time combination strings
+        """
+        unique_classes = set()
+        
+        for combinations in class_combinations.values():
+            unique_classes.update(combinations)
+            
+        return unique_classes
+    
+    def _create_class_time_columns(self, unique_classes: set):
+        """Create binary columns for each unique class time combination.
+        
+        Args:
+            unique_classes: Set of unique class time combinations
+        """
+        for class_name in unique_classes:
+            self.df[class_name] = 0
+    
+    def _populate_class_time_columns(self, class_combinations: dict):
+        """Populate binary class time columns with appropriate values.
+        
+        Args:
+            class_combinations: Dictionary mapping row indices to their combinations
+        """
+        for index, combinations in class_combinations.items():
+            for class_name in combinations:
+                self.df.loc[index, class_name] = 1
     
     def get_terms(self, part_of_term: str) -> List[str]:
         """Get term codes from part_of_term."""
