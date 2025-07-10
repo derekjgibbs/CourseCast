@@ -18,8 +18,8 @@ dependencies = [
     "python-multipart>=0.0.6",
     "PuLP>=2.7.0",
     "pandas>=2.1.0",
-    "numpy>=1.25.0",
-    "scipy>=1.11.0",
+    "numpy>=1.26.0",
+    "scipy>=1.11.2",
     "convex>=0.7.0",
     "structlog>=23.2.0",
 ]
@@ -42,7 +42,7 @@ include = ["*"]
 
 [tool.black]
 line-length = 88
-target-version = ["py39"]
+target-version = ["py312"]
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -65,7 +65,7 @@ line_length = 88
 known_first_party = ["coursecast"]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
