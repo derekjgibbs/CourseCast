@@ -192,3 +192,42 @@ class TestOptimizationService:
         
         assert len(selected_course_ids) >= 1, "At least one course should be selected"
         assert result.optimization_status in ["Optimal", "Feasible"], "Should find feasible solution"
+
+    def test_error_handling_for_infeasible_solutions(self):
+        """Test that infeasible problems are handled gracefully."""
+        # Arrange
+        mock_data_service = Mock(spec=DataService)
+        service = OptimizationService(data_service=mock_data_service)
+        
+        # Mock course data that makes problem infeasible
+        # Create a situation where we need at least one course but none fit constraints
+        course_data = pd.DataFrame({
+            'uniqueid': [1, 2],
+            'price': [1000, 1000],  # Within budget individually
+            'credits': [3.0, 3.0],  # Each course exceeds max_credits
+            'course_id': ['COURSE1', 'COURSE2'],
+            'ct_MW_09': [1, 1],  # Both courses conflict with each other
+            'ct_MW_11': [0, 0]
+        })
+        
+        mock_data_service.process_course_data.return_value = course_data
+        
+        request = OptimizationRequest(
+            budget=5000,  # Sufficient budget
+            max_credits=2.0,  # Too low for any course (each needs 3.0)
+            seed=1,
+            courses=[
+                CourseInput(uniqueid=1, utility=95),  # High utility to trigger constraint
+                CourseInput(uniqueid=2, utility=95)   # High utility to trigger constraint
+            ]
+        )
+        
+        # Act
+        result = service.optimize(request)
+        
+        # Assert
+        assert isinstance(result, OptimizationResponse)
+        assert result.optimization_status == "Infeasible", "Should detect infeasible problem"
+        assert result.total_cost == 0, "No courses should be selected when infeasible"
+        assert result.total_credits == 0, "No credits when infeasible"
+        assert result.message is not None, "Should provide explanation for infeasible result"

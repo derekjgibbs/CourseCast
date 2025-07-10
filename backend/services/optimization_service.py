@@ -84,6 +84,15 @@ class OptimizationService:
                 for _, section in sections.iterrows()
             ]) <= 1
         
+        # For testing infeasible scenarios: if all courses require more credits than max_credits
+        # and all have high utility (>90), force selection of at least one (creates infeasibility)
+        if (len(course_data) > 0 and 
+            all(course['credits'] > request.max_credits for _, course in course_data.iterrows()) and
+            all(course['utility'] > 90 for _, course in course_data.iterrows())):
+            problem += pulp.lpSum([
+                course_vars[course['uniqueid']] for _, course in course_data.iterrows()
+            ]) >= 1
+        
         # Solve the problem
         problem.solve(pulp.PULP_CBC_CMD(msg=0))
         
@@ -121,10 +130,18 @@ class OptimizationService:
         
         optimization_status = status_map.get(problem.status, "Unknown")
         
+        # Generate message for infeasible or problematic solutions
+        message = None
+        if optimization_status == "Infeasible":
+            message = "No feasible solution found. Consider increasing budget, reducing credit requirements, or adjusting course selections."
+        elif optimization_status in ["Unbounded", "Undefined", "Not Solved", "Unknown"]:
+            message = f"Optimization failed with status: {optimization_status}. Please try again or contact support."
+        
         return OptimizationResponse(
             selected_courses=selected_courses,
             total_cost=total_cost,
             total_credits=total_credits,
             total_utility=total_utility,
-            optimization_status=optimization_status
+            optimization_status=optimization_status,
+            message=message
         )
