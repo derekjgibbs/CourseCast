@@ -144,3 +144,333 @@ The codebase is being redesigned for v2.0 with planned improvements:
     Simplicity - Choose the least complex solution
     Maintainability - Optimize for future changes
     Performance - Only optimize after the above are satisfied
+
+# TypeScript Best Practices in Convex
+
+## Writing Convex Functions in TypeScript
+
+### Basic TypeScript Integration
+
+You can gradually add TypeScript to a Convex project. The first step is writing Convex functions with `.ts` extension.
+
+#### Argument Validation Example
+
+```typescript
+import { mutation } from "./_generated/server";
+import { v } from "convex/values";
+
+export default mutation({
+  args: {
+    body: v.string(),
+    author: v.string(),
+  },
+  // Convex automatically infers argument type
+  handler: async (ctx, args) => {
+    const { body, author } = args;
+    await ctx.db.insert("messages", { body, author });
+  },
+});
+```
+
+#### Manual Type Annotation
+
+```typescript
+import { internalMutation } from "./_generated/server";
+
+export default internalMutation({
+  handler: async (ctx, args: { body: string; author: string }) => {
+    const { body, author } = args;
+    await ctx.db.insert("messages", { body, author });
+  },
+});
+```
+
+## Adding a Schema
+
+When you define a schema, database method return types become more precise:
+
+```typescript
+import { query } from "./_generated/server";
+
+export const list = query({
+  args: {},
+  // Return type is now `Promise<Doc<"messages">[]>`
+  handler: (ctx) => {
+    return ctx.db.query("messages").collect();
+  },
+});
+```
+
+## Type Annotating Server-Side Helpers
+
+Use generated types for context and document handling:
+
+```typescript
+import { Doc, Id } from "./_generated/dataModel";
+import { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
+
+export function myReadHelper(ctx: QueryCtx, id: Id<"channels">) {
+  /* ... */
+}
+
+export function myActionHelper(ctx: ActionCtx, doc: Doc<"messages">) {
+  /* ... */
+}
+```
+
+### Inferring Types from Validators
+
+```typescript
+import { Infer, v } from "convex/values";
+
+export const courseValidator = v.object({
+  name: v.string(),
+  credits: v.number(),
+  prerequisites: v.array(v.string()),
+});
+
+export type Course = Infer<typeof courseValidator>;
+```
+
+## Best Practices Summary
+
+1. **Use TypeScript files**: Convert `.js` files to `.ts` for better type safety
+2. **Define schemas**: Leverage Convex's schema system for automatic type inference
+3. **Use generated types**: Import `Doc`, `Id`, and context types from `_generated/`
+4. **Validate arguments**: Use `v` validators for function arguments
+5. **Type helpers**: Annotate server-side helper functions with proper context types
+6. **Infer from validators**: Use `Infer<typeof validator>` for consistent typing
+
+## Additional TypeScript Features
+
+### Optional Arguments
+```typescript
+export const updateMessage = mutation({
+  args: {
+    id: v.id("messages"),
+    body: v.optional(v.string()),
+    author: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // TypeScript knows body and author are optional
+    await ctx.db.patch(args.id, {
+      ...(args.body && { body: args.body }),
+      ...(args.author && { author: args.author }),
+    });
+  },
+});
+```
+
+### Union Types
+```typescript
+export const statusValidator = v.union(
+  v.literal("pending"),
+  v.literal("approved"),
+  v.literal("rejected")
+);
+
+export type Status = Infer<typeof statusValidator>;
+```
+
+### Nested Objects
+```typescript
+export const userValidator = v.object({
+  name: v.string(),
+  email: v.string(),
+  profile: v.object({
+    bio: v.string(),
+    avatar: v.optional(v.string()),
+  }),
+});
+```
+
+# The Zen of Convex
+
+## Performance Principles
+
+### Sync Engine Approach
+- Center applications around the deterministic, reactive database
+- Benefits include:
+  - Easier project understanding
+  - Faster performance
+  - Simplified state management
+
+### Query and Function Best Practices
+- Use queries for almost every app read
+- Keep sync engine functions:
+  - Working with fewer than a few hundred records
+  - Completing in under 100ms
+- Use actions sparingly and incrementally
+
+### Client-Side State Management
+- Leverage built-in Convex caching and consistency controls
+- Avoid creating unnecessary local cache layers
+- Be cautious with mutation return values for UI updates
+
+## Architecture Guidelines
+
+### Server-Side Development
+- Solve composition problems using standard TypeScript methods
+- Create frameworks using "just code"
+- Leverage community examples for complex implementations
+
+### Action Usage
+- Avoid direct action invocations from browsers
+- Treat actions as part of a workflow
+- Record progress incrementally
+- Chain effects and mutations strategically
+
+## Development Workflow
+
+### Recommended Practices
+- Actively use the Convex dashboard
+- Engage with community resources
+- Leverage developer search
+- Join the Convex community on Discord
+
+## Key Community Resources
+- [Documentation](https://docs.convex.dev)
+- [Stack Blog](https://stack.convex.dev)
+- [Community Portal](https://convex.dev/community)
+- [Developer Search](https://search.convex.dev)
+
+The philosophy emphasizes creating efficient, maintainable applications by leveraging Convex's built-in capabilities and community knowledge.
+
+# TypeScript Best Practices in Convex
+
+## Writing Convex Functions in TypeScript
+
+### Basic TypeScript Integration
+
+You can gradually add TypeScript to a Convex project. The first step is writing Convex functions with `.ts` extension.
+
+#### Argument Validation Example
+
+```typescript
+import { mutation } from "./_generated/server";
+import { v } from "convex/values";
+
+export default mutation({
+  args: {
+    body: v.string(),
+    author: v.string(),
+  },
+  // Convex automatically infers argument type
+  handler: async (ctx, args) => {
+    const { body, author } = args;
+    await ctx.db.insert("messages", { body, author });
+  },
+});
+```
+
+#### Manual Type Annotation
+
+```typescript
+import { internalMutation } from "./_generated/server";
+
+export default internalMutation({
+  handler: async (ctx, args: { body: string; author: string }) => {
+    const { body, author } = args;
+    await ctx.db.insert("messages", { body, author });
+  },
+});
+```
+
+## Adding a Schema
+
+When you define a schema, database method return types become more precise:
+
+```typescript
+import { query } from "./_generated/server";
+
+export const list = query({
+  args: {},
+  // Return type is now `Promise<Doc<"messages">[]>`
+  handler: (ctx) => {
+    return ctx.db.query("messages").collect();
+  },
+});
+```
+
+## Type Annotating Server-Side Helpers
+
+Use generated types for context and document handling:
+
+```typescript
+import { Doc, Id } from "./_generated/dataModel";
+import { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
+
+export function myReadHelper(ctx: QueryCtx, id: Id<"channels">) {
+  /* ... */
+}
+
+export function myActionHelper(ctx: ActionCtx, doc: Doc<"messages">) {
+  /* ... */
+}
+```
+
+### Inferring Types from Validators
+
+```typescript
+import { Infer, v } from "convex/values";
+
+export const courseValidator = v.object({
+  name: v.string(),
+  credits: v.number(),
+  prerequisites: v.array(v.string()),
+});
+
+export type Course = Infer<typeof courseValidator>;
+```
+
+## Best Practices Summary
+
+1. **Use TypeScript files**: Convert `.js` files to `.ts` for better type safety
+2. **Define schemas**: Leverage Convex's schema system for automatic type inference
+3. **Use generated types**: Import `Doc`, `Id`, and context types from `_generated/`
+4. **Validate arguments**: Use `v` validators for function arguments
+5. **Type helpers**: Annotate server-side helper functions with proper context types
+6. **Infer from validators**: Use `Infer<typeof validator>` for consistent typing
+
+## Additional TypeScript Features
+
+### Optional Arguments
+```typescript
+export const updateMessage = mutation({
+  args: {
+    id: v.id("messages"),
+    body: v.optional(v.string()),
+    author: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // TypeScript knows body and author are optional
+    await ctx.db.patch(args.id, {
+      ...(args.body && { body: args.body }),
+      ...(args.author && { author: args.author }),
+    });
+  },
+});
+```
+
+### Union Types
+```typescript
+export const statusValidator = v.union(
+  v.literal("pending"),
+  v.literal("approved"),
+  v.literal("rejected")
+);
+
+export type Status = Infer<typeof statusValidator>;
+```
+
+### Nested Objects
+```typescript
+export const userValidator = v.object({
+  name: v.string(),
+  email: v.string(),
+  profile: v.object({
+    bio: v.string(),
+    avatar: v.optional(v.string()),
+  }),
+});
+```
