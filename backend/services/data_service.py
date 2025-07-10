@@ -175,5 +175,113 @@ class PreProcessor:
 
 
 class DataService:
-    """Placeholder for DataService class."""
-    pass
+    """Main service for coordinating data processing operations."""
+    
+    def __init__(self, z_table_filepath: str = None, config=None):
+        """Initialize DataService with components.
+        
+        Args:
+            z_table_filepath: Optional path to z-score table file.
+            config: Optional PreprocessingConfig object.
+        """
+        self.random_manager = RandomManager(z_table_filepath)
+        self.preprocessor = PreProcessor(config)
+        self.z_table_filepath = z_table_filepath
+    
+    def load_excel_file(self, file_path: str, sheet_name: str = None) -> pd.DataFrame:
+        """Load course data from Excel file.
+        
+        Args:
+            file_path: Path to Excel file.
+            sheet_name: Optional sheet name to load.
+            
+        Returns:
+            DataFrame with loaded course data.
+            
+        Raises:
+            FileNotFoundError: If file doesn't exist.
+            ValueError: If required columns are missing.
+        """
+        from pathlib import Path
+        
+        if not Path(file_path).exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+        
+        try:
+            df = pd.read_excel(file_path, sheet_name=sheet_name)
+            # If sheet_name is specified and returns a dict, get the DataFrame
+            if isinstance(df, dict):
+                if sheet_name and sheet_name in df:
+                    df = df[sheet_name]
+                else:
+                    # Get the first sheet if multiple sheets exist
+                    df = list(df.values())[0]
+        except Exception as e:
+            raise ValueError(f"Error reading Excel file: {str(e)}")
+        
+        # Validate required columns
+        required_columns = [
+            'primary_section_id', 'part_of_term', 'days_code',
+            'start_time_24hr', 'stop_time_24hr', 'price_predicted',
+            'resid_mean', 'resid_stdev', 'uniqueid'
+        ]
+        
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise ValueError(f"Missing required columns: {missing_columns}")
+        
+        return df
+    
+    def process_course_data(self, file_path: str, seed: str, sheet_name: str = None) -> pd.DataFrame:
+        """Complete processing pipeline for course data.
+        
+        Args:
+            file_path: Path to Excel file with course data.
+            seed: Seed for Monte Carlo simulation.
+            sheet_name: Optional sheet name to load.
+            
+        Returns:
+            Fully processed DataFrame with prices and conflict fields.
+        """
+        # Load data
+        df = self.load_excel_file(file_path, sheet_name)
+        
+        # Preprocess
+        df = self.preprocessor.preprocess(df)
+        
+        # Setup prices
+        df = self.preprocessor.setupPrice(df, seed, self.z_table_filepath)
+        
+        return df
+    
+    def validate_course_data(self, df: pd.DataFrame) -> bool:
+        """Validate course data has all required fields and valid values.
+        
+        Args:
+            df: Course data DataFrame to validate.
+            
+        Returns:
+            True if valid, raises ValueError otherwise.
+        """
+        # Check for required columns
+        required_columns = [
+            'primary_section_id', 'course_id', 'section_code',
+            'price', 'uniqueid'
+        ]
+        
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise ValueError(f"Missing required columns after processing: {missing_columns}")
+        
+        # Check for valid prices
+        if (df['price'] < 0).any():
+            raise ValueError("Negative prices found in data")
+        
+        if (df['price'] > 4851).any():
+            raise ValueError("Prices exceed maximum allowed value")
+        
+        # Check for duplicate unique IDs
+        if df['uniqueid'].duplicated().any():
+            raise ValueError("Duplicate unique IDs found")
+        
+        return True

@@ -194,18 +194,60 @@ class TestDataService:
     
     def test_init_creates_data_service(self):
         """Test DataService initialization."""
-        # RED: Should fail - DataService doesn't exist yet
-        pass
+        from services.data_service import DataService
+        
+        # Arrange & Act
+        service = DataService()
+        
+        # Assert
+        assert service is not None
+        assert hasattr(service, 'random_manager')
+        assert hasattr(service, 'preprocessor')
     
     def test_load_excel_file_success(self):
         """Test successful Excel file loading."""
-        # RED: Should fail - method doesn't exist yet
-        pass
+        from services.data_service import DataService
+        
+        # Arrange
+        service = DataService()
+        # Create temp Excel file with required columns
+        test_data = pd.DataFrame({
+            'primary_section_id': ['STAT6130001'],
+            'part_of_term': ['1'],
+            'days_code': ['MW'],
+            'start_time_24hr': [time(8, 30)],
+            'stop_time_24hr': [time(10, 15)],
+            'price_predicted': [1000.0],
+            'resid_mean': [100.0],
+            'resid_stdev': [50.0],
+            'uniqueid': [1]
+        })
+        
+        with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+            test_data.to_excel(tmp.name, index=False)
+            tmp_path = tmp.name
+        
+        try:
+            # Act
+            result = service.load_excel_file(tmp_path)
+            
+            # Assert
+            assert len(result) == 1
+            assert 'primary_section_id' in result.columns
+            assert result.loc[0, 'primary_section_id'] == 'STAT6130001'
+        finally:
+            os.unlink(tmp_path)
     
     def test_load_excel_file_not_found(self):
         """Test Excel file loading with missing file."""
-        # RED: Should fail - method doesn't exist yet
-        pass
+        from services.data_service import DataService
+        
+        # Arrange
+        service = DataService()
+        
+        # Act & Assert
+        with pytest.raises(FileNotFoundError, match="File not found"):
+            service.load_excel_file("/nonexistent/file.xlsx")
     
     def test_validate_course_data_success(self):
         """Test course data validation with valid data."""
