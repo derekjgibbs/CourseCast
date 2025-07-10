@@ -1,5 +1,5 @@
 import { mutation, query } from "./_generated/server";
-import { ConvexError } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { 
   createUserValidator, 
   updateUserValidator,
@@ -50,7 +50,7 @@ export const createUser = mutation({
 
 export const updateUser = mutation({
   args: {
-    id: "string",
+    id: v.id("users"),
     updates: updateUserValidator,
   },
   handler: async (ctx, args) => {
@@ -104,7 +104,7 @@ export const updateUser = mutation({
 });
 
 export const deleteUser = mutation({
-  args: { id: "string" },
+  args: { id: v.id("users") },
   handler: async (ctx, args) => {
     const { id } = args;
     
@@ -134,7 +134,7 @@ export const deleteUser = mutation({
 // Queries
 
 export const getUserByEmail = query({
-  args: { email: "string" },
+  args: { email: v.string() },
   handler: async (ctx, args) => {
     const { email } = args;
     
@@ -152,7 +152,7 @@ export const getUserByEmail = query({
 });
 
 export const getUserById = query({
-  args: { id: "string" },
+  args: { id: v.id("users") },
   handler: async (ctx, args) => {
     const { id } = args;
     
