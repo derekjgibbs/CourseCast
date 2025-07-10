@@ -436,4 +436,52 @@ describe('CourseCatalogTable', () => {
       expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
     });
   });
+
+  describe('Export functionality', () => {
+    it('renders export button', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const exportButton = screen.getByText('Export CSV (2 courses)');
+      expect(exportButton).toBeInTheDocument();
+      expect(exportButton.tagName).toBe('BUTTON');
+    });
+
+    it('shows export count when courses are filtered', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      // Apply search filter
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      fireEvent.change(searchInput, { target: { value: 'Accounting' } });
+      
+      // Should show export button with count
+      expect(screen.getByText('Export CSV (1 courses)')).toBeInTheDocument();
+    });
+
+    it('shows correct export count with pagination', () => {
+      const manyCourses = Array.from({ length: 25 }, (_, i) => ({
+        _id: `course${i + 1}` as any,
+        _creationTime: Date.now(),
+        course_id: `TEST${i + 1}`,
+        title: `Test Course ${i + 1}`,
+        department: 'TEST',
+        instructor: 'INSTRUCTOR',
+        days: 'MW',
+        start_time: '10:00',
+        end_time: '11:30',
+        term: 'Full',
+        credits: 1.0,
+        price_forecast: 2000,
+        price_std_dev: 150,
+        course_quality: 3.0,
+        instructor_quality: 3.0,
+        difficulty: 2.5,
+        work_required: 2.5,
+      }));
+
+      render(<CourseCatalogTable courses={manyCourses} />);
+      
+      // Should show export button with total count (not just current page)
+      expect(screen.getByText('Export CSV (25 courses)')).toBeInTheDocument();
+    });
+  });
 });

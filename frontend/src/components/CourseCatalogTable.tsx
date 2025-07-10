@@ -92,6 +92,35 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses, pageSi
     setCurrentPage(prev => Math.max(prev - 1, 1));
   };
 
+  const generateCSV = (courses: CourseDoc[]) => {
+    const headers = ['Course ID', 'Title', 'Department', 'Instructor', 'Days', 'Time', 'Credits', 'Price Forecast'];
+    
+    return [
+      headers.join(','),
+      ...courses.map(course => [
+        course.course_id,
+        `"${course.title}"`, // Wrap in quotes to handle commas
+        course.department,
+        course.instructor,
+        course.days,
+        `${course.start_time} - ${course.end_time}`,
+        course.credits,
+        course.price_forecast,
+      ].join(','))
+    ].join('\n');
+  };
+
+  const exportToCSV = () => {
+    const csvContent = generateCSV(filteredCourses);
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'courses.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const table = useReactTable({
     data: paginatedCourses,
     columns,
@@ -106,14 +135,22 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses, pageSi
 
   return (
     <div className="space-y-4">
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search courses..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
+      <div className="mb-4 space-y-4">
+        <div className="flex gap-4">
+          <input
+            type="text"
+            placeholder="Search courses..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button
+            onClick={exportToCSV}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 whitespace-nowrap"
+          >
+            Export CSV {filteredCourses.length > 0 && `(${filteredCourses.length} courses)`}
+          </button>
+        </div>
       </div>
       
       <div className="overflow-x-auto">

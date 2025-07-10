@@ -1,9 +1,14 @@
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
+import { useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import CourseCatalogTable from '../components/CourseCatalogTable'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const courses = useQuery(api.courses.list) || []
+
   return (
     <>
       <Head>
@@ -17,9 +22,14 @@ export default function Home() {
           <h1 className="text-3xl font-bold text-center mb-8">
             Welcome to CourseCast
           </h1>
-          <p className="text-center text-gray-600">
+          <p className="text-center text-gray-600 mb-8">
             Optimize your course schedule using Monte Carlo simulation
           </p>
+          
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold mb-4">Course Catalog</h2>
+            <CourseCatalogTable courses={courses} />
+          </div>
         </div>
       </main>
     </>
