@@ -65,6 +65,25 @@ class OptimizationService:
             for _, course in course_data.iterrows()
         ]) <= request.max_credits
         
+        # Time conflict constraints (for each class time slot)
+        time_columns = [col for col in course_data.columns if col.startswith('ct_')]
+        for time_col in time_columns:
+            # For each time slot, at most one course can be selected
+            problem += pulp.lpSum([
+                course_vars[course['uniqueid']] * course[time_col]
+                for _, course in course_data.iterrows()
+            ]) <= 1
+        
+        # Course duplicate constraint (max one section per course)
+        unique_course_ids = course_data['course_id'].unique()
+        for course_id in unique_course_ids:
+            # For each unique course, at most one section can be selected
+            sections = course_data[course_data['course_id'] == course_id]
+            problem += pulp.lpSum([
+                course_vars[section['uniqueid']]
+                for _, section in sections.iterrows()
+            ]) <= 1
+        
         # Solve the problem
         problem.solve(pulp.PULP_CBC_CMD(msg=0))
         
