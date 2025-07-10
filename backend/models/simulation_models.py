@@ -20,7 +20,7 @@ class SimulationRequest(BaseModel):
 class CourseStatistics(BaseModel):
     """Statistics for a single course across simulations."""
     
-    uniqueid: str = Field(..., description="Unique course identifier")
+    uniqueid: int = Field(..., description="Unique course identifier")
     probability: float = Field(..., description="Probability of being selected")
     selection_count: int = Field(..., description="Number of times selected")
 
@@ -28,7 +28,7 @@ class CourseStatistics(BaseModel):
 class ScheduleStatistics(BaseModel):
     """Statistics for a specific schedule combination."""
     
-    courses: List[str] = Field(..., description="List of course unique IDs in this schedule")
+    courses: List[int] = Field(..., description="List of course unique IDs in this schedule")
     probability: float = Field(..., description="Probability of this schedule occurring")
     count: int = Field(..., description="Number of times this schedule occurred")
 
