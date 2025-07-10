@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { CourseDoc } from '../../convex/types';
 
 interface CourseCatalogTableProps {
@@ -6,9 +6,35 @@ interface CourseCatalogTableProps {
 }
 
 const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredCourses = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return courses;
+    }
+
+    const searchLower = searchTerm.toLowerCase();
+    return courses.filter(course => 
+      course.title.toLowerCase().includes(searchLower) ||
+      course.course_id.toLowerCase().includes(searchLower) ||
+      course.instructor.toLowerCase().includes(searchLower)
+    );
+  }, [courses, searchTerm]);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-300">
+    <div className="space-y-4">
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search courses..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+      
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-300">
         <thead>
           <tr className="bg-gray-100">
             <th className="px-4 py-2 text-left border-b">Course ID</th>
@@ -22,14 +48,14 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses }) => {
           </tr>
         </thead>
         <tbody>
-          {courses.length === 0 ? (
+          {filteredCourses.length === 0 ? (
             <tr>
               <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
                 No courses found
               </td>
             </tr>
           ) : (
-            courses.map((course) => (
+            filteredCourses.map((course) => (
               <tr key={course._id} className="hover:bg-gray-50">
                 <td className="px-4 py-2 border-b">{course.course_id}</td>
                 <td className="px-4 py-2 border-b">{course.title}</td>
@@ -44,6 +70,7 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses }) => {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };

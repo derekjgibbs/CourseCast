@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import CourseCatalogTable from './CourseCatalogTable';
 import { CourseDoc } from '../../convex/types';
@@ -84,5 +84,86 @@ describe('CourseCatalogTable', () => {
     
     // Should show empty state message
     expect(screen.getByText('No courses found')).toBeInTheDocument();
+  });
+
+  describe('Search functionality', () => {
+    it('renders search input field', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      expect(searchInput).toBeInTheDocument();
+      expect(searchInput).toHaveAttribute('type', 'text');
+    });
+
+    it('filters courses by course title', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      fireEvent.change(searchInput, { target: { value: 'Accounting' } });
+      
+      // Should show only the accounting course
+      expect(screen.getByText('ACCT6130001')).toBeInTheDocument();
+      expect(screen.queryByText('MGMT6110001')).not.toBeInTheDocument();
+    });
+
+    it('filters courses by course ID', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      fireEvent.change(searchInput, { target: { value: 'MGMT6110' } });
+      
+      // Should show only the management course
+      expect(screen.getByText('MGMT6110001')).toBeInTheDocument();
+      expect(screen.queryByText('ACCT6130001')).not.toBeInTheDocument();
+    });
+
+    it('filters courses by instructor name', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      fireEvent.change(searchInput, { target: { value: 'SMITH' } });
+      
+      // Should show only SMITH's course
+      expect(screen.getByText('MGMT6110001')).toBeInTheDocument();
+      expect(screen.queryByText('ACCT6130001')).not.toBeInTheDocument();
+    });
+
+    it('shows no results message when no courses match search', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      fireEvent.change(searchInput, { target: { value: 'NonExistentCourse' } });
+      
+      expect(screen.getByText('No courses found')).toBeInTheDocument();
+    });
+
+    it('search is case insensitive', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      fireEvent.change(searchInput, { target: { value: 'lane' } });
+      
+      // Should find LANE instructor
+      expect(screen.getByText('ACCT6130001')).toBeInTheDocument();
+      expect(screen.queryByText('MGMT6110001')).not.toBeInTheDocument();
+    });
+
+    it('clears search results when search input is cleared', () => {
+      render(<CourseCatalogTable courses={mockCourses} />);
+      
+      const searchInput = screen.getByPlaceholderText('Search courses...');
+      
+      // First, filter results
+      fireEvent.change(searchInput, { target: { value: 'ACCT' } });
+      expect(screen.getByText('ACCT6130001')).toBeInTheDocument();
+      expect(screen.queryByText('MGMT6110001')).not.toBeInTheDocument();
+      
+      // Then clear search
+      fireEvent.change(searchInput, { target: { value: '' } });
+      
+      // Should show all courses again
+      expect(screen.getByText('ACCT6130001')).toBeInTheDocument();
+      expect(screen.getByText('MGMT6110001')).toBeInTheDocument();
+    });
   });
 });
