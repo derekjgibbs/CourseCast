@@ -11,7 +11,9 @@ from config import settings
 from logging_config import setup_logging, get_logger
 from services.data_service import DataService
 from services.optimization_service import OptimizationService
+from services.simulation_service import SimulationService
 from models.optimization_models import OptimizationRequest, OptimizationResponse
+from models.simulation_models import SimulationRequest, SimulationResponse
 
 
 # Set up logging
@@ -21,6 +23,7 @@ logger = get_logger(__name__)
 # Initialize services
 data_service = DataService()
 optimization_service = OptimizationService(data_service=data_service)
+simulation_service = SimulationService(data_service=data_service, optimization_service=optimization_service)
 
 
 @asynccontextmanager
@@ -117,6 +120,39 @@ async def optimize_courses(request: OptimizationRequest) -> OptimizationResponse
         raise HTTPException(
             status_code=500,
             detail=f"Optimization failed: {str(e)}"
+        )
+
+
+@app.post(f"{settings.api_v1_prefix}/simulate", response_model=SimulationResponse)
+async def simulate_courses(request: SimulationRequest) -> SimulationResponse:
+    """Run Monte Carlo simulation for course optimization."""
+    try:
+        logger.info(
+            "Starting simulation",
+            budget=request.budget,
+            max_credits=request.max_credits,
+            course_count=len(request.courses),
+            num_simulations=request.num_simulations,
+            seed=request.seed
+        )
+        
+        result = simulation_service.run_simulation(request)
+        
+        logger.info(
+            "Simulation completed",
+            total_simulations=result.total_simulations,
+            successful_simulations=result.successful_simulations,
+            failed_simulations=result.failed_simulations,
+            unique_schedules=len(result.schedule_probabilities)
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error("Simulation failed", error=str(e), exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Simulation failed: {str(e)}"
         )
 
 
