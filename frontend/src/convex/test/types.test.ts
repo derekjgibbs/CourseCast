@@ -27,7 +27,7 @@ const courseUtilityValidator = v.record(v.string(), v.number());
 describe("TypeScript type inference", () => {
   test("User type inference works correctly", () => {
     type User = Infer<typeof userValidator>;
-    
+
     const user: User = {
       name: "Test User",
       email: "test@example.com",
@@ -43,14 +43,14 @@ describe("TypeScript type inference", () => {
 
   test("UserScenario type inference works correctly", () => {
     type UserScenario = Infer<typeof userScenarioValidator>;
-    
+
     const scenario: UserScenario = {
       user_id: "user123",
       name: "Test Scenario",
       token_budget: 4500,
       max_credits: 5.0,
       min_credits: 0.0,
-      utilities: { "ACCT7900401": 50, "REAL8400401": 60 },
+      utilities: { ACCT7900401: 50, REAL8400401: 60 },
       fixed_courses: ["ACCT7900401", "REAL8400401", "FINC8010001"],
       is_active: true,
       created_at: Date.now(),
@@ -71,7 +71,7 @@ describe("TypeScript type inference", () => {
 
   test("CourseUtilities type inference works correctly", () => {
     type CourseUtilities = Infer<typeof courseUtilityValidator>;
-    
+
     const utilities: CourseUtilities = {
       "19": 50,
       "20": 60,
@@ -93,7 +93,7 @@ describe("TypeScript type inference", () => {
   test("Fixed courses array type works", () => {
     const fixedCoursesValidator = v.array(v.string());
     type FixedCourses = Infer<typeof fixedCoursesValidator>;
-    
+
     const validCourses: FixedCourses = ["ACCT7900401", "REAL8400401", "FINC8010001"];
     expect(Array.isArray(validCourses)).toBe(true);
     validCourses.forEach(courseId => {
@@ -116,7 +116,7 @@ describe("Validator composition", () => {
     });
 
     type ComplexType = Infer<typeof complexValidator>;
-    
+
     const validData: ComplexType = {
       user: {
         name: "Test User",
@@ -130,7 +130,7 @@ describe("Validator composition", () => {
         token_budget: 4500,
         max_credits: 5.0,
         min_credits: 0.0,
-        utilities: { "ACCT7900401": 50 },
+        utilities: { ACCT7900401: 50 },
         fixed_courses: ["ACCT7900401"],
         is_active: true,
         created_at: Date.now(),
@@ -171,7 +171,7 @@ describe("Validator composition", () => {
     const statusValidator = v.union(
       v.literal("active"),
       v.literal("inactive"),
-      v.literal("archived")
+      v.literal("archived"),
     );
 
     type Status = Infer<typeof statusValidator>;
@@ -188,11 +188,11 @@ describe("Validator composition", () => {
 
   test("Record validator works for utilities", () => {
     type Utilities = Infer<typeof courseUtilityValidator>;
-    
+
     const utilities: Utilities = {
-      "ACCT7900401": 25,
-      "REAL8400401": 50,
-      "FINC8010001": 75,
+      ACCT7900401: 25,
+      REAL8400401: 50,
+      FINC8010001: 75,
     };
 
     expect(Object.keys(utilities)).toEqual(["ACCT7900401", "REAL8400401", "FINC8010001"]);

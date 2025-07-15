@@ -116,14 +116,17 @@ export const CONSTRAINTS = {
 
 // Type guards for runtime validation
 export const isValidUtilityValue = (value: number): boolean => {
-  return value >= CONSTRAINTS.COURSE_UTILITY.MIN_VALUE && 
-         value <= CONSTRAINTS.COURSE_UTILITY.MAX_VALUE;
+  return (
+    value >= CONSTRAINTS.COURSE_UTILITY.MIN_VALUE && value <= CONSTRAINTS.COURSE_UTILITY.MAX_VALUE
+  );
 };
 
 export const isValidCreditsRange = (min: number, max: number): boolean => {
-  return min >= CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_LIMIT &&
-         max <= CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_LIMIT &&
-         min <= max;
+  return (
+    min >= CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_LIMIT &&
+    max <= CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_LIMIT &&
+    min <= max
+  );
 };
 
 export const isValidScenarioName = (name: string): boolean => {
@@ -136,11 +139,14 @@ export const validateUtilities = (utilities: CourseUtilities): boolean => {
 };
 
 export const validateFixedCourses = (courses: FixedCourses): boolean => {
-  return courses.every(courseId => typeof courseId === 'string' && courseId.length > 0);
+  return courses.every(courseId => typeof courseId === "string" && courseId.length > 0);
 };
 
 // Default values for new scenarios
-export const getDefaultUserScenario = (userId: UserId, name: string): Omit<UserScenario, "_id" | "_creationTime"> => ({
+export const getDefaultUserScenario = (
+  userId: UserId,
+  name: string,
+): Omit<UserScenario, "_id" | "_creationTime"> => ({
   user_id: userId,
   name,
   token_budget: CONSTRAINTS.USER_SCENARIO.TOKEN_BUDGET_DEFAULT,

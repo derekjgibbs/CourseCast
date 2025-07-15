@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 export const seedUsers = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     // Check if users already exist
     const existingUsers = await ctx.db.query("users").collect();
     if (existingUsers.length > 0) {
@@ -21,7 +21,7 @@ export const seedUsers = mutation({
       },
       {
         name: "Bob Smith",
-        email: "bob.smith@mba.example.edu", 
+        email: "bob.smith@mba.example.edu",
         created_at: now,
         updated_at: now,
       },
@@ -53,17 +53,17 @@ export const seedUsers = mutation({
     }
 
     console.log(`Successfully seeded ${userIds.length} users`);
-    return { 
-      message: `Successfully created ${userIds.length} users`, 
+    return {
+      message: `Successfully created ${userIds.length} users`,
       count: userIds.length,
-      userIds 
+      userIds,
     };
   },
 });
 
 export const seedUserScenarios = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     // Get all users
     const users = await ctx.db.query("users").collect();
     if (users.length === 0) {
@@ -73,7 +73,9 @@ export const seedUserScenarios = mutation({
     // Check if scenarios already exist
     const existingScenarios = await ctx.db.query("user_scenarios").collect();
     if (existingScenarios.length > 0) {
-      console.log(`User scenarios already exist (${existingScenarios.length} scenarios found). Skipping seed.`);
+      console.log(
+        `User scenarios already exist (${existingScenarios.length} scenarios found). Skipping seed.`,
+      );
       return { message: "User scenarios already exist", count: existingScenarios.length };
     }
 
@@ -88,7 +90,7 @@ export const seedUserScenarios = mutation({
         fixed_courses: [],
       },
       {
-        name: "Balanced Approach", 
+        name: "Balanced Approach",
         token_budget: 4500,
         max_credits: 7.5,
         min_credits: 5.0,
@@ -106,12 +108,12 @@ export const seedUserScenarios = mutation({
     ];
 
     const scenarioIds = [];
-    
+
     // Create scenarios for first 3 users
     for (let i = 0; i < Math.min(3, users.length); i++) {
       const user = users[i];
       const template = scenarioTemplates[i];
-      
+
       const scenarioId = await ctx.db.insert("user_scenarios", {
         user_id: user._id,
         name: template.name,
@@ -124,37 +126,37 @@ export const seedUserScenarios = mutation({
         created_at: now,
         updated_at: now,
       });
-      
+
       scenarioIds.push(scenarioId);
       console.log(`Created scenario "${template.name}" for user ${user.name} (${scenarioId})`);
     }
 
     console.log(`Successfully seeded ${scenarioIds.length} user scenarios`);
-    return { 
+    return {
       message: `Successfully created ${scenarioIds.length} user scenarios`,
       count: scenarioIds.length,
-      scenarioIds 
+      scenarioIds,
     };
   },
 });
 
 export const seedAll = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     console.log("Starting full database seed...");
-    
+
     // Seed users first
     const userResult = await ctx.runMutation("seed:seedUsers", {});
     console.log("User seeding result:", userResult);
-    
+
     // Then seed user scenarios
     const scenarioResult = await ctx.runMutation("seed:seedUserScenarios", {});
     console.log("Scenario seeding result:", scenarioResult);
-    
+
     return {
       users: userResult,
       scenarios: scenarioResult,
-      message: "Database seeding completed successfully"
+      message: "Database seeding completed successfully",
     };
   },
 });
@@ -179,10 +181,10 @@ export const clearData = mutation({
     }
 
     console.log(`Cleared ${scenarios.length} scenarios and ${users.length} users`);
-    return { 
+    return {
       message: `Cleared ${scenarios.length} scenarios and ${users.length} users`,
       scenariosDeleted: scenarios.length,
-      usersDeleted: users.length
+      usersDeleted: users.length,
     };
   },
 });

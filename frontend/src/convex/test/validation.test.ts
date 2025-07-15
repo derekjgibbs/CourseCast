@@ -7,7 +7,7 @@ import {
   validateFixedCourses,
   getDefaultUserScenario,
   CONSTRAINTS,
-} from "../types";
+} from "@/convex/types";
 import { v } from "convex/values";
 
 describe("Business logic validation", () => {
@@ -64,7 +64,7 @@ describe("Business logic validation", () => {
 
   describe("Utilities object validation", () => {
     test("validates correct utilities object", () => {
-      const validUtilities = { "ACCT7900401": 50, "REAL8400401": 75, "FINC8010001": 25 };
+      const validUtilities = { ACCT7900401: 50, REAL8400401: 75, FINC8010001: 25 };
       expect(validateUtilities(validUtilities)).toBe(true);
     });
 
@@ -73,12 +73,12 @@ describe("Business logic validation", () => {
     });
 
     test("rejects utilities with invalid values", () => {
-      const invalidUtilities = { "ACCT7900401": 150, "REAL8400401": 75 };
+      const invalidUtilities = { ACCT7900401: 150, REAL8400401: 75 };
       expect(validateUtilities(invalidUtilities)).toBe(false);
     });
 
     test("rejects utilities with negative values", () => {
-      const invalidUtilities = { "ACCT7900401": -10, "REAL8400401": 75 };
+      const invalidUtilities = { ACCT7900401: -10, REAL8400401: 75 };
       expect(validateUtilities(invalidUtilities)).toBe(false);
     });
   });
@@ -106,9 +106,9 @@ describe("Default value generation", () => {
   test("generates correct default user scenario", () => {
     const userId = "user123" as any; // Mock ID
     const name = "My Scenario";
-    
+
     const defaultScenario = getDefaultUserScenario(userId, name);
-    
+
     expect(defaultScenario.user_id).toBe(userId);
     expect(defaultScenario.name).toBe(name);
     expect(defaultScenario.token_budget).toBe(CONSTRAINTS.USER_SCENARIO.TOKEN_BUDGET_DEFAULT);
@@ -163,13 +163,16 @@ describe("Edge cases and error conditions", () => {
   });
 
   test("handles very large fixed courses arrays", () => {
-    const largeCourseArray = Array.from({ length: 1000 }, (_, i) => `COURSE${i.toString().padStart(7, '0')}`);
-    
+    const largeCourseArray = Array.from(
+      { length: 1000 },
+      (_, i) => `COURSE${i.toString().padStart(7, "0")}`,
+    );
+
     expect(validateFixedCourses(largeCourseArray)).toBe(true);
   });
 
   test("handles decimal utility values", () => {
-    const decimalUtilities = { "ACCT7900401": 50.5, "REAL8400401": 75.2 };
+    const decimalUtilities = { ACCT7900401: 50.5, REAL8400401: 75.2 };
     expect(validateUtilities(decimalUtilities)).toBe(true);
   });
 
@@ -192,7 +195,7 @@ describe("Edge cases and error conditions", () => {
     const userIdValidator = v.id("users");
     const scenarioIdValidator = v.id("user_scenarios");
     const courseIdValidator = v.id("courses");
-    
+
     expect(userIdValidator).toBeDefined();
     expect(scenarioIdValidator).toBeDefined();
     expect(courseIdValidator).toBeDefined();
@@ -201,7 +204,7 @@ describe("Edge cases and error conditions", () => {
   test("validates array and record validators", () => {
     const fixedCoursesValidator = v.array(v.number());
     const utilitiesValidator = v.record(v.string(), v.number());
-    
+
     expect(fixedCoursesValidator).toBeDefined();
     expect(utilitiesValidator).toBeDefined();
   });
@@ -210,9 +213,9 @@ describe("Edge cases and error conditions", () => {
     const statusValidator = v.union(
       v.literal("active"),
       v.literal("inactive"),
-      v.literal("archived")
+      v.literal("archived"),
     );
-    
+
     expect(statusValidator).toBeDefined();
   });
 });

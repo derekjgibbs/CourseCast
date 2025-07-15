@@ -13,7 +13,7 @@ describe("Users table schema", () => {
     });
 
     const validUser = createMockUser();
-    
+
     // Test that validator is properly defined and mock data has correct types
     expect(userValidator).toBeDefined();
     expect(validUser.name).toBeTypeOf("string");
@@ -59,7 +59,7 @@ describe("User scenarios table schema", () => {
     });
 
     const validScenario = createMockUserScenario("user123");
-    
+
     expect(userScenarioValidator).toBeDefined();
     expect(validScenario.user_id).toBeTypeOf("string");
     expect(validScenario.name).toBeTypeOf("string");
@@ -73,7 +73,7 @@ describe("User scenarios table schema", () => {
 
   test("validates name field type", () => {
     const validScenario = createMockUserScenario("user123");
-    
+
     expect(validScenario.name).toBeTypeOf("string");
     expect(validScenario.name.length).toBeGreaterThan(0);
     expect(validScenario.name.length).toBeLessThanOrEqual(200);
@@ -81,7 +81,7 @@ describe("User scenarios table schema", () => {
 
   test("validates numeric field types", () => {
     const validScenario = createMockUserScenario("user123");
-    
+
     expect(validScenario.token_budget).toBeTypeOf("number");
     expect(validScenario.max_credits).toBeTypeOf("number");
     expect(validScenario.min_credits).toBeTypeOf("number");
@@ -90,10 +90,10 @@ describe("User scenarios table schema", () => {
 
   test("validates utilities object structure", () => {
     const validScenario = createMockUserScenario("user123");
-    
+
     expect(validScenario.utilities).toBeTypeOf("object");
     expect(Array.isArray(validScenario.utilities)).toBe(false);
-    
+
     // Check utilities values are numbers
     Object.values(validScenario.utilities).forEach(value => {
       expect(value).toBeTypeOf("number");
@@ -102,9 +102,9 @@ describe("User scenarios table schema", () => {
 
   test("validates fixed_courses array", () => {
     const validScenario = createMockUserScenario("user123");
-    
+
     expect(Array.isArray(validScenario.fixed_courses)).toBe(true);
-    
+
     // Check all elements are strings
     validScenario.fixed_courses.forEach(courseId => {
       expect(courseId).toBeTypeOf("string");
@@ -114,7 +114,7 @@ describe("User scenarios table schema", () => {
 
   test("validates boolean fields", () => {
     const validScenario = createMockUserScenario("user123");
-    
+
     expect(validScenario.is_active).toBeTypeOf("boolean");
   });
 });
@@ -156,7 +156,7 @@ describe("Schema table definitions", () => {
         created_at: v.number(),
         updated_at: v.number(),
       }).index("by_email", ["email"]),
-      
+
       user_scenarios: defineTable({
         user_id: v.id("users"),
         name: v.string(),

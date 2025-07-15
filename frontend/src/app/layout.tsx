@@ -17,15 +17,13 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 export default function Layout({ children }: LayoutProps) {
   const [convex] = useState(() => new ConvexReactClient(CONVEX_URL));
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ConvexProvider client={convex}>
-          {children}
-        </ConvexProvider>
+        <ConvexProvider client={convex}>{children}</ConvexProvider>
       </body>
     </html>
   );
