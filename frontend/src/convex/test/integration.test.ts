@@ -1,13 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { v } from "convex/values";
-import { createMockUser, createMockUserScenario } from "./utils";
-import {
-  createUserValidator,
-  createUserScenarioValidator,
-  updateUserScenarioValidator,
-  getDefaultUserScenario,
-  CONSTRAINTS,
-} from "../types";
+
+import { CONSTRAINTS, getDefaultUserScenario } from "@/convex/types";
+
+import { createMockUserScenario } from "./utils";
 
 describe("Integration tests - User and Scenario workflows", () => {
   describe("Complete user lifecycle", () => {

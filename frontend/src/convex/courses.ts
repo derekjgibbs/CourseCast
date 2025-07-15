@@ -15,7 +15,7 @@ export const listPaginated = query({
     searchTerm: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db.query("courses");
+    const query = ctx.db.query("courses");
 
     // Apply search filter if provided
     if (args.searchTerm) {

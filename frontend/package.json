@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "fmt": "prettier --experimental-cli . --check",
-    "fmt:fix": "prettier --experimental-cli . --write",
+    "fmt": "prettier --experimental-cli --no-cache . --check",
+    "fmt:fix": "prettier --experimental-cli --no-cache . --write",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui"
@@ -26,11 +26,15 @@
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^24.0.14",
     "@types/react": "^19.1.8",
     "@vitest/ui": "^3.2.4",
+    "eslint": "^9.31.0",
+    "eslint-config-next": "^15.4.1",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "jsdom": "^26.1.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",

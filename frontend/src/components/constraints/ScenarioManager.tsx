@@ -166,7 +166,9 @@ const DeleteConfirmationModal: React.FC<DeleteModalProps> = ({
         </div>
 
         <div className="mb-6">
-          <p className="mb-2 text-gray-600">Are you sure you want to delete "{scenario.name}"?</p>
+          <p className="mb-2 text-gray-600">
+            Are you sure you want to delete &quot;{scenario.name}&quot;?
+          </p>
           <p className="text-sm text-gray-500">
             This action cannot be undone. All scenario data will be permanently removed.
           </p>
