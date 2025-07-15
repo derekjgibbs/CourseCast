@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import CourseCatalogTable from './CourseCatalogTable';
-import { CourseDoc } from '../../convex/types';
+import type { CourseDoc } from '@/convex/types';
 
 // Mock course data
 const mockCourses: CourseDoc[] = [
@@ -49,7 +49,7 @@ const mockCourses: CourseDoc[] = [
 describe('CourseCatalogTable', () => {
   it('renders table with course data', () => {
     render(<CourseCatalogTable courses={mockCourses} />);
-    
+
     // Check if table headers are present
     expect(screen.getByText('Course ID')).toBeInTheDocument();
     expect(screen.getByText('Title')).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe('CourseCatalogTable', () => {
 
   it('displays course information correctly', () => {
     render(<CourseCatalogTable courses={mockCourses} />);
-    
+
     // Check first course data
     expect(screen.getByText('ACCT6130001')).toBeInTheDocument();
     expect(screen.getByText('Fundamentals of Financial and Managerial Accounting')).toBeInTheDocument();
@@ -77,11 +77,11 @@ describe('CourseCatalogTable', () => {
 
   it('handles empty course list', () => {
     render(<CourseCatalogTable courses={[]} />);
-    
+
     // Should still show headers
     expect(screen.getByText('Course ID')).toBeInTheDocument();
     expect(screen.getByText('Title')).toBeInTheDocument();
-    
+
     // Should show empty state message
     expect(screen.getByText('No courses found')).toBeInTheDocument();
   });
@@ -89,7 +89,7 @@ describe('CourseCatalogTable', () => {
   describe('Search functionality', () => {
     it('renders search input field', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const searchInput = screen.getByPlaceholderText('Search courses...');
       expect(searchInput).toBeInTheDocument();
       expect(searchInput).toHaveAttribute('type', 'text');
@@ -97,10 +97,10 @@ describe('CourseCatalogTable', () => {
 
     it('filters courses by course title', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const searchInput = screen.getByPlaceholderText('Search courses...');
       fireEvent.change(searchInput, { target: { value: 'Accounting' } });
-      
+
       // Should show only the accounting course
       expect(screen.getByText('ACCT6130001')).toBeInTheDocument();
       expect(screen.queryByText('MGMT6110001')).not.toBeInTheDocument();
@@ -108,10 +108,10 @@ describe('CourseCatalogTable', () => {
 
     it('filters courses by course ID', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const searchInput = screen.getByPlaceholderText('Search courses...');
       fireEvent.change(searchInput, { target: { value: 'MGMT6110' } });
-      
+
       // Should show only the management course
       expect(screen.getByText('MGMT6110001')).toBeInTheDocument();
       expect(screen.queryByText('ACCT6130001')).not.toBeInTheDocument();
@@ -119,10 +119,10 @@ describe('CourseCatalogTable', () => {
 
     it('filters courses by instructor name', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const searchInput = screen.getByPlaceholderText('Search courses...');
       fireEvent.change(searchInput, { target: { value: 'SMITH' } });
-      
+
       // Should show only SMITH's course
       expect(screen.getByText('MGMT6110001')).toBeInTheDocument();
       expect(screen.queryByText('ACCT6130001')).not.toBeInTheDocument();
@@ -130,19 +130,19 @@ describe('CourseCatalogTable', () => {
 
     it('shows no results message when no courses match search', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const searchInput = screen.getByPlaceholderText('Search courses...');
       fireEvent.change(searchInput, { target: { value: 'NonExistentCourse' } });
-      
+
       expect(screen.getByText('No courses found')).toBeInTheDocument();
     });
 
     it('search is case insensitive', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const searchInput = screen.getByPlaceholderText('Search courses...');
       fireEvent.change(searchInput, { target: { value: 'lane' } });
-      
+
       // Should find LANE instructor
       expect(screen.getByText('ACCT6130001')).toBeInTheDocument();
       expect(screen.queryByText('MGMT6110001')).not.toBeInTheDocument();
@@ -150,17 +150,17 @@ describe('CourseCatalogTable', () => {
 
     it('clears search results when search input is cleared', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const searchInput = screen.getByPlaceholderText('Search courses...');
-      
+
       // First, filter results
       fireEvent.change(searchInput, { target: { value: 'ACCT' } });
       expect(screen.getByText('ACCT6130001')).toBeInTheDocument();
       expect(screen.queryByText('MGMT6110001')).not.toBeInTheDocument();
-      
+
       // Then clear search
       fireEvent.change(searchInput, { target: { value: '' } });
-      
+
       // Should show all courses again
       expect(screen.getByText('ACCT6130001')).toBeInTheDocument();
       expect(screen.getByText('MGMT6110001')).toBeInTheDocument();
@@ -170,7 +170,7 @@ describe('CourseCatalogTable', () => {
   describe('Sorting functionality', () => {
     it('renders sortable column headers with sort indicators', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       // Check that headers are clickable buttons
       expect(screen.getByRole('button', { name: /course id/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /title/i })).toBeInTheDocument();
@@ -182,10 +182,10 @@ describe('CourseCatalogTable', () => {
 
     it('sorts courses by course ID ascending when header is clicked', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const courseIdHeader = screen.getByRole('button', { name: /course id/i });
       fireEvent.click(courseIdHeader);
-      
+
       const rows = screen.getAllByRole('row');
       // First row should be header, second should be ACCT (comes before MGMT alphabetically)
       expect(rows[1]).toHaveTextContent('ACCT6130001');
@@ -194,11 +194,11 @@ describe('CourseCatalogTable', () => {
 
     it('sorts courses by course ID descending when header is clicked twice', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const courseIdHeader = screen.getByRole('button', { name: /course id/i });
       fireEvent.click(courseIdHeader); // First click - ascending
       fireEvent.click(courseIdHeader); // Second click - descending
-      
+
       const rows = screen.getAllByRole('row');
       // First row should be header, second should be MGMT (comes after ACCT alphabetically)
       expect(rows[1]).toHaveTextContent('MGMT6110001');
@@ -207,12 +207,12 @@ describe('CourseCatalogTable', () => {
 
     it('sorts courses by credits numerically', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const creditsHeader = screen.getByRole('button', { name: /credits/i });
       fireEvent.click(creditsHeader);
-      
+
       const rows = screen.getAllByRole('row');
-      // TanStack table sorts ascending by default: ACCT (1.0) before MGMT (1.5) 
+      // TanStack table sorts ascending by default: ACCT (1.0) before MGMT (1.5)
       // If this fails, debug the actual order being returned
       expect(rows[1]).toHaveTextContent('ACCT6130001');
       expect(rows[2]).toHaveTextContent('MGMT6110001');
@@ -220,10 +220,10 @@ describe('CourseCatalogTable', () => {
 
     it('sorts courses by price forecast numerically', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const priceHeader = screen.getByRole('button', { name: /price forecast/i });
       fireEvent.click(priceHeader);
-      
+
       const rows = screen.getAllByRole('row');
       // First course should be ACCT (lower price: 1875), second should be MGMT (higher price: 2000)
       expect(rows[1]).toHaveTextContent('ACCT6130001');
@@ -232,16 +232,16 @@ describe('CourseCatalogTable', () => {
 
     it('shows sort direction indicators', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const courseIdHeader = screen.getByRole('button', { name: /course id/i });
-      
+
       // Before clicking - no sort indicator or neutral
       expect(courseIdHeader).toBeInTheDocument();
-      
+
       // After clicking - should show ascending indicator
       fireEvent.click(courseIdHeader);
       expect(courseIdHeader).toHaveTextContent('↑');
-      
+
       // After clicking again - should show descending indicator
       fireEvent.click(courseIdHeader);
       expect(courseIdHeader).toHaveTextContent('↓');
@@ -249,14 +249,14 @@ describe('CourseCatalogTable', () => {
 
     it('resets other column sorts when sorting by a different column', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const courseIdHeader = screen.getByRole('button', { name: /course id/i });
       const titleHeader = screen.getByRole('button', { name: /title/i });
-      
+
       // Sort by course ID first
       fireEvent.click(courseIdHeader);
       expect(courseIdHeader).toHaveTextContent('↑');
-      
+
       // Sort by title - should reset course ID sort indicator
       fireEvent.click(titleHeader);
       expect(titleHeader).toHaveTextContent('↑');
@@ -266,15 +266,15 @@ describe('CourseCatalogTable', () => {
 
     it('maintains sort when searching', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       // Sort by course ID ascending
       const courseIdHeader = screen.getByRole('button', { name: /course id/i });
       fireEvent.click(courseIdHeader);
-      
+
       // Search for courses - should maintain sort order
       const searchInput = screen.getByPlaceholderText('Search courses...');
       fireEvent.change(searchInput, { target: { value: 'A' } }); // Should match both courses with 'A'
-      
+
       const rows = screen.getAllByRole('row');
       // Should still be sorted by course ID (ACCT before MGMT)
       expect(rows[1]).toHaveTextContent('ACCT6130001');
@@ -307,7 +307,7 @@ describe('CourseCatalogTable', () => {
     it('renders pagination controls when there are many courses', () => {
       const manyCourses = createManyMockCourses(25);
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       // Should show pagination controls
       expect(screen.getByText('Previous')).toBeInTheDocument();
       expect(screen.getByText('Next')).toBeInTheDocument();
@@ -317,7 +317,7 @@ describe('CourseCatalogTable', () => {
     it('shows correct number of courses per page', () => {
       const manyCourses = createManyMockCourses(25);
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       // Should show 10 courses per page (plus header row)
       const rows = screen.getAllByRole('row');
       expect(rows).toHaveLength(11); // 1 header + 10 data rows
@@ -326,15 +326,15 @@ describe('CourseCatalogTable', () => {
     it('navigates to next page when Next button is clicked', () => {
       const manyCourses = createManyMockCourses(25);
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       // Initially on page 1
       expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
       expect(screen.getByText('TEST1')).toBeInTheDocument();
-      
+
       // Click Next
       const nextButton = screen.getByText('Next');
       fireEvent.click(nextButton);
-      
+
       // Should be on page 2
       expect(screen.getByText('Page 2 of 3')).toBeInTheDocument();
       expect(screen.getByText('TEST11')).toBeInTheDocument(); // First course on page 2
@@ -344,16 +344,16 @@ describe('CourseCatalogTable', () => {
     it('navigates to previous page when Previous button is clicked', () => {
       const manyCourses = createManyMockCourses(25);
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       // Go to page 2 first
       const nextButton = screen.getByText('Next');
       fireEvent.click(nextButton);
       expect(screen.getByText('Page 2 of 3')).toBeInTheDocument();
-      
+
       // Click Previous
       const prevButton = screen.getByText('Previous');
       fireEvent.click(prevButton);
-      
+
       // Should be back on page 1
       expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
       expect(screen.getByText('TEST1')).toBeInTheDocument();
@@ -362,7 +362,7 @@ describe('CourseCatalogTable', () => {
     it('disables Previous button on first page', () => {
       const manyCourses = createManyMockCourses(25);
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       const prevButton = screen.getByText('Previous');
       expect(prevButton).toBeDisabled();
     });
@@ -370,12 +370,12 @@ describe('CourseCatalogTable', () => {
     it('disables Next button on last page', () => {
       const manyCourses = createManyMockCourses(25);
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       // Navigate to last page
       const nextButton = screen.getByText('Next');
       fireEvent.click(nextButton); // Page 2
       fireEvent.click(nextButton); // Page 3
-      
+
       expect(screen.getByText('Page 3 of 3')).toBeInTheDocument();
       expect(nextButton).toBeDisabled();
     });
@@ -383,12 +383,12 @@ describe('CourseCatalogTable', () => {
     it('shows correct courses on last page with fewer items', () => {
       const manyCourses = createManyMockCourses(25);
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       // Navigate to last page
       const nextButton = screen.getByText('Next');
       fireEvent.click(nextButton); // Page 2
       fireEvent.click(nextButton); // Page 3
-      
+
       // Page 3 should have 5 courses (25 total - 20 on first two pages)
       const rows = screen.getAllByRole('row');
       expect(rows).toHaveLength(6); // 1 header + 5 data rows
@@ -398,7 +398,7 @@ describe('CourseCatalogTable', () => {
 
     it('does not show pagination controls for small datasets', () => {
       render(<CourseCatalogTable courses={mockCourses} />); // Only 2 courses
-      
+
       // Should not show pagination controls
       expect(screen.queryByText('Previous')).not.toBeInTheDocument();
       expect(screen.queryByText('Next')).not.toBeInTheDocument();
@@ -408,11 +408,11 @@ describe('CourseCatalogTable', () => {
     it('pagination works with search results', () => {
       const manyCourses = createManyMockCourses(25);
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       // Search for courses (all have "Test Course" in title)
       const searchInput = screen.getByPlaceholderText('Search courses...');
       fireEvent.change(searchInput, { target: { value: 'Test Course' } });
-      
+
       // Should still have pagination for filtered results
       expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
       expect(screen.getByText('Previous')).toBeInTheDocument();
@@ -422,16 +422,16 @@ describe('CourseCatalogTable', () => {
     it('resets to page 1 when search changes', () => {
       const manyCourses = createManyMockCourses(25);
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       // Go to page 2
       const nextButton = screen.getByText('Next');
       fireEvent.click(nextButton);
       expect(screen.getByText('Page 2 of 3')).toBeInTheDocument();
-      
+
       // Search for something
       const searchInput = screen.getByPlaceholderText('Search courses...');
       fireEvent.change(searchInput, { target: { value: 'Test' } });
-      
+
       // Should reset to page 1
       expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
     });
@@ -440,7 +440,7 @@ describe('CourseCatalogTable', () => {
   describe('Export functionality', () => {
     it('renders export button', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       const exportButton = screen.getByText('Export CSV (2 courses)');
       expect(exportButton).toBeInTheDocument();
       expect(exportButton.tagName).toBe('BUTTON');
@@ -448,11 +448,11 @@ describe('CourseCatalogTable', () => {
 
     it('shows export count when courses are filtered', () => {
       render(<CourseCatalogTable courses={mockCourses} />);
-      
+
       // Apply search filter
       const searchInput = screen.getByPlaceholderText('Search courses...');
       fireEvent.change(searchInput, { target: { value: 'Accounting' } });
-      
+
       // Should show export button with count
       expect(screen.getByText('Export CSV (1 courses)')).toBeInTheDocument();
     });
@@ -479,7 +479,7 @@ describe('CourseCatalogTable', () => {
       }));
 
       render(<CourseCatalogTable courses={manyCourses} />);
-      
+
       // Should show export button with total count (not just current page)
       expect(screen.getByText('Export CSV (25 courses)')).toBeInTheDocument();
     });

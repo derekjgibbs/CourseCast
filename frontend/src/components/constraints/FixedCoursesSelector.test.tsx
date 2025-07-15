@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import FixedCoursesSelector from './FixedCoursesSelector';
-import type { CourseDoc } from '../../../convex/types';
+import type { CourseDoc } from '@/convex/types';
 
 // Mock Convex client
 const mockConvex = new ConvexReactClient('https://test.convex.dev');
@@ -86,7 +86,7 @@ describe('FixedCoursesSelector', () => {
     it('renders component with proper styling and structure', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -108,7 +108,7 @@ describe('FixedCoursesSelector', () => {
     it('displays all courses when no search term is entered', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -125,7 +125,7 @@ describe('FixedCoursesSelector', () => {
     it('shows selected courses with different visual styling', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={['ACCT6130001', 'FINC6110001']}
             onSelectionChange={mockOnSelectionChange}
@@ -146,7 +146,7 @@ describe('FixedCoursesSelector', () => {
     it('displays course information correctly', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -166,7 +166,7 @@ describe('FixedCoursesSelector', () => {
     it('filters courses by course ID', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -187,7 +187,7 @@ describe('FixedCoursesSelector', () => {
     it('filters courses by title', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -208,7 +208,7 @@ describe('FixedCoursesSelector', () => {
     it('filters courses by instructor', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -229,7 +229,7 @@ describe('FixedCoursesSelector', () => {
     it('shows no results message when search yields no matches', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -248,7 +248,7 @@ describe('FixedCoursesSelector', () => {
     it('is case insensitive', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -269,7 +269,7 @@ describe('FixedCoursesSelector', () => {
     it('shows department filter dropdown', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -283,7 +283,7 @@ describe('FixedCoursesSelector', () => {
     it('filters courses by department', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -304,7 +304,7 @@ describe('FixedCoursesSelector', () => {
     it('shows all departments in dropdown', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -313,7 +313,7 @@ describe('FixedCoursesSelector', () => {
       );
 
       const departmentSelect = screen.getByRole('combobox');
-      
+
       // Check that all unique departments are available as options
       const options = screen.getAllByRole('option');
       const optionTexts = options.map(option => option.textContent);
@@ -327,7 +327,7 @@ describe('FixedCoursesSelector', () => {
     it('calls onSelectionChange when course is selected', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -346,7 +346,7 @@ describe('FixedCoursesSelector', () => {
     it('calls onSelectionChange when course is deselected', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={['ACCT6130001', 'FINC6110001']}
             onSelectionChange={mockOnSelectionChange}
@@ -365,7 +365,7 @@ describe('FixedCoursesSelector', () => {
     it('supports multiple course selection', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={['ACCT6130001']}
             onSelectionChange={mockOnSelectionChange}
@@ -384,7 +384,7 @@ describe('FixedCoursesSelector', () => {
     it('shows selected count', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={['ACCT6130001', 'FINC6110001']}
             onSelectionChange={mockOnSelectionChange}
@@ -398,7 +398,7 @@ describe('FixedCoursesSelector', () => {
     it('shows clear selection button when courses are selected', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={['ACCT6130001']}
             onSelectionChange={mockOnSelectionChange}
@@ -412,7 +412,7 @@ describe('FixedCoursesSelector', () => {
     it('clears all selections when clear button is clicked', async () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={['ACCT6130001', 'FINC6110001']}
             onSelectionChange={mockOnSelectionChange}
@@ -433,7 +433,7 @@ describe('FixedCoursesSelector', () => {
     it('shows different styling for selected vs unselected courses', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={['ACCT6130001']}
             onSelectionChange={mockOnSelectionChange}
@@ -452,7 +452,7 @@ describe('FixedCoursesSelector', () => {
     it('shows hover effects on course items', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -467,7 +467,7 @@ describe('FixedCoursesSelector', () => {
     it('shows department badges with proper colors', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -490,7 +490,7 @@ describe('FixedCoursesSelector', () => {
     it('shows loading state when courses are being fetched', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={undefined}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -505,7 +505,7 @@ describe('FixedCoursesSelector', () => {
     it('shows empty state when no courses are available', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={[]}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -521,7 +521,7 @@ describe('FixedCoursesSelector', () => {
     it('has proper ARIA labels and roles', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}
@@ -541,7 +541,7 @@ describe('FixedCoursesSelector', () => {
     it('supports keyboard navigation', () => {
       render(
         <ConvexTestWrapper>
-          <FixedCoursesSelector 
+          <FixedCoursesSelector
             courses={mockCourses}
             selectedCourses={[]}
             onSelectionChange={mockOnSelectionChange}

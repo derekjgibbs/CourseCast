@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  Search, 
-  BookCheck, 
+import {
+  Search,
+  BookCheck,
   Filter,
   X,
   Clock,
@@ -9,7 +9,7 @@ import {
   GraduationCap,
   Loader2
 } from 'lucide-react';
-import type { CourseDoc } from '../../../convex/types';
+import type { CourseDoc } from '@/convex/types';
 
 interface FixedCoursesSelectorProps {
   courses?: CourseDoc[];
@@ -50,12 +50,12 @@ const FixedCoursesSelector: React.FC<FixedCoursesSelectorProps> = ({
     if (!courses) return [];
 
     return courses.filter(course => {
-      const matchesSearch = !searchTerm.trim() || 
+      const matchesSearch = !searchTerm.trim() ||
         course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.course_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.instructor.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesDepartment = !selectedDepartment || 
+      const matchesDepartment = !selectedDepartment ||
         course.department === selectedDepartment;
 
       return matchesSearch && matchesDepartment;
@@ -83,8 +83,8 @@ const FixedCoursesSelector: React.FC<FixedCoursesSelectorProps> = ({
         key={course.course_id}
         data-testid={`course-item-${course.course_id}`}
         className={`p-4 border rounded-xl transition-all duration-300 hover:bg-opacity-30 cursor-pointer ${
-          isSelected 
-            ? 'bg-blue-50 border-blue-200 bg-opacity-70' 
+          isSelected
+            ? 'bg-blue-50 border-blue-200 bg-opacity-70'
             : 'bg-white bg-opacity-50 border-white border-opacity-30'
         }`}
         onClick={() => handleCourseToggle(course.course_id)}
@@ -100,7 +100,7 @@ const FixedCoursesSelector: React.FC<FixedCoursesSelectorProps> = ({
             tabIndex={0}
             className="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
           />
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-3">
@@ -114,11 +114,11 @@ const FixedCoursesSelector: React.FC<FixedCoursesSelectorProps> = ({
               </div>
               <span className="text-green-600 font-bold text-sm">{course.credits}</span>
             </div>
-            
+
             <h3 className="text-gray-900 font-semibold text-sm mb-2 leading-tight">
               {course.title}
             </h3>
-            
+
             <div className="flex items-center space-x-4 text-xs text-gray-500">
               <div className="flex items-center space-x-1">
                 <User className="w-3 h-3" />
@@ -137,7 +137,7 @@ const FixedCoursesSelector: React.FC<FixedCoursesSelectorProps> = ({
 
   if (isLoading) {
     return (
-      <div 
+      <div
         data-testid="fixed-courses-container"
         className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl shadow-lg border border-white border-opacity-30 p-8"
       >
@@ -150,7 +150,7 @@ const FixedCoursesSelector: React.FC<FixedCoursesSelectorProps> = ({
   }
 
   return (
-    <div 
+    <div
       data-testid="fixed-courses-container"
       className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl shadow-lg border border-white border-opacity-30 p-8 transition-all duration-300 hover:bg-opacity-30"
     >
@@ -162,7 +162,7 @@ const FixedCoursesSelector: React.FC<FixedCoursesSelectorProps> = ({
           </div>
           <h2 className="text-xl font-semibold text-gray-800">Required Courses</h2>
         </div>
-        
+
         {selectedCourses.length > 0 && (
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">

@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  DollarSign, 
-  GraduationCap, 
-  Save, 
+import {
+  DollarSign,
+  GraduationCap,
+  Save,
   X,
   HelpCircle,
-  AlertCircle 
+  AlertCircle
 } from 'lucide-react';
-import type { UserScenarioDoc } from '../../../convex/types';
-import { CONSTRAINTS } from '../../../convex/types';
+import { CONSTRAINTS, type UserScenarioDoc } from '@/convex/types';
 
 interface ConstraintInputFormProps {
   scenario?: UserScenarioDoc;
@@ -119,9 +118,9 @@ const ConstraintInputForm: React.FC<ConstraintInputFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (Object.keys(errors).length > 0) return;
-    
+
     setIsSubmitting(true);
     try {
       await onSave({
@@ -134,9 +133,9 @@ const ConstraintInputForm: React.FC<ConstraintInputFormProps> = ({
     }
   };
 
-  const isFormValid = Object.keys(errors).length === 0 && 
-    formData.token_budget && 
-    formData.min_credits && 
+  const isFormValid = Object.keys(errors).length === 0 &&
+    formData.token_budget &&
+    formData.min_credits &&
     formData.max_credits;
 
   return (
@@ -151,11 +150,11 @@ const ConstraintInputForm: React.FC<ConstraintInputFormProps> = ({
         </div>
 
         {/* Form Container */}
-        <div 
+        <div
           data-testid="constraint-form-container"
           className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl shadow-lg border border-white border-opacity-30 p-8 transition-all duration-300 hover:bg-opacity-30"
         >
-          <form 
+          <form
             onSubmit={handleSubmit}
             aria-label="Constraint input form"
             role="form"
@@ -185,10 +184,10 @@ const ConstraintInputForm: React.FC<ConstraintInputFormProps> = ({
                   )}
                 </div>
               </div>
-              
+
               <div className="space-y-2">
-                <label 
-                  htmlFor="token_budget" 
+                <label
+                  htmlFor="token_budget"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Token Budget
@@ -202,8 +201,8 @@ const ConstraintInputForm: React.FC<ConstraintInputFormProps> = ({
                   aria-describedby="token-budget-help"
                   tabIndex={1}
                   className={`w-full px-4 py-3 border rounded-xl bg-white bg-opacity-50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-300 focus:bg-opacity-70 ${
-                    errors.token_budget 
-                      ? 'border-red-500 focus:ring-red-500' 
+                    errors.token_budget
+                      ? 'border-red-500 focus:ring-red-500'
                       : 'border-white border-opacity-20 focus:ring-blue-500'
                   }`}
                   placeholder="Enter token budget"
@@ -247,8 +246,8 @@ const ConstraintInputForm: React.FC<ConstraintInputFormProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label 
-                    htmlFor="min_credits" 
+                  <label
+                    htmlFor="min_credits"
                     className="block text-sm font-medium text-gray-700"
                   >
                     Minimum Credits
@@ -262,7 +261,7 @@ const ConstraintInputForm: React.FC<ConstraintInputFormProps> = ({
                     tabIndex={2}
                     className={`w-full px-4 py-3 border rounded-xl bg-white bg-opacity-50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-300 focus:bg-opacity-70 ${
                       errors.min_credits || errors.credits_range
-                        ? 'border-red-500 focus:ring-red-500' 
+                        ? 'border-red-500 focus:ring-red-500'
                         : 'border-white border-opacity-20 focus:ring-blue-500'
                     }`}
                     placeholder="Min credits"
@@ -276,8 +275,8 @@ const ConstraintInputForm: React.FC<ConstraintInputFormProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <label 
-                    htmlFor="max_credits" 
+                  <label
+                    htmlFor="max_credits"
                     className="block text-sm font-medium text-gray-700"
                   >
                     Maximum Credits
@@ -291,7 +290,7 @@ const ConstraintInputForm: React.FC<ConstraintInputFormProps> = ({
                     tabIndex={3}
                     className={`w-full px-4 py-3 border rounded-xl bg-white bg-opacity-50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-300 focus:bg-opacity-70 ${
                       errors.max_credits || errors.credits_range
-                        ? 'border-red-500 focus:ring-red-500' 
+                        ? 'border-red-500 focus:ring-red-500'
                         : 'border-white border-opacity-20 focus:ring-blue-500'
                     }`}
                     placeholder="Max credits"

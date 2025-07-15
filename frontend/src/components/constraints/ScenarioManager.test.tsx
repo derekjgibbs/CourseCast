@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import ScenarioManager from './ScenarioManager';
-import type { UserScenarioDoc } from '../../../convex/types';
+import type { UserScenarioDoc } from '@/convex/types';
 
 // Mock Convex client
 const mockConvex = new ConvexReactClient('https://test.convex.dev');
@@ -74,7 +74,7 @@ describe('ScenarioManager', () => {
     it('renders component with proper styling and structure', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -100,7 +100,7 @@ describe('ScenarioManager', () => {
     it('displays all scenarios in dropdown', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -120,7 +120,7 @@ describe('ScenarioManager', () => {
     it('shows active scenario details', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -141,7 +141,7 @@ describe('ScenarioManager', () => {
     it('shows action buttons for scenario management', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -162,7 +162,7 @@ describe('ScenarioManager', () => {
     it('calls onScenarioChange when different scenario is selected', async () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -184,7 +184,7 @@ describe('ScenarioManager', () => {
     it('updates displayed details when scenario changes', () => {
       const { rerender } = render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -198,7 +198,7 @@ describe('ScenarioManager', () => {
       // Change to second scenario
       rerender(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[1]}
             onScenarioChange={mockOnScenarioChange}
@@ -220,7 +220,7 @@ describe('ScenarioManager', () => {
     it('shows create scenario modal when create button clicked', async () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -243,7 +243,7 @@ describe('ScenarioManager', () => {
     it('calls onCreateScenario with new scenario name', async () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -274,7 +274,7 @@ describe('ScenarioManager', () => {
     it('validates scenario name input', async () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -308,7 +308,7 @@ describe('ScenarioManager', () => {
     it('closes modal after successful creation', async () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -326,7 +326,7 @@ describe('ScenarioManager', () => {
       // Create scenario
       const nameInput = screen.getByPlaceholderText(/scenario name/i);
       fireEvent.change(nameInput, { target: { value: 'New Test Scenario' } });
-      
+
       const submitButton = screen.getByText('Create Scenario');
       fireEvent.click(submitButton);
 
@@ -340,7 +340,7 @@ describe('ScenarioManager', () => {
     it('calls onDuplicateScenario with current scenario', async () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -360,11 +360,11 @@ describe('ScenarioManager', () => {
     });
 
     it('shows loading state during duplication', async () => {
-      const slowDuplicate = vi.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
-      
+      const slowDuplicate = vi.fn(() => new Promise<void>(resolve => setTimeout(resolve, 100)));
+
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -391,7 +391,7 @@ describe('ScenarioManager', () => {
     it('shows confirmation dialog before deletion', async () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -415,7 +415,7 @@ describe('ScenarioManager', () => {
     it('calls onDeleteScenario when confirmed', async () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -442,7 +442,7 @@ describe('ScenarioManager', () => {
     it('cancels deletion when cancel is clicked', async () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -471,8 +471,8 @@ describe('ScenarioManager', () => {
     it('disables delete button when only one scenario exists', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
-            scenarios={[mockScenarios[0]]}
+          <ScenarioManager
+            scenarios={[mockScenarios[0]!]}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
             onCreateScenario={mockOnCreateScenario}
@@ -491,7 +491,7 @@ describe('ScenarioManager', () => {
     it('formats dates correctly', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -510,7 +510,7 @@ describe('ScenarioManager', () => {
     it('shows scenario statistics correctly', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[1]}
             onScenarioChange={mockOnScenarioChange}
@@ -530,14 +530,14 @@ describe('ScenarioManager', () => {
 
     it('handles scenarios with no utilities or fixed courses', () => {
       const emptyScenario = {
-        ...mockScenarios[0],
+        ...mockScenarios[0]!,
         utilities: {},
         fixed_courses: [],
       };
 
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={[emptyScenario]}
             activeScenario={emptyScenario}
             onScenarioChange={mockOnScenarioChange}
@@ -557,7 +557,7 @@ describe('ScenarioManager', () => {
     it('shows loading state when scenarios are being fetched', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={undefined}
             activeScenario={undefined}
             onScenarioChange={mockOnScenarioChange}
@@ -575,7 +575,7 @@ describe('ScenarioManager', () => {
     it('shows empty state when no scenarios exist', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={[]}
             activeScenario={undefined}
             onScenarioChange={mockOnScenarioChange}
@@ -595,7 +595,7 @@ describe('ScenarioManager', () => {
     it('has proper ARIA labels and roles', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}
@@ -618,7 +618,7 @@ describe('ScenarioManager', () => {
     it('supports keyboard navigation', () => {
       render(
         <ConvexTestWrapper>
-          <ScenarioManager 
+          <ScenarioManager
             scenarios={mockScenarios}
             activeScenario={mockScenarios[0]}
             onScenarioChange={mockOnScenarioChange}

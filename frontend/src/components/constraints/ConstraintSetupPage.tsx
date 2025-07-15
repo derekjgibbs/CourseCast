@@ -4,8 +4,8 @@ import { Save, AlertTriangle, CheckCircle } from 'lucide-react';
 import ScenarioManager from './ScenarioManager';
 import ConstraintInputForm from './ConstraintInputForm';
 import FixedCoursesSelector from './FixedCoursesSelector';
-import { api } from '../../../convex/_generated/api';
-import type { UserScenarioDoc, UserId } from '../../../convex/types';
+import { api } from '@/convex/_generated/api';
+import type { UserScenarioDoc, UserId } from '@/convex/types';
 
 interface ConstraintSetupPageProps {
   userId: UserId;
@@ -32,8 +32,8 @@ const Notification: React.FC<NotificationProps> = ({ type, message, onClose }) =
 
   return (
     <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center space-x-3 ${
-      type === 'success' 
-        ? 'bg-green-100 border border-green-200 text-green-800' 
+      type === 'success'
+        ? 'bg-green-100 border border-green-200 text-green-800'
         : 'bg-red-100 border border-red-200 text-red-800'
     }`}>
       {type === 'success' ? (
@@ -57,7 +57,7 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
   const scenarios = useQuery(api.userScenarios.getUserScenarios, { user_id: userId });
   const activeScenario = useQuery(api.userScenarios.getActiveUserScenario, { user_id: userId });
   const courses = useQuery(api.courses.list, {});
-  
+
   const updateScenario = useMutation(api.userScenarios.updateUserScenario);
   const createScenario = useMutation(api.userScenarios.createUserScenario);
   const deleteScenario = useMutation(api.userScenarios.deleteUserScenario);
@@ -278,7 +278,7 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
                 <p>Required Courses: {formData.fixed_courses.length}</p>
               </div>
             </div>
-            
+
             <button
               onClick={handleSaveConstraints}
               disabled={!isFormValid || isSaving || !currentScenario}

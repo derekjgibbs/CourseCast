@@ -1,4 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+'use client';
+
+import { type FC, useState, useMemo, useEffect } from 'react';
 import {
   createColumnHelper,
   flexRender,
@@ -7,17 +9,18 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-import { 
-  Search, 
-  Download, 
-  BookOpen, 
-  Clock, 
-  User, 
+import {
+  Search,
+  Download,
+  BookOpen,
+  Clock,
+  User,
   DollarSign,
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
-import { CourseDoc } from '../../convex/types';
+
+import type { CourseDoc } from '@/convex/types';
 
 interface CourseCatalogTableProps {
   courses: CourseDoc[];
@@ -130,7 +133,7 @@ const columns = [
   }),
 ];
 
-const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses, pageSize = 10 }) => {
+const CourseCatalogTable: FC<CourseCatalogTableProps> = ({ courses, pageSize = 10 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -141,7 +144,7 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses, pageSi
     }
 
     const searchLower = searchTerm.toLowerCase();
-    return courses.filter(course => 
+    return courses.filter(course =>
       course.title.toLowerCase().includes(searchLower) ||
       course.course_id.toLowerCase().includes(searchLower) ||
       course.instructor.toLowerCase().includes(searchLower)
@@ -168,7 +171,7 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses, pageSi
 
   const generateCSV = (courses: CourseDoc[]) => {
     const headers = ['Course ID', 'Title', 'Department', 'Instructor', 'Schedule', 'Credits', 'Price Forecast'];
-    
+
     return [
       headers.join(','),
       ...courses.map(course => [
@@ -216,7 +219,7 @@ const CourseCatalogTable: React.FC<CourseCatalogTableProps> = ({ courses, pageSi
           </h1>
           <p className="text-gray-600 text-lg">Discover and explore available courses</p>
         </div>
-      
+
         {/* Search and Export Controls */}
         <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl shadow-lg border border-white border-opacity-30 p-6 transition-all duration-300 hover:bg-opacity-30">
           <div className="flex gap-4">

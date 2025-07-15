@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import ConstraintSetupPage from './ConstraintSetupPage';
-import type { UserScenarioDoc, CourseDoc } from '../../../convex/types';
+import type { UserScenarioDoc, CourseDoc } from '@/convex/types';
 
 // Mock Convex client
 const mockConvex = new ConvexReactClient('https://test.convex.dev');
@@ -104,7 +104,7 @@ describe('ConstraintSetup Integration Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Mock useQuery to return our test data
     mockUseQuery.mockImplementation((query: any) => {
       if (query.toString().includes('getUserScenarios')) {
@@ -368,7 +368,7 @@ describe('ConstraintSetup Integration Tests', () => {
 
     it('handles API errors gracefully', async () => {
       const mockFailingUpdate = vi.fn().mockRejectedValue(new Error('API Error'));
-      
+
       mockUseMutation.mockImplementation((mutation: any) => {
         if (mutation.toString().includes('updateUserScenario')) {
           return mockFailingUpdate;
@@ -404,7 +404,7 @@ describe('ConstraintSetup Integration Tests', () => {
       );
 
       const tokenInput = screen.getByLabelText('Token Budget');
-      
+
       // Rapidly change input multiple times
       fireEvent.change(tokenInput, { target: { value: '1000' } });
       fireEvent.change(tokenInput, { target: { value: '2000' } });

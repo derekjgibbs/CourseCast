@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import ConstraintInputForm from './ConstraintInputForm';
-import type { UserScenarioDoc } from '../../../convex/types';
+import type { UserScenarioDoc } from '@/convex/types';
 
 // Mock Convex client
 const mockConvex = new ConvexReactClient('https://test.convex.dev');
@@ -42,7 +42,7 @@ describe('ConstraintInputForm', () => {
     it('renders form with all required input fields', () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -68,7 +68,7 @@ describe('ConstraintInputForm', () => {
     it('renders with proper glass morphism styling', () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -83,7 +83,7 @@ describe('ConstraintInputForm', () => {
     it('displays default values when no scenario provided', () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             onSave={mockOnSave}
             onCancel={mockOnCancel}
           />
@@ -100,7 +100,7 @@ describe('ConstraintInputForm', () => {
     it('validates token budget must be positive', async () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -120,7 +120,7 @@ describe('ConstraintInputForm', () => {
     it('validates min credits cannot exceed max credits', async () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -130,7 +130,7 @@ describe('ConstraintInputForm', () => {
 
       const minCreditsInput = screen.getByLabelText('Minimum Credits');
       const maxCreditsInput = screen.getByLabelText('Maximum Credits');
-      
+
       fireEvent.change(minCreditsInput, { target: { value: '8' } });
       fireEvent.change(maxCreditsInput, { target: { value: '5' } });
       fireEvent.blur(maxCreditsInput);
@@ -143,7 +143,7 @@ describe('ConstraintInputForm', () => {
     it('validates credits are within allowed limits', async () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -163,7 +163,7 @@ describe('ConstraintInputForm', () => {
     it('disables save button when form has validation errors', async () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -183,7 +183,7 @@ describe('ConstraintInputForm', () => {
     it('calls onSave with correct data when form is valid', async () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -214,7 +214,7 @@ describe('ConstraintInputForm', () => {
     it('calls onCancel when cancel button is clicked', () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -229,11 +229,11 @@ describe('ConstraintInputForm', () => {
     });
 
     it('shows loading state during form submission', async () => {
-      const slowOnSave = vi.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
-      
+      const slowOnSave = vi.fn(() => new Promise<void>(resolve => setTimeout(resolve, 100)));
+
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={slowOnSave}
             onCancel={mockOnCancel}
@@ -257,7 +257,7 @@ describe('ConstraintInputForm', () => {
     it('shows helpful tooltips for constraint inputs', () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -273,7 +273,7 @@ describe('ConstraintInputForm', () => {
     it('auto-formats numeric inputs', async () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -293,7 +293,7 @@ describe('ConstraintInputForm', () => {
     it('preserves form state when switching between inputs', () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -316,7 +316,7 @@ describe('ConstraintInputForm', () => {
     it('has proper ARIA labels and descriptions', () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}
@@ -334,7 +334,7 @@ describe('ConstraintInputForm', () => {
     it('supports keyboard navigation', () => {
       render(
         <ConvexTestWrapper>
-          <ConstraintInputForm 
+          <ConstraintInputForm
             scenario={mockScenario}
             onSave={mockOnSave}
             onCancel={mockOnCancel}

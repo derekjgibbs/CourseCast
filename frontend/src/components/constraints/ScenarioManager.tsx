@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { 
-  Settings, 
-  Plus, 
-  Copy, 
+import {
+  Settings,
+  Plus,
+  Copy,
   Trash2,
   Calendar,
   DollarSign,
@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   X
 } from 'lucide-react';
-import type { UserScenarioDoc } from '../../../convex/types';
+import type { UserScenarioDoc } from '@/convex/types';
 
 interface ScenarioManagerProps {
   scenarios?: UserScenarioDoc[];
@@ -45,7 +45,7 @@ const CreateScenarioModal: React.FC<CreateModalProps> = ({ isOpen, onClose, onSu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim()) {
       setError('Scenario name is required');
       return;
@@ -53,7 +53,7 @@ const CreateScenarioModal: React.FC<CreateModalProps> = ({ isOpen, onClose, onSu
 
     setIsSubmitting(true);
     setError('');
-    
+
     try {
       await onSubmit(name.trim());
       setName('');
@@ -85,7 +85,7 @@ const CreateScenarioModal: React.FC<CreateModalProps> = ({ isOpen, onClose, onSu
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="scenario-name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -104,7 +104,7 @@ const CreateScenarioModal: React.FC<CreateModalProps> = ({ isOpen, onClose, onSu
               <p className="text-red-600 text-sm mt-1">{error}</p>
             )}
           </div>
-          
+
           <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
@@ -161,7 +161,7 @@ const DeleteConfirmationModal: React.FC<DeleteModalProps> = ({ isOpen, scenario,
           </div>
           <h3 className="text-lg font-semibold text-gray-800">Delete Scenario</h3>
         </div>
-        
+
         <div className="mb-6">
           <p className="text-gray-600 mb-2">
             Are you sure you want to delete "{scenario.name}"?
@@ -170,7 +170,7 @@ const DeleteConfirmationModal: React.FC<DeleteModalProps> = ({ isOpen, scenario,
             This action cannot be undone. All scenario data will be permanently removed.
           </p>
         </div>
-        
+
         <div className="flex justify-end space-x-3">
           <button
             onClick={onClose}
@@ -222,7 +222,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
 
   const handleDuplicate = async () => {
     if (!activeScenario) return;
-    
+
     setIsDuplicating(true);
     try {
       await onDuplicateScenario(activeScenario);
@@ -256,7 +256,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
 
   if (isLoading) {
     return (
-      <div 
+      <div
         data-testid="scenario-manager-container"
         className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl shadow-lg border border-white border-opacity-30 p-8"
       >
@@ -270,7 +270,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
 
   if (!scenarios || scenarios.length === 0) {
     return (
-      <div 
+      <div
         data-testid="scenario-manager-container"
         className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl shadow-lg border border-white border-opacity-30 p-8"
       >
@@ -292,7 +292,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
 
   return (
     <>
-      <div 
+      <div
         data-testid="scenario-manager-container"
         className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl shadow-lg border border-white border-opacity-30 p-8 transition-all duration-300 hover:bg-opacity-30"
       >
@@ -304,7 +304,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-gray-800">Scenario Manager</h2>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowCreateModal(true)}
@@ -315,7 +315,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
               <Plus className="w-4 h-4 mr-1" />
               Create New
             </button>
-            
+
             <button
               onClick={handleDuplicate}
               disabled={!activeScenario || isDuplicating}
@@ -335,7 +335,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                 </>
               )}
             </button>
-            
+
             <button
               onClick={() => setShowDeleteModal(true)}
               disabled={!activeScenario || scenarios.length <= 1}
@@ -379,7 +379,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
               </div>
               <p className="text-lg font-bold text-gray-900">{activeScenario.token_budget.toLocaleString()}</p>
             </div>
-            
+
             <div className="bg-white bg-opacity-30 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center space-x-2 mb-2">
                 <GraduationCap className="w-4 h-4 text-green-600" />
@@ -389,7 +389,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                 {activeScenario.min_credits} - {activeScenario.max_credits}
               </p>
             </div>
-            
+
             <div className="bg-white bg-opacity-30 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center space-x-2 mb-2">
                 <BookCheck className="w-4 h-4 text-purple-600" />
@@ -399,7 +399,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                 {activeScenario.fixed_courses.length} required course{activeScenario.fixed_courses.length !== 1 ? 's' : ''}
               </p>
             </div>
-            
+
             <div className="bg-white bg-opacity-30 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center space-x-2 mb-2">
                 <Users className="w-4 h-4 text-orange-600" />
@@ -426,7 +426,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                   <span>Updated {formatRelativeTime(activeScenario.updated_at)}</span>
                 </div>
               </div>
-              
+
               {activeScenario.is_active && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   Active
@@ -443,7 +443,7 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
         onClose={() => setShowCreateModal(false)}
         onSubmit={onCreateScenario}
       />
-      
+
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         scenario={activeScenario}
