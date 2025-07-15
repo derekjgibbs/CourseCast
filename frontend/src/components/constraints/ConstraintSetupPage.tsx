@@ -1,11 +1,11 @@
-import React, { useState, useCallback } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { Save, AlertTriangle, CheckCircle } from 'lucide-react';
-import ScenarioManager from './ScenarioManager';
-import ConstraintInputForm from './ConstraintInputForm';
-import FixedCoursesSelector from './FixedCoursesSelector';
-import { api } from '../../../convex/_generated/api';
-import type { UserScenarioDoc, UserId } from '../../../convex/types';
+import React, { useState, useCallback } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { Save, AlertTriangle, CheckCircle } from "lucide-react";
+import ScenarioManager from "./ScenarioManager";
+import ConstraintInputForm from "./ConstraintInputForm";
+import FixedCoursesSelector from "./FixedCoursesSelector";
+import { api } from "@/convex/_generated/api";
+import type { UserScenarioDoc, UserId } from "@/convex/types";
 
 interface ConstraintSetupPageProps {
   userId: UserId;
@@ -19,7 +19,7 @@ interface FormData {
 }
 
 interface NotificationProps {
-  type: 'success' | 'error';
+  type: "success" | "error";
   message: string;
   onClose: () => void;
 }
@@ -31,21 +31,20 @@ const Notification: React.FC<NotificationProps> = ({ type, message, onClose }) =
   }, [onClose]);
 
   return (
-    <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center space-x-3 ${
-      type === 'success' 
-        ? 'bg-green-100 border border-green-200 text-green-800' 
-        : 'bg-red-100 border border-red-200 text-red-800'
-    }`}>
-      {type === 'success' ? (
-        <CheckCircle className="w-5 h-5" />
+    <div
+      className={`fixed top-4 right-4 z-50 flex items-center space-x-3 rounded-lg p-4 shadow-lg ${
+        type === "success"
+          ? "border border-green-200 bg-green-100 text-green-800"
+          : "border border-red-200 bg-red-100 text-red-800"
+      }`}
+    >
+      {type === "success" ? (
+        <CheckCircle className="h-5 w-5" />
       ) : (
-        <AlertTriangle className="w-5 h-5" />
+        <AlertTriangle className="h-5 w-5" />
       )}
       <span className="font-medium">{message}</span>
-      <button
-        onClick={onClose}
-        className="ml-2 text-gray-400 hover:text-gray-600"
-      >
+      <button onClick={onClose} className="ml-2 text-gray-400 hover:text-gray-600">
         ×
       </button>
     </div>
@@ -57,14 +56,16 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
   const scenarios = useQuery(api.userScenarios.getUserScenarios, { user_id: userId });
   const activeScenario = useQuery(api.userScenarios.getActiveUserScenario, { user_id: userId });
   const courses = useQuery(api.courses.list, {});
-  
+
   const updateScenario = useMutation(api.userScenarios.updateUserScenario);
   const createScenario = useMutation(api.userScenarios.createUserScenario);
   const deleteScenario = useMutation(api.userScenarios.deleteUserScenario);
   const setActiveScenario = useMutation(api.userScenarios.setActiveUserScenario);
 
   // Local state
-  const [currentScenario, setCurrentScenario] = useState<UserScenarioDoc | undefined>(activeScenario || undefined);
+  const [currentScenario, setCurrentScenario] = useState<UserScenarioDoc | undefined>(
+    activeScenario || undefined,
+  );
   const [formData, setFormData] = useState<FormData>({
     token_budget: activeScenario?.token_budget || 4500,
     min_credits: activeScenario?.min_credits || 0,
@@ -72,7 +73,10 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
     fixed_courses: activeScenario?.fixed_courses || [],
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // Update form data when active scenario changes
   React.useEffect(() => {
@@ -88,76 +92,88 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
   }, [activeScenario]);
 
   // Handlers
-  const handleScenarioChange = useCallback(async (scenario: UserScenarioDoc) => {
-    try {
-      await setActiveScenario({ id: scenario._id, user_id: userId });
-      setCurrentScenario(scenario);
-    } catch (error) {
-      setNotification({
-        type: 'error',
-        message: 'Failed to switch scenario',
-      });
-    }
-  }, [setActiveScenario, userId]);
+  const handleScenarioChange = useCallback(
+    async (scenario: UserScenarioDoc) => {
+      try {
+        await setActiveScenario({ id: scenario._id, user_id: userId });
+        setCurrentScenario(scenario);
+      } catch (error) {
+        setNotification({
+          type: "error",
+          message: "Failed to switch scenario",
+        });
+      }
+    },
+    [setActiveScenario, userId],
+  );
 
-  const handleCreateScenario = useCallback(async (name: string) => {
-    try {
-      await createScenario({
-        user_id: userId,
-        name,
-      });
-      setNotification({
-        type: 'success',
-        message: 'Scenario created successfully',
-      });
-    } catch (error) {
-      setNotification({
-        type: 'error',
-        message: 'Failed to create scenario',
-      });
-      throw error;
-    }
-  }, [createScenario, userId]);
+  const handleCreateScenario = useCallback(
+    async (name: string) => {
+      try {
+        await createScenario({
+          user_id: userId,
+          name,
+        });
+        setNotification({
+          type: "success",
+          message: "Scenario created successfully",
+        });
+      } catch (error) {
+        setNotification({
+          type: "error",
+          message: "Failed to create scenario",
+        });
+        throw error;
+      }
+    },
+    [createScenario, userId],
+  );
 
-  const handleDeleteScenario = useCallback(async (scenario: UserScenarioDoc) => {
-    try {
-      await deleteScenario({ id: scenario._id });
-      setNotification({
-        type: 'success',
-        message: 'Scenario deleted successfully',
-      });
-    } catch (error) {
-      setNotification({
-        type: 'error',
-        message: 'Failed to delete scenario',
-      });
-      throw error;
-    }
-  }, [deleteScenario]);
+  const handleDeleteScenario = useCallback(
+    async (scenario: UserScenarioDoc) => {
+      try {
+        await deleteScenario({ id: scenario._id });
+        setNotification({
+          type: "success",
+          message: "Scenario deleted successfully",
+        });
+      } catch (error) {
+        setNotification({
+          type: "error",
+          message: "Failed to delete scenario",
+        });
+        throw error;
+      }
+    },
+    [deleteScenario],
+  );
 
-  const handleDuplicateScenario = useCallback(async (scenario: UserScenarioDoc) => {
-    try {
-      await createScenario({
-        user_id: userId,
-        name: `${scenario.name} (Copy)`,
-        token_budget: scenario.token_budget,
-        min_credits: scenario.min_credits,
-        max_credits: scenario.max_credits,
-        utilities: scenario.utilities,
-        fixed_courses: scenario.fixed_courses,
-      });
-      setNotification({
-        type: 'success',
-        message: 'Scenario duplicated successfully',
-      });
-    } catch (error) {
-      setNotification({
-        type: 'error',
-        message: 'Failed to duplicate scenario',
-      });
-      throw error;
-    }
-  }, [createScenario, userId]);
+  const handleDuplicateScenario = useCallback(
+    async (scenario: UserScenarioDoc) => {
+      try {
+        await createScenario({
+          user_id: userId,
+          name: `${scenario.name} (Copy)`,
+          token_budget: scenario.token_budget,
+          min_credits: scenario.min_credits,
+          max_credits: scenario.max_credits,
+          utilities: scenario.utilities,
+          fixed_courses: scenario.fixed_courses,
+        });
+        setNotification({
+          type: "success",
+          message: "Scenario duplicated successfully",
+        });
+      } catch (error) {
+        setNotification({
+          type: "error",
+          message: "Failed to duplicate scenario",
+        });
+        throw error;
+      }
+    },
+    [createScenario, userId],
+  );
 
   const handleConstraintChange = useCallback((constraints: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...constraints }));
@@ -182,13 +198,13 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
         },
       });
       setNotification({
-        type: 'success',
-        message: 'Constraints saved successfully',
+        type: "success",
+        message: "Constraints saved successfully",
       });
     } catch (error) {
       setNotification({
-        type: 'error',
-        message: 'Error saving constraints',
+        type: "error",
+        message: "Error saving constraints",
       });
     } finally {
       setIsSaving(false);
@@ -199,10 +215,10 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
   if (scenarios === undefined || courses === undefined) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 text-lg">Loading...</p>
+        <div className="mx-auto max-w-7xl">
+          <div className="py-12 text-center">
+            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
+            <p className="text-lg text-gray-600">Loading...</p>
           </div>
         </div>
       </div>
@@ -210,20 +226,23 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
   }
 
   // Check if form is valid
-  const isFormValid = formData.token_budget > 0 &&
+  const isFormValid =
+    formData.token_budget > 0 &&
     formData.min_credits >= 0 &&
     formData.max_credits <= 10 &&
     formData.min_credits <= formData.max_credits;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="mx-auto max-w-7xl space-y-8">
         {/* Header */}
-        <div className="text-center py-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+        <div className="py-8 text-center">
+          <h1 className="mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-4xl font-bold text-transparent">
             Constraint Setup
           </h1>
-          <p className="text-gray-600 text-lg">Configure your course selection parameters and requirements</p>
+          <p className="text-lg text-gray-600">
+            Configure your course selection parameters and requirements
+          </p>
         </div>
 
         {/* Scenario Manager */}
@@ -237,7 +256,7 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
         />
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {/* Constraint Input Form */}
           <div className="space-y-6">
             <ConstraintInputForm
@@ -268,24 +287,28 @@ const ConstraintSetupPage: React.FC<ConstraintSetupPageProps> = ({ userId }) => 
         </div>
 
         {/* Save Section */}
-        <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl shadow-lg border border-white border-opacity-30 p-6">
+        <div className="bg-opacity-20 border-opacity-30 rounded-2xl border border-white bg-white p-6 shadow-lg backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
-                <p><strong>Current Settings:</strong></p>
+                <p>
+                  <strong>Current Settings:</strong>
+                </p>
                 <p>Token Budget: {formData.token_budget.toLocaleString()}</p>
-                <p>Credits: {formData.min_credits} - {formData.max_credits}</p>
+                <p>
+                  Credits: {formData.min_credits} - {formData.max_credits}
+                </p>
                 <p>Required Courses: {formData.fixed_courses.length}</p>
               </div>
             </div>
-            
+
             <button
               onClick={handleSaveConstraints}
               disabled={!isFormValid || isSaving || !currentScenario}
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="inline-flex transform items-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-blue-600 hover:to-purple-700 hover:shadow-xl focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Save className="w-5 h-5 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Constraints'}
+              <Save className="mr-2 h-5 w-5" />
+              {isSaving ? "Saving..." : "Save Constraints"}
             </button>
           </div>
         </div>
