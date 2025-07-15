@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "fmt": "prettier --experimental-cli --no-cache . --check",
-    "fmt:fix": "prettier --experimental-cli --no-cache . --write",
+    "fmt": "prettier --experimental-cli --cache-location=.prettiercache --check .",
+    "fmt:fix": "prettier --experimental-cli --cache-location=.prettiercache --write .",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui"

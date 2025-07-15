@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# prettier
+.prettiercache
+
 # production
 /build
 

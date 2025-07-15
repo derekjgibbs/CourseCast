@@ -1,4 +1,6 @@
 .next
+.prettiercache
+
 data
 node_modules
 
