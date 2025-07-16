@@ -12,11 +12,14 @@
     "fmt:fix": "prettier --experimental-cli --cache-location=.prettiercache --write .",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "ui:init": "shadcn init",
+    "ui:add": "shadcn add"
   },
   "dependencies": {
     "@tanstack/react-table": "^8.21.3",
     "autoprefixer": "^10.4.21",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.25.4",
     "lucide-react": "^0.525.0",
@@ -39,7 +42,9 @@
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
+    "shadcn": "^2.9.0",
     "tailwindcss": "^4.1.11",
+    "tw-animate-css": "^1.3.5",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   }
