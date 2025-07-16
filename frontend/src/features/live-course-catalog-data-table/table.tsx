@@ -3,6 +3,8 @@
 import {
   ArrowBigLeft,
   ArrowBigRight,
+  ChevronDown,
+  ChevronUp,
   BookOpen,
   Building,
   ClipboardList,
@@ -12,12 +14,15 @@ import {
   User,
 } from "lucide-react";
 import {
+  type SortDirection,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useCallback } from "react";
 
 import type { CourseDoc } from "@/convex/types";
 
@@ -32,6 +37,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+interface SortSymbolProps {
+  direction: SortDirection | false;
+}
+
+function SortSymbol({ direction }: SortSymbolProps) {
+  switch (direction) {
+    case "asc":
+      return <ChevronUp className="size-4" />;
+    case "desc":
+      return <ChevronDown className="size-4" />;
+    default:
+      return null;
+  }
+}
 
 const formatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -55,29 +75,41 @@ type Course = Pick<
 const helper = createColumnHelper<Course>();
 const columns = [
   helper.accessor("course_id", {
-    header: () => (
-      <div className="flex items-center space-x-2">
-        <BookOpen className="size-4" />
-        <span>Course ID</span>
-      </div>
+    sortingFn: "alphanumeric",
+    header: ({ column }) => (
+      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+        <div className="flex items-center space-x-2">
+          <BookOpen className="size-4" />
+          <span>Course ID</span>
+          <SortSymbol direction={column.getIsSorted()} />
+        </div>
+      </Button>
     ),
     cell: info => <span className="text-sm font-medium text-gray-600">{info.getValue()}</span>,
   }),
   helper.accessor("title", {
-    header: () => (
-      <div className="flex items-center space-x-2">
-        <Pencil className="size-4" />
-        <span>Title</span>
-      </div>
+    sortingFn: "basic",
+    header: ({ column }) => (
+      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+        <div className="flex items-center space-x-2">
+          <Pencil className="size-4" />
+          <span>Title</span>
+          <SortSymbol direction={column.getIsSorted()} />
+        </div>
+      </Button>
     ),
     cell: info => <span className="font-semibold text-gray-900">{info.getValue()}</span>,
   }),
   helper.accessor("department", {
-    header: () => (
-      <div className="flex items-center space-x-2">
-        <Building className="size-4" />
-        <span>Department</span>
-      </div>
+    sortingFn: "basic",
+    header: ({ column }) => (
+      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+        <div className="flex items-center space-x-2">
+          <Building className="size-4" />
+          <span>Department</span>
+          <SortSymbol direction={column.getIsSorted()} />
+        </div>
+      </Button>
     ),
     cell: info => {
       const dept = info.getValue();
@@ -126,22 +158,28 @@ const columns = [
     },
   }),
   helper.accessor("instructor", {
-    header: () => (
-      <div className="flex items-center space-x-2">
-        <User className="size-4" />
-        <span>Instructor</span>
-      </div>
+    sortingFn: "basic",
+    header: ({ column }) => (
+      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+        <div className="flex items-center space-x-2">
+          <User className="size-4" />
+          <span>Instructor</span>
+          <SortSymbol direction={column.getIsSorted()} />
+        </div>
+      </Button>
     ),
     cell: info => <span className="font-medium text-gray-600">{info.getValue()}</span>,
   }),
   helper.accessor(
     ({ days, start_time, end_time }) => ({ days, time: `${start_time} - ${end_time}` }),
     {
+      // TODO: sortingFn
       id: "schedule",
-      header: () => (
+      header: ({ column }) => (
         <div className="flex items-center space-x-2">
           <Clock className="size-4" />
           <span>Schedule</span>
+          <SortSymbol direction={column.getIsSorted()} />
         </div>
       ),
       cell: info => {
@@ -156,28 +194,34 @@ const columns = [
     },
   ),
   helper.accessor("credits", {
-    header: () => (
-      <div className="flex items-center space-x-2">
-        <ClipboardList className="size-4" />
-        <span>Credits</span>
-      </div>
+    sortingFn: "basic",
+    header: ({ column }) => (
+      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+        <div className="flex items-center space-x-2">
+          <ClipboardList className="size-4" />
+          <span>Credits</span>
+          <SortSymbol direction={column.getIsSorted()} />
+        </div>
+      </Button>
     ),
     cell: info => <span className="text-lg font-bold text-green-600">{info.getValue()}</span>,
-    sortingFn: "basic",
   }),
   helper.accessor("price_forecast", {
-    header: () => (
-      <div className="flex items-center space-x-2">
-        <DollarSign className="size-4" />
-        <span>Price Forecast</span>
-      </div>
+    sortingFn: "basic",
+    header: ({ column }) => (
+      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+        <div className="flex items-center space-x-2">
+          <DollarSign className="size-4" />
+          <span>Price Forecast</span>
+          <SortSymbol direction={column.getIsSorted()} />
+        </div>
+      </Button>
     ),
     cell: info => {
       const value = info.getValue();
       const formattedPrice = formatter.format(value);
       return <span className="text-lg font-bold text-red-500">{formattedPrice}</span>;
     },
-    sortingFn: "basic",
   }),
 ];
 
@@ -186,13 +230,20 @@ interface CourseCatalogTableProps {
 }
 
 export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
+  "use no memo"; // https://github.com/TanStack/table/issues/5567
+
   const table = useReactTable({
     data: courses,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: 20 } },
+    getSortedRowModel: getSortedRowModel(),
+    initialState: { pagination: { pageSize: 20 }, sorting: [] },
   });
+
+  const previousPage = useCallback(() => table.previousPage(), [table]);
+  const nextPage = useCallback(() => table.nextPage(), [table]);
+
   const rowModel = table.getRowModel();
   return (
     <div className="space-y-2">
@@ -210,7 +261,7 @@ export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody className="text-center">
           {rowModel.rows.length === 0 ? (
             <TableRow>
               <TableCell colSpan={columns.length}>
@@ -238,7 +289,7 @@ export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
           type="button"
           variant="outline"
           size="icon"
-          onClick={() => table.previousPage()}
+          onClick={previousPage}
           disabled={!table.getCanPreviousPage()}
         >
           <ArrowBigLeft />
@@ -250,7 +301,7 @@ export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
           type="button"
           variant="outline"
           size="icon"
-          onClick={() => table.nextPage()}
+          onClick={nextPage}
           disabled={!table.getCanNextPage()}
         >
           <ArrowBigRight />
