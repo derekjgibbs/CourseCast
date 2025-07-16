@@ -11,11 +11,12 @@ import {
   ClipboardList,
   Clock,
   DollarSign,
+  Download,
   Pencil,
   Search,
   User,
 } from "lucide-react";
-import { type ChangeEvent, useCallback, useState } from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useState } from "react";
 import {
   type Column,
   type SortDirection,
@@ -27,6 +28,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { unparse } from "papaparse";
 
 import type { CourseDoc } from "@/convex/types";
 
@@ -282,6 +284,44 @@ export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
     [table],
   );
 
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const { rows } = table.getFilteredRowModel();
+      const csv = unparse(
+        rows.map(({ original }) => original),
+        {
+          header: true,
+          columns: [
+            "course_id",
+            "title",
+            "department",
+            "instructor",
+            "days",
+            "start_time",
+            "end_time",
+            "credits",
+            "price_forecast",
+          ],
+        },
+      );
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      try {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "courses.csv";
+        a.click();
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    },
+    [table],
+  );
+
   let filterColumn: Column<Course, unknown> | undefined;
   if (typeof selectedFilter !== "undefined") filterColumn = table.getColumn(selectedFilter);
 
@@ -289,7 +329,7 @@ export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
   const pageCount = table.getPageCount();
   return (
     <div className="space-y-4">
-      <div className="flex gap-1">
+      <form className="flex gap-1" onSubmit={handleSubmit}>
         <Select value={selectedFilter} onValueChange={handleValueChange}>
           <SelectTrigger>
             <Search />
@@ -305,7 +345,11 @@ export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
         ) : (
           <FilterInput column={filterColumn} />
         )}
-      </div>
+        <Button type="submit">
+          <Download />
+          <span>Download CSV</span>
+        </Button>
+      </form>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map(group => (
