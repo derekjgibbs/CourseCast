@@ -19,10 +19,11 @@ interface LayoutProps {
 }
 
 const inter = Inter({ subsets: ["latin"] });
+const classes = cn(inter.className, "antialiased");
 export default function Layout({ children }: LayoutProps) {
   return (
     <html lang="en">
-      <body className={cn(inter.className, "antialiased")}>
+      <body className={classes}>
         <LiveConvexProvider>{children}</LiveConvexProvider>
       </body>
     </html>

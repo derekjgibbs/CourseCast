@@ -18,6 +18,7 @@
     "convex:dev": "convex dev"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
     "@tanstack/react-table": "^8.21.3",
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",

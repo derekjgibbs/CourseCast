@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { LiveCourseCatalogTable } from "@/features/live-course-catalog-table";
+import { LiveCourseCatalogDataTable } from "@/features/live-course-catalog-data-table";
 
 export const metadata: Metadata = {
   title: "CourseCast",
@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-purple-50">
+    <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-6 py-8">
-        <LiveCourseCatalogTable />
+        <LiveCourseCatalogDataTable />
       </div>
     </main>
   );
