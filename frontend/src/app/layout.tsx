@@ -1,13 +1,13 @@
 import "./globals.css";
 
+import type { ReactNode } from "react";
 import type { Viewport } from "next";
 
-import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { Inter } from "next/font/google";
-import { type ReactNode, useState } from "react";
 
-import { CONVEX_URL } from "@/env/convex";
 import { cn } from "@/lib/utils";
+
+import { LiveConvexProvider } from "@/features/live-convex-provider";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -19,12 +19,12 @@ interface LayoutProps {
 }
 
 const inter = Inter({ subsets: ["latin"] });
+const classes = cn(inter.className, "antialiased");
 export default function Layout({ children }: LayoutProps) {
-  const [convex] = useState(() => new ConvexReactClient(CONVEX_URL));
   return (
     <html lang="en">
-      <body className={cn(inter.className, "dark antialiased")}>
-        <ConvexProvider client={convex}>{children}</ConvexProvider>
+      <body className={classes}>
+        <LiveConvexProvider>{children}</LiveConvexProvider>
       </body>
     </html>
   );

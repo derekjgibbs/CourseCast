@@ -8,7 +8,11 @@
  * @module
  */
 
-import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 import type * as courses from "../courses.js";
 import type * as seed from "../seed.js";
 import type * as test_utils from "../test/utils.js";
@@ -32,5 +36,11 @@ declare const fullApi: ApiFromModules<{
   userScenarios: typeof userScenarios;
   users: typeof users;
 }>;
-export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "public">>;
-export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, "internal">>;
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;

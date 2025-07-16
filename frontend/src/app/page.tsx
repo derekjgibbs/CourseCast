@@ -1,11 +1,6 @@
-"use client";
-
 import type { Metadata } from "next";
 
-import { useQuery } from "convex/react";
-
-import CourseCatalogTable from "@/components/CourseCatalogTable";
-import { api } from "@/convex/_generated/api";
+import { LiveCourseCatalogDataTable } from "@/features/live-course-catalog-data-table";
 
 export const metadata: Metadata = {
   title: "CourseCast",
@@ -13,11 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  const courses = useQuery(api.courses.list) ?? [];
   return (
-    <main className="min-h-screen bg-purple-50">
+    <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-6 py-8">
-        <CourseCatalogTable courses={courses} />
+        <LiveCourseCatalogDataTable />
       </div>
     </main>
   );

@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { v } from "convex/values";
+
+import { createUserValidator, updateUserValidator } from "@/convex/types";
+
 import { createMockUser } from "./utils";
-import { createUserValidator, updateUserValidator } from "../types";
 
 describe("User mutations", () => {
   describe("createUser", () => {
