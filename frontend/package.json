@@ -14,7 +14,8 @@
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
     "ui:init": "shadcn init",
-    "ui:add": "shadcn add"
+    "ui:add": "shadcn add",
+    "convex:dev": "convex dev"
   },
   "dependencies": {
     "@tanstack/react-table": "^8.21.3",
