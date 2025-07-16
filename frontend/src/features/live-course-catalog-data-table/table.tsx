@@ -1,4 +1,5 @@
 "use client";
+"use no memo"; // https://github.com/TanStack/table/issues/5567
 
 import {
   ArrowBigLeft,
@@ -11,24 +12,35 @@ import {
   Clock,
   DollarSign,
   Pencil,
+  Search,
   User,
 } from "lucide-react";
+import { type ChangeEvent, useCallback, useState } from "react";
 import {
+  type Column,
   type SortDirection,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useCallback } from "react";
 
 import type { CourseDoc } from "@/convex/types";
 
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -76,6 +88,7 @@ const helper = createColumnHelper<Course>();
 const columns = [
   helper.accessor("course_id", {
     sortingFn: "alphanumeric",
+    filterFn: "includesString",
     header: ({ column }) => (
       <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
         <div className="flex items-center space-x-2">
@@ -89,6 +102,7 @@ const columns = [
   }),
   helper.accessor("title", {
     sortingFn: "basic",
+    filterFn: "includesString",
     header: ({ column }) => (
       <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
         <div className="flex items-center space-x-2">
@@ -225,28 +239,73 @@ const columns = [
   }),
 ];
 
+interface FilterInputProps {
+  column: Column<Course, unknown>;
+}
+
+function FilterInput({ column }: FilterInputProps) {
+  const value = column.getFilterValue() ?? "";
+  if (typeof value !== "string") throw new Error("unexpected filter value type");
+
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => column.setFilterValue(event.target.value),
+    [column],
+  );
+
+  return <Input placeholder="Search..." value={value} onChange={handleChange} />;
+}
+
 interface CourseCatalogTableProps {
   courses: Course[];
 }
 
 export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
-  "use no memo"; // https://github.com/TanStack/table/issues/5567
-
   const table = useReactTable({
     data: courses,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    initialState: { pagination: { pageSize: 20 }, sorting: [] },
+    getFilteredRowModel: getFilteredRowModel(),
+    initialState: { pagination: { pageSize: 20 } },
   });
 
   const previousPage = useCallback(() => table.previousPage(), [table]);
   const nextPage = useCallback(() => table.nextPage(), [table]);
 
+  const [selectedFilter, setSelectedFilter] = useState("course_id");
+  const handleValueChange = useCallback(
+    (value: string) => {
+      setSelectedFilter(value);
+      table.resetColumnFilters();
+    },
+    [table],
+  );
+
+  let filterColumn: Column<Course, unknown> | undefined;
+  if (typeof selectedFilter !== "undefined") filterColumn = table.getColumn(selectedFilter);
+
   const rowModel = table.getRowModel();
+  const pageCount = table.getPageCount();
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
+      <div className="flex gap-1">
+        <Select value={selectedFilter} onValueChange={handleValueChange}>
+          <SelectTrigger>
+            <Search />
+            <SelectValue placeholder="Filter by..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="course_id">Course ID</SelectItem>
+            <SelectItem value="title">Course Title</SelectItem>
+          </SelectContent>
+        </Select>
+        {typeof filterColumn === "undefined" ? (
+          <Input disabled placeholder="Search..." />
+        ) : (
+          <FilterInput column={filterColumn} />
+        )}
+      </div>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map(group => (
@@ -284,29 +343,31 @@ export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
           )}
         </TableBody>
       </Table>
-      <div className="flex items-center justify-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={previousPage}
-          disabled={!table.getCanPreviousPage()}
-        >
-          <ArrowBigLeft />
-        </Button>
-        <span className="text-sm text-gray-500">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-        </span>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={nextPage}
-          disabled={!table.getCanNextPage()}
-        >
-          <ArrowBigRight />
-        </Button>
-      </div>
+      {pageCount === 0 ? null : (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={previousPage}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <ArrowBigLeft />
+          </Button>
+          <span className="text-sm text-gray-500">
+            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={nextPage}
+            disabled={!table.getCanNextPage()}
+          >
+            <ArrowBigRight />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
