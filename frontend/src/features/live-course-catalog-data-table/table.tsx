@@ -4,8 +4,9 @@
 import {
   ArrowBigLeft,
   ArrowBigRight,
-  ChevronDown,
-  ChevronUp,
+  ArrowDownWideNarrow,
+  ArrowUpDown,
+  ArrowUpNarrowWide,
   BookOpen,
   Building,
   ClipboardList,
@@ -59,11 +60,11 @@ interface SortSymbolProps {
 function SortSymbol({ direction }: SortSymbolProps) {
   switch (direction) {
     case "asc":
-      return <ChevronUp className="size-4" />;
+      return <ArrowUpNarrowWide className="size-4" />;
     case "desc":
-      return <ChevronDown className="size-4" />;
+      return <ArrowDownWideNarrow className="size-4" />;
     default:
-      return null;
+      return <ArrowUpDown className="size-4" />;
   }
 }
 
@@ -92,12 +93,17 @@ const columns = [
     sortingFn: "alphanumeric",
     filterFn: "includesString",
     header: ({ column }) => (
-      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => column.toggleSorting()}
+        className="w-full justify-between"
+      >
         <div className="flex items-center space-x-2">
           <BookOpen className="size-4" />
           <span>Course ID</span>
-          <SortSymbol direction={column.getIsSorted()} />
         </div>
+        <SortSymbol direction={column.getIsSorted()} />
       </Button>
     ),
     cell: info => <span className="text-sm font-medium text-gray-600">{info.getValue()}</span>,
@@ -106,12 +112,17 @@ const columns = [
     sortingFn: "basic",
     filterFn: "includesString",
     header: ({ column }) => (
-      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => column.toggleSorting()}
+        className="w-full justify-between"
+      >
         <div className="flex items-center space-x-2">
           <Pencil className="size-4" />
           <span>Title</span>
-          <SortSymbol direction={column.getIsSorted()} />
         </div>
+        <SortSymbol direction={column.getIsSorted()} />
       </Button>
     ),
     cell: info => <span className="font-semibold text-gray-900">{info.getValue()}</span>,
@@ -119,12 +130,17 @@ const columns = [
   helper.accessor("department", {
     sortingFn: "basic",
     header: ({ column }) => (
-      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => column.toggleSorting()}
+        className="w-full justify-between"
+      >
         <div className="flex items-center space-x-2">
           <Building className="size-4" />
           <span>Department</span>
-          <SortSymbol direction={column.getIsSorted()} />
         </div>
+        <SortSymbol direction={column.getIsSorted()} />
       </Button>
     ),
     cell: info => {
@@ -176,12 +192,17 @@ const columns = [
   helper.accessor("instructor", {
     sortingFn: "basic",
     header: ({ column }) => (
-      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => column.toggleSorting()}
+        className="w-full justify-between"
+      >
         <div className="flex items-center space-x-2">
           <User className="size-4" />
           <span>Instructor</span>
-          <SortSymbol direction={column.getIsSorted()} />
         </div>
+        <SortSymbol direction={column.getIsSorted()} />
       </Button>
     ),
     cell: info => <span className="font-medium text-gray-600">{info.getValue()}</span>,
@@ -191,11 +212,10 @@ const columns = [
     {
       // TODO: sortingFn
       id: "schedule",
-      header: ({ column }) => (
+      header: () => (
         <div className="flex items-center space-x-2">
           <Clock className="size-4" />
           <span>Schedule</span>
-          <SortSymbol direction={column.getIsSorted()} />
         </div>
       ),
       cell: info => {
@@ -212,12 +232,17 @@ const columns = [
   helper.accessor("credits", {
     sortingFn: "basic",
     header: ({ column }) => (
-      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => column.toggleSorting()}
+        className="w-full justify-between"
+      >
         <div className="flex items-center space-x-2">
           <ClipboardList className="size-4" />
           <span>Credits</span>
-          <SortSymbol direction={column.getIsSorted()} />
         </div>
+        <SortSymbol direction={column.getIsSorted()} />
       </Button>
     ),
     cell: info => <span className="text-lg font-bold text-green-600">{info.getValue()}</span>,
@@ -225,12 +250,17 @@ const columns = [
   helper.accessor("price_forecast", {
     sortingFn: "basic",
     header: ({ column }) => (
-      <Button type="button" variant="ghost" onClick={() => column.toggleSorting()}>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => column.toggleSorting()}
+        className="w-full justify-between"
+      >
         <div className="flex items-center space-x-2">
           <DollarSign className="size-4" />
           <span>Price Forecast</span>
-          <SortSymbol direction={column.getIsSorted()} />
         </div>
+        <SortSymbol direction={column.getIsSorted()} />
       </Button>
     ),
     cell: info => {
