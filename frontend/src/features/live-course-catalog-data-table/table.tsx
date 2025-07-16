@@ -353,7 +353,7 @@ export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map(group => (
-            <TableRow key={group.id}>
+            <TableRow key={group.id} className="hover:bg-inherit">
               {group.headers.map(header => (
                 <TableHead key={header.id} className="text-gray-700">
                   {header.isPlaceholder
