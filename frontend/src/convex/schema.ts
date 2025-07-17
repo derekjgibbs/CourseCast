@@ -1,30 +1,22 @@
+import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  users: defineTable({
-    name: v.string(),
-    email: v.string(),
-    created_at: v.number(),
-    updated_at: v.number(),
-  }).index("by_email", ["email"]),
-
+  ...authTables,
   user_scenarios: defineTable({
     user_id: v.id("users"),
     name: v.string(),
-    token_budget: v.number(),
+    token_budget: v.int64(),
     max_credits: v.number(),
     min_credits: v.number(),
-    utilities: v.record(v.string(), v.number()),
+    utilities: v.record(v.string(), v.int64()),
     fixed_courses: v.array(v.string()),
-    is_active: v.boolean(),
-    created_at: v.number(),
-    updated_at: v.number(),
+    created_at: v.int64(),
+    updated_at: v.int64(),
   })
-    .index("by_user", ["user_id"])
-    .index("by_user_active", ["user_id", "is_active"])
+    .index("by_user_id", ["user_id"])
     .index("by_created_at", ["created_at"]),
-
   courses: defineTable({
     course_id: v.string(),
     title: v.string(),
