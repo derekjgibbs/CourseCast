@@ -13,7 +13,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as auth from "../auth.js";
 import type * as courses from "../courses.js";
+import type * as http from "../http.js";
 import type * as seed from "../seed.js";
 import type * as test_utils from "../test/utils.js";
 import type * as types from "../types.js";
@@ -29,7 +31,9 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   courses: typeof courses;
+  http: typeof http;
   seed: typeof seed;
   "test/utils": typeof test_utils;
   types: typeof types;

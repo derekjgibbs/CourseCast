@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 import { mutation, query } from "./_generated/server";
 import { createUserValidator, updateUserValidator, UserDoc, UserId } from "./types";
@@ -8,39 +9,25 @@ import { createUserValidator, updateUserValidator, UserDoc, UserId } from "./typ
 export const createUser = mutation({
   args: createUserValidator,
   handler: async (ctx, args) => {
-    const { name, email } = args;
+    const name = args.name.trim();
+    const email = args.email.trim();
 
     // Validate required fields
-    if (!name || name.trim().length === 0) {
-      throw new ConvexError("Name is required and cannot be empty");
-    }
-
-    if (!email || !email.includes("@")) {
-      throw new ConvexError("Valid email address is required");
-    }
+    if (name.length === 0) throw new ConvexError("name is required and cannot be empty");
+    if (!email.includes("@")) throw new ConvexError("valid email address is required");
 
     // Check for email uniqueness (case insensitive)
     const existingUser = await ctx.db
       .query("users")
-      .withIndex("by_email", q => q.eq("email", email.toLowerCase()))
-      .first();
-
-    if (existingUser) {
-      throw new ConvexError("A user with this email already exists");
-    }
-
-    // Create timestamps
-    const now = Date.now();
+      .withIndex("email", q => q.eq("email", email))
+      .unique();
+    if (existingUser !== null) throw new ConvexError("A user with this email already exists");
 
     // Insert user
-    const userId = await ctx.db.insert("users", {
+    return await ctx.db.insert("users", {
       name: name.trim(),
-      email: email.toLowerCase(),
-      created_at: now,
-      updated_at: now,
+      email: email.trim(),
     });
-
-    return userId;
   },
 });
 
@@ -53,7 +40,7 @@ export const updateUser = mutation({
     const { id, updates } = args;
 
     // Find existing user
-    const existingUser = await ctx.db.get(id as UserId);
+    const existingUser = await ctx.db.get(id);
     if (!existingUser) {
       throw new ConvexError("User not found");
     }
@@ -69,32 +56,23 @@ export const updateUser = mutation({
     }
 
     if (updates.email !== undefined) {
-      if (!updates.email || !updates.email.includes("@")) {
+      if (!updates.email || !updates.email.includes("@"))
         throw new ConvexError("Valid email address is required");
-      }
 
       // Check for email uniqueness (excluding current user)
       const normalizedEmail = updates.email.toLowerCase();
       if (normalizedEmail !== existingUser.email) {
         const emailConflict = await ctx.db
           .query("users")
-          .withIndex("by_email", q => q.eq("email", normalizedEmail))
-          .first();
-
-        if (emailConflict) {
-          throw new ConvexError("A user with this email already exists");
-        }
+          .withIndex("email", q => q.eq("email", normalizedEmail))
+          .unique();
+        if (emailConflict !== null) throw new ConvexError("A user with this email already exists");
       }
-
       updateData.email = normalizedEmail;
     }
 
-    // Update timestamp
-    updateData.updated_at = Date.now();
-
     // Apply updates
-    await ctx.db.patch(id as UserId, updateData);
-
+    await ctx.db.patch(id, updateData);
     return id;
   },
 });
@@ -129,19 +107,32 @@ export const deleteUser = mutation({
 
 // Queries
 
+export const getAuthenticatedUser = query({
+  handler: async ctx => {
+    const id = await getAuthUserId(ctx);
+    if (id === null) throw new ConvexError("unknown session");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_id", q => q.eq("_id", id))
+      .unique();
+    if (user === null) throw new ConvexError("unknown user");
+
+    return user;
+  },
+});
+
 export const getUserByEmail = query({
   args: { email: v.string() },
   handler: async (ctx, args) => {
     const { email } = args;
 
-    if (!email || !email.includes("@")) {
-      return null;
-    }
+    if (!email || !email.includes("@")) return null;
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", q => q.eq("email", email.toLowerCase()))
-      .first();
+      .withIndex("email", q => q.eq("email", email))
+      .unique();
 
     return user;
   },
@@ -149,27 +140,10 @@ export const getUserByEmail = query({
 
 export const getUserById = query({
   args: { id: v.id("users") },
-  handler: async (ctx, args) => {
-    const { id } = args;
-
-    if (!id || id.length === 0) {
-      return null;
-    }
-
-    try {
-      const user = await ctx.db.get(id as UserId);
-      return user;
-    } catch {
-      return null;
-    }
-  },
+  handler: async (ctx, { id }) => await ctx.db.get(id),
 });
 
 export const list = query({
   args: {},
-  handler: async ctx => {
-    const users = await ctx.db.query("users").order("desc").collect();
-
-    return users;
-  },
+  handler: async ctx => await ctx.db.query("users").order("desc").collect(),
 });
