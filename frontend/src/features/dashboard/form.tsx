@@ -2,9 +2,8 @@
 
 import Form from "next/form";
 import { Loader2, LogIn, UserPlus } from "lucide-react";
+import { useActionState, useCallback } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useCallback } from "react";
-import { useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,10 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function AuthenticationForm() {
   const { signIn } = useAuthActions();
-  const mutationFn = useCallback(signIn.bind(void 0, "password"), [signIn]);
-  const mutation = useMutation({ mutationFn });
+  const signInAction = useCallback(
+    async (_: unknown, data: FormData) => await signIn("password", data),
+    [signIn],
+  );
+  const [_, action, isPending] = useActionState(signInAction, null);
   return (
-    <Form action={mutation.mutate}>
+    <Form action={action}>
       <Tabs defaultValue="signUp">
         <TabsList>
           <TabsTrigger value="signUp">Sign up</TabsTrigger>
@@ -48,16 +50,16 @@ export function AuthenticationForm() {
                 required
                 name="email"
                 placeholder="user@example.com"
-                disabled={mutation.isPending}
+                disabled={isPending}
               />
             </div>
             <div className="space-y-2">
               <Label>Password</Label>
-              <Input type="password" required name="password" disabled={mutation.isPending} />
+              <Input type="password" required name="password" disabled={isPending} />
             </div>
           </CardContent>
           <CardFooter>
-            {mutation.isPending ? (
+            {isPending ? (
               <Button type="submit" disabled className="w-full">
                 <Loader2 className="animate-spin" />
                 <span>

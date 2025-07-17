@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { ConstraintSetupCard } from "@/features/constraint-setup";
+import { ScenarioUpdateCard } from "@/features/scenario";
 import { LiveCourseCatalogDataTable } from "@/features/live-course-catalog-data-table";
 
 import { AuthenticationForm } from "./form";
@@ -28,7 +28,7 @@ export function Dashboard() {
       </Unauthenticated>
       <Authenticated>
         <main className="mx-auto w-full max-w-7xl grow space-y-8 px-6 py-8">
-          <ConstraintSetupCard />
+          <ScenarioUpdateCard />
           <LiveCourseCatalogDataTable />
         </main>
       </Authenticated>

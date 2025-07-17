@@ -12,12 +12,10 @@ export default defineSchema({
     min_credits: v.number(),
     utilities: v.record(v.string(), v.int64()),
     fixed_courses: v.array(v.string()),
-    is_active: v.boolean(),
     created_at: v.int64(),
     updated_at: v.int64(),
   })
-    .index("by_user", ["user_id"])
-    .index("by_user_active", ["user_id", "is_active"])
+    .index("by_user_id", ["user_id"])
     .index("by_created_at", ["created_at"]),
   courses: defineTable({
     course_id: v.string(),

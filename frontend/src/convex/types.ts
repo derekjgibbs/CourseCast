@@ -12,14 +12,14 @@ export const userValidator = v.object({
 export const userScenarioValidator = v.object({
   user_id: v.id("users"),
   name: v.string(),
-  token_budget: v.number(),
+  token_budget: v.int64(),
   max_credits: v.number(),
   min_credits: v.number(),
   utilities: v.record(v.string(), v.number()),
   fixed_courses: v.array(v.string()),
   is_active: v.boolean(),
-  created_at: v.number(),
-  updated_at: v.number(),
+  created_at: v.int64(),
+  updated_at: v.int64(),
 });
 
 export const courseValidator = v.object({
@@ -41,7 +41,7 @@ export const courseValidator = v.object({
 });
 
 // Utility validators
-export const courseUtilitiesValidator = v.record(v.string(), v.number());
+export const courseUtilitiesValidator = v.record(v.string(), v.int64());
 export const fixedCoursesValidator = v.array(v.string());
 
 // Input validators for API operations
@@ -55,24 +55,16 @@ export const updateUserValidator = v.object({
   email: v.optional(v.string()),
 });
 
-export const createUserScenarioValidator = v.object({
-  user_id: v.id("users"),
-  name: v.string(),
-  token_budget: v.optional(v.number()),
-  max_credits: v.optional(v.number()),
-  min_credits: v.optional(v.number()),
-  utilities: v.optional(v.record(v.string(), v.number())),
-  fixed_courses: v.optional(v.array(v.string())),
-});
+export const createUserScenarioValidator = v.object({ name: v.string() });
 
 export const updateUserScenarioValidator = v.object({
+  id: v.id("user_scenarios"),
   name: v.optional(v.string()),
-  token_budget: v.optional(v.number()),
-  max_credits: v.optional(v.number()),
+  token_budget: v.optional(v.int64()),
   min_credits: v.optional(v.number()),
-  utilities: v.optional(v.record(v.string(), v.number())),
+  max_credits: v.optional(v.number()),
+  utilities: v.optional(v.record(v.string(), v.int64())),
   fixed_courses: v.optional(v.array(v.string())),
-  is_active: v.optional(v.boolean()),
 });
 
 // Inferred TypeScript types
@@ -102,20 +94,20 @@ export type CourseId = Id<"courses">;
 export const CONSTRAINTS = {
   USER_SCENARIO: {
     NAME_MAX_LENGTH: 200,
-    TOKEN_BUDGET_DEFAULT: 4500,
+    TOKEN_BUDGET_DEFAULT: 4500n,
     MAX_CREDITS_DEFAULT: 7.5,
     MIN_CREDITS_DEFAULT: 0.0,
     MAX_CREDITS_LIMIT: 10.0,
     MIN_CREDITS_LIMIT: 0.0,
   },
   COURSE_UTILITY: {
-    MIN_VALUE: 0,
-    MAX_VALUE: 100,
+    MIN_VALUE: 0n,
+    MAX_VALUE: 100n,
   },
 } as const;
 
 // Type guards for runtime validation
-export const isValidUtilityValue = (value: number): boolean => {
+export const isValidUtilityValue = (value: bigint): boolean => {
   return (
     value >= CONSTRAINTS.COURSE_UTILITY.MIN_VALUE && value <= CONSTRAINTS.COURSE_UTILITY.MAX_VALUE
   );
@@ -139,22 +131,5 @@ export const validateUtilities = (utilities: CourseUtilities): boolean => {
 };
 
 export const validateFixedCourses = (courses: FixedCourses): boolean => {
-  return courses.every(courseId => typeof courseId === "string" && courseId.length > 0);
+  return courses.every(courseId => courseId.length > 0);
 };
-
-// Default values for new scenarios
-export const getDefaultUserScenario = (
-  userId: UserId,
-  name: string,
-): Omit<UserScenario, "_id" | "_creationTime"> => ({
-  user_id: userId,
-  name,
-  token_budget: CONSTRAINTS.USER_SCENARIO.TOKEN_BUDGET_DEFAULT,
-  max_credits: CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_DEFAULT,
-  min_credits: CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_DEFAULT,
-  utilities: {},
-  fixed_courses: [],
-  is_active: true,
-  created_at: Date.now(),
-  updated_at: Date.now(),
-});
