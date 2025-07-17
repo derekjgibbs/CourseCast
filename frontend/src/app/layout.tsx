@@ -40,7 +40,7 @@ export default function Layout({ children }: LayoutProps) {
             </Link>
           </nav>
         </header>
-        <main className="grow">{children}</main>
+        {children}
         <footer className="mt-12 border-t border-gray-200 bg-white" role="contentinfo">
           <div className="mx-auto max-w-7xl px-6 py-8">
             <div className="text-center text-sm text-gray-500">

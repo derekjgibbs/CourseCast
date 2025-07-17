@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
-import { ConstraintSetupCard } from "@/features/constraint-setup";
-import { LiveCourseCatalogDataTable } from "@/features/live-course-catalog-data-table";
+import { Dashboard } from "@/features/dashboard";
 
 export const metadata: Metadata = {
   title: "Dashboard | CourseCast",
@@ -9,10 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return (
-    <div className="mx-auto max-w-7xl space-y-8 px-6 py-8">
-      <ConstraintSetupCard />
-      <LiveCourseCatalogDataTable />
-    </div>
-  );
+  return <Dashboard />;
 }

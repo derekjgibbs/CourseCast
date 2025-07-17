@@ -7,5 +7,5 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  return <LiveConvexProvider> {children}</LiveConvexProvider>;
+  return <LiveConvexProvider>{children}</LiveConvexProvider>;
 }
