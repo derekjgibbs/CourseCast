@@ -1,10 +1,11 @@
 "use client";
 
-import Form from "next/form";
+import { NotepadTextDashed, Save } from "lucide-react";
 import { useCallback, useId, useState } from "react";
 
 import { CONSTRAINTS, isValidCreditsRange } from "@/convex/types";
 
+import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,8 +23,9 @@ export function ConstraintSetupForm() {
     if (isValidCreditsRange(min, max)) setCreditRange([min, max]);
   }, []);
 
+  // TODO: Use <Form> from next/form.
   return (
-    <Form action="/" className="contents">
+    <form className="contents">
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor={`${id}-token-budget`}>Token Budget</Label>
@@ -56,7 +58,16 @@ export function ConstraintSetupForm() {
           </div>
         </div>
       </CardContent>
-      <CardFooter>(footer)</CardFooter>
-    </Form>
+      <CardFooter className="justify-end gap-1">
+        <Button type="submit" variant="outline" disabled>
+          <NotepadTextDashed />
+          <span>Save Template</span>
+        </Button>
+        <Button type="submit" disabled>
+          <Save />
+          <span>Submit Constraints</span>
+        </Button>
+      </CardFooter>
+    </form>
   );
 }
