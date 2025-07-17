@@ -9,10 +9,8 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <LiveCourseCatalogDataTable />
-      </div>
-    </main>
+    <div className="mx-auto max-w-7xl px-6 py-8">
+      <LiveCourseCatalogDataTable />
+    </div>
   );
 }
