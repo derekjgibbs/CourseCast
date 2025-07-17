@@ -44,7 +44,7 @@ export default function Layout({ children }: LayoutProps) {
         <footer className="mt-12 border-t border-gray-200 bg-white" role="contentinfo">
           <div className="mx-auto max-w-7xl px-6 py-8">
             <div className="text-center text-sm text-gray-500">
-              <p>&copy; 2024 CourseCast. Course optimization using Monte Carlo simulation.</p>
+              <p>&copy; 2025 CourseCast. Course optimization using Monte Carlo simulation.</p>
             </div>
           </div>
         </footer>
