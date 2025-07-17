@@ -3,11 +3,11 @@ import "./globals.css";
 import type { ReactNode } from "react";
 import type { Viewport } from "next";
 
+import Link from "next/link";
+
 import { Inter } from "next/font/google";
 
 import { cn } from "@/lib/utils";
-
-import { LiveConvexProvider } from "@/features/live-convex-provider";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -28,18 +28,19 @@ export default function Layout({ children }: LayoutProps) {
           role="banner"
         >
           <nav
-            className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4"
             role="navigation"
             aria-label="Main navigation"
+            className="mx-auto max-w-7xl px-6 py-4"
           >
-            <h1 className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-2xl font-bold text-transparent">
+            <Link
+              href="/"
+              className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-2xl font-bold text-transparent"
+            >
               CourseCast
-            </h1>
+            </Link>
           </nav>
         </header>
-        <main className="grow">
-          <LiveConvexProvider>{children}</LiveConvexProvider>
-        </main>
+        <main className="grow">{children}</main>
         <footer className="mt-12 border-t border-gray-200 bg-white" role="contentinfo">
           <div className="mx-auto max-w-7xl px-6 py-8">
             <div className="text-center text-sm text-gray-500">
