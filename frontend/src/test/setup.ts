@@ -1,4 +1,13 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
+import { beforeEach, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
+
+// This is important so that we don't reuse the same rendering context for each test.
+beforeEach(cleanup);
+
+// Fix for Radix UI components in JSDOM
+window.HTMLElement.prototype.hasPointerCapture = vi.fn();
+window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
 // Mock URL.createObjectURL and URL.revokeObjectURL for export tests
 Object.defineProperty(URL, "createObjectURL", {
@@ -9,30 +18,4 @@ Object.defineProperty(URL, "createObjectURL", {
 Object.defineProperty(URL, "revokeObjectURL", {
   writable: true,
   value: vi.fn(),
-});
-
-// Make vi available globally
-import { vi } from "vitest";
-(global as any).vi = vi;
-
-// Set up environment variables for Convex integration tests
-process.env.VITE_CONVEX_URL = "https://glorious-mule-933.convex.cloud";
-
-// Setup portal container for modal tests
-beforeEach(() => {
-  // Create a modal root element if it doesn't exist
-  let modalRoot = document.getElementById("modal-root");
-  if (!modalRoot) {
-    modalRoot = document.createElement("div");
-    modalRoot.id = "modal-root";
-    document.body.appendChild(modalRoot);
-  }
-});
-
-afterEach(() => {
-  // Clean up portal elements
-  const modalRoot = document.getElementById("modal-root");
-  if (modalRoot) {
-    modalRoot.innerHTML = "";
-  }
 });
