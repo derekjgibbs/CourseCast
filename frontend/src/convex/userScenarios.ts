@@ -1,17 +1,16 @@
-import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
+
+import { mutation, query } from "./_generated/server";
 import {
+  CONSTRAINTS,
+  type UserScenarioDoc,
   createUserScenarioValidator,
-  updateUserScenarioValidator,
-  UserScenarioDoc,
-  UserScenarioId,
-  UserId,
+  getDefaultUserScenario,
   isValidCreditsRange,
   isValidScenarioName,
+  updateUserScenarioValidator,
   validateUtilities,
   validateFixedCourses,
-  getDefaultUserScenario,
-  CONSTRAINTS,
 } from "./types";
 
 // Mutations
@@ -97,7 +96,7 @@ export const updateUserScenario = mutation({
     const { id, updates } = args;
 
     // Find existing scenario
-    const existingScenario = await ctx.db.get(id as UserScenarioId);
+    const existingScenario = await ctx.db.get(id);
     if (!existingScenario) {
       throw new ConvexError("User scenario not found");
     }
@@ -162,7 +161,7 @@ export const updateUserScenario = mutation({
     updateData.updated_at = Date.now();
 
     // Apply updates
-    await ctx.db.patch(id as UserScenarioId, updateData);
+    await ctx.db.patch(id, updateData);
 
     return id;
   },
@@ -174,13 +173,13 @@ export const deleteUserScenario = mutation({
     const { id } = args;
 
     // Check if scenario exists
-    const scenario = await ctx.db.get(id as UserScenarioId);
+    const scenario = await ctx.db.get(id);
     if (!scenario) {
       throw new ConvexError("User scenario not found");
     }
 
     // Delete the scenario
-    await ctx.db.delete(id as UserScenarioId);
+    await ctx.db.delete(id);
 
     // If this was an active scenario, we might want to activate another one
     // But for now, we'll just leave the user with no active scenario
@@ -198,7 +197,7 @@ export const setActiveUserScenario = mutation({
     const { id, user_id } = args;
 
     // Check if scenario exists and belongs to the user
-    const scenario = await ctx.db.get(id as UserScenarioId);
+    const scenario = await ctx.db.get(id);
     if (!scenario) {
       throw new ConvexError("User scenario not found");
     }
@@ -210,7 +209,7 @@ export const setActiveUserScenario = mutation({
     // Deactivate all other scenarios for this user
     const userScenarios = await ctx.db
       .query("user_scenarios")
-      .withIndex("by_user", q => q.eq("user_id", user_id as UserId))
+      .withIndex("by_user", q => q.eq("user_id", user_id))
       .collect();
 
     for (const userScenario of userScenarios) {
@@ -223,7 +222,7 @@ export const setActiveUserScenario = mutation({
     }
 
     // Activate the target scenario
-    await ctx.db.patch(id as UserScenarioId, {
+    await ctx.db.patch(id, {
       is_active: true,
       updated_at: Date.now(),
     });
@@ -248,7 +247,7 @@ export const getUserScenarios = query({
 
     const scenarios = await ctx.db
       .query("user_scenarios")
-      .withIndex("by_user", q => q.eq("user_id", user_id as UserId))
+      .withIndex("by_user", q => q.eq("user_id", user_id))
       .order("desc")
       .take(limit);
 
@@ -267,7 +266,7 @@ export const getActiveUserScenario = query({
 
     const activeScenario = await ctx.db
       .query("user_scenarios")
-      .withIndex("by_user_active", q => q.eq("user_id", user_id as UserId).eq("is_active", true))
+      .withIndex("by_user_active", q => q.eq("user_id", user_id).eq("is_active", true))
       .first();
 
     return activeScenario;

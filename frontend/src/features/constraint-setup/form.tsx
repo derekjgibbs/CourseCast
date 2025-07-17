@@ -33,8 +33,8 @@ export function ConstraintSetupForm() {
             id={`${id}-token-budget`}
             type="number"
             required
-            placeholder="4500"
-            defaultValue={4500}
+            placeholder={CONSTRAINTS.USER_SCENARIO.TOKEN_BUDGET_DEFAULT.toString()}
+            defaultValue={CONSTRAINTS.USER_SCENARIO.TOKEN_BUDGET_DEFAULT}
           />
         </div>
         <div className="space-y-2">
