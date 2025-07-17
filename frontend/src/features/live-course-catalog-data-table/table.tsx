@@ -75,7 +75,7 @@ const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-type Course = Pick<
+export type Course = Pick<
   CourseDoc,
   | "course_id"
   | "title"
@@ -109,7 +109,7 @@ const columns = [
     cell: info => <span className="text-sm font-medium text-gray-600">{info.getValue()}</span>,
   }),
   helper.accessor("title", {
-    sortingFn: "basic",
+    sortingFn: "alphanumeric",
     filterFn: "includesString",
     header: ({ column }) => (
       <Button
@@ -288,10 +288,11 @@ function FilterInput({ column }: FilterInputProps) {
 }
 
 interface CourseCatalogTableProps {
+  initialPageSize?: number;
   courses: Course[];
 }
 
-export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
+export function CourseCatalogDataTable({ courses, initialPageSize = 20 }: CourseCatalogTableProps) {
   const table = useReactTable({
     data: courses,
     columns,
@@ -299,7 +300,7 @@ export function CourseCatalogDataTable({ courses }: CourseCatalogTableProps) {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    initialState: { pagination: { pageSize: 20 } },
+    initialState: { pagination: { pageSize: initialPageSize } },
   });
 
   const previousPage = useCallback(() => table.previousPage(), [table]);
