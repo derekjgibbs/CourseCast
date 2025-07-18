@@ -53,6 +53,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
+
 interface SortSymbolProps {
   direction: SortDirection | false;
 }
@@ -60,11 +62,11 @@ interface SortSymbolProps {
 function SortSymbol({ direction }: SortSymbolProps) {
   switch (direction) {
     case "asc":
-      return <ArrowUpNarrowWide className="size-4" />;
+      return <ArrowUpNarrowWide />;
     case "desc":
-      return <ArrowDownWideNarrow className="size-4" />;
+      return <ArrowDownWideNarrow />;
     default:
-      return <ArrowUpDown className="size-4" />;
+      return <ArrowUpDown />;
   }
 }
 
@@ -106,7 +108,14 @@ const columns = [
         <SortSymbol direction={column.getIsSorted()} />
       </Button>
     ),
-    cell: info => <span className="text-sm font-medium text-gray-600">{info.getValue()}</span>,
+    cell: info => {
+      const value = info.getValue();
+      return (
+        <CopyToClipboardButton value={value} variant="ghost" size="sm">
+          <span className="text-sm font-medium text-gray-600">{value}</span>
+        </CopyToClipboardButton>
+      );
+    },
   }),
   helper.accessor("title", {
     sortingFn: "alphanumeric",

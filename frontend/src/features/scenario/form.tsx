@@ -30,6 +30,8 @@ function onSuccess() {
 function onError() {
   toast.error("Failed to update scenario", {
     description: "Please try again later.",
+    duration: Infinity,
+    dismissible: true,
   });
 }
 
