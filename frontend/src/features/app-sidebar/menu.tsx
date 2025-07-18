@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import type { ReactNode } from "react";
+import { useParams, usePathname } from "next/navigation";
 import { useQuery } from "convex/react";
 
 import type { UserScenarioDoc } from "@/convex/types";
@@ -9,6 +10,23 @@ import { api } from "@/convex/_generated/api";
 
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+
+interface MenuItemProps {
+  href: string;
+  children: ReactNode;
+}
+
+export function MenuItem({ href, children }: MenuItemProps) {
+  const pathname = usePathname();
+  const isActive = href === pathname;
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={isActive}>
+        <Link href={href}>{children}</Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
 
 type ScenarioMenuItemProps = Pick<UserScenarioDoc, "_id" | "name">;
 function ScenarioMenuItem({ _id: id, name }: ScenarioMenuItemProps) {
