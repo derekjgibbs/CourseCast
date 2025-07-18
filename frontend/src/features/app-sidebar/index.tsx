@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Ellipsis } from "lucide-react";
+import { Home, Ellipsis } from "lucide-react";
 import type { ReactNode } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
@@ -22,10 +22,11 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
+  SidebarMenu,
 } from "@/components/ui/sidebar";
 
 import { ScenarioGroupAction } from "./button";
-import { ScenarioMenu } from "./menu";
+import { MenuItem, ScenarioMenu } from "./menu";
 
 export function AppSidebar() {
   return (
@@ -39,6 +40,14 @@ export function AppSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            <MenuItem href="/dashboard">
+              <Home />
+              <span>Course Catalog</span>
+            </MenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Scenarios</SidebarGroupLabel>
           <ScenarioGroupAction />
@@ -84,7 +93,7 @@ function AppHeaderBreadcrumbs({ href, children }: AppHeaderBreadcrumbsProps) {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/dashboard">Course Catalog</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         {typeof href === "undefined" ? null : (
