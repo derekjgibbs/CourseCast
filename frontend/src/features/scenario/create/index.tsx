@@ -2,8 +2,8 @@
 
 import * as v from "valibot";
 import { Loader2, Plus } from "lucide-react";
+import { type ReactNode, useId, useState } from "react";
 import { decode } from "decode-formdata";
-import { useId, useState } from "react";
 import { useMutation as useConvexMutation } from "convex/react";
 import { useMutation as useTanstackMutation } from "@tanstack/react-query";
 
@@ -77,18 +77,14 @@ function ScenarioCreateDialogBox({ onSuccess }: ScenarioDialogProps) {
 
 interface ScenarioDialogProps {
   onSuccess: (id: UserScenarioId) => void;
+  children?: ReactNode;
 }
 
-export function ScenarioDialog({ onSuccess }: ScenarioDialogProps) {
+export function ScenarioDialog({ onSuccess, children }: ScenarioDialogProps) {
   const [open, setOpen] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus />
-          <span>New Scenario</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>New Scenario</DialogTitle>
