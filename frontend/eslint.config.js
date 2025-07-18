@@ -9,7 +9,7 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({ baseDirectory: __dirname });
 export default defineConfig(
-  compat.extends("next/core-web-vitals", "next/typescript"),
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     files: ["src/**/*.{j,t}s{x,}"],
     rules: {
@@ -19,7 +19,5 @@ export default defineConfig(
       ],
     },
   },
-  {
-    ignores: ["src/convex/_generated/**/*"],
-  },
+  { ignores: ["src/convex/_generated/**/*"] },
 );
