@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 
 export default function Page() {
   // TODO: Call to Action
-  return null;
+  return <main className="grow" />;
 }
