@@ -7,6 +7,7 @@ import {
   ArrowUpNarrowWide,
   BookOpen,
   Building,
+  ChartNoAxesCombined,
   ClipboardList,
   Clock,
   DollarSign,
@@ -107,14 +108,22 @@ const columns = [
   }),
   helper.display({
     id: "utility",
+    header: () => (
+      <div className="flex items-center space-x-2">
+        <ChartNoAxesCombined className="size-4" />
+        <span>Utility</span>
+      </div>
+    ),
     cell: () => (
       <Input
         type="number"
         required
+        placeholder="0-100"
         min={CONSTRAINTS.COURSE_UTILITY.MIN_VALUE.toString()}
         max={CONSTRAINTS.COURSE_UTILITY.MAX_VALUE.toString()}
         step={1}
-        defaultValue={0}
+        defaultValue={CONSTRAINTS.COURSE_UTILITY.MIN_VALUE.toString()}
+        className="min-w-20"
       />
     ),
   }),

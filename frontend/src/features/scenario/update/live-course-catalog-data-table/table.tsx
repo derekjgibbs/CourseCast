@@ -17,7 +17,7 @@ import {
   Search,
   User,
 } from "lucide-react";
-import { type ChangeEvent, type FormEvent, useCallback, useState } from "react";
+import { type ChangeEvent, type MouseEvent, useCallback, useState } from "react";
 import {
   type Column,
   type SortDirection,
@@ -342,43 +342,37 @@ export function CourseCatalogDataTable({ courses, initialPageSize = 20 }: Course
     [table],
   );
 
-  const handleSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
+  const downloadCsv = useCallback(() => {
+    const { rows } = table.getFilteredRowModel();
+    const csv = unparse(
+      rows.map(({ original }) => original),
+      {
+        header: true,
+        columns: [
+          "course_id",
+          "title",
+          "department",
+          "instructor",
+          "days",
+          "start_time",
+          "end_time",
+          "credits",
+          "price_forecast",
+        ],
+      },
+    );
 
-      const { rows } = table.getFilteredRowModel();
-      const csv = unparse(
-        rows.map(({ original }) => original),
-        {
-          header: true,
-          columns: [
-            "course_id",
-            "title",
-            "department",
-            "instructor",
-            "days",
-            "start_time",
-            "end_time",
-            "credits",
-            "price_forecast",
-          ],
-        },
-      );
-
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      try {
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "courses.csv";
-        a.click();
-      } finally {
-        URL.revokeObjectURL(url);
-      }
-    },
-    [table],
-  );
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    try {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "courses.csv";
+      a.click();
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }, [table]);
 
   let filterColumn: Column<Course, unknown> | undefined;
   if (typeof selectedFilter !== "undefined") filterColumn = table.getColumn(selectedFilter);
@@ -387,7 +381,7 @@ export function CourseCatalogDataTable({ courses, initialPageSize = 20 }: Course
   const pageCount = table.getPageCount();
   return (
     <div className="space-y-4">
-      <form className="flex gap-1" onSubmit={handleSubmit}>
+      <div className="flex gap-1">
         <Select value={selectedFilter} onValueChange={handleValueChange}>
           <SelectTrigger>
             <Search />
@@ -403,11 +397,11 @@ export function CourseCatalogDataTable({ courses, initialPageSize = 20 }: Course
         ) : (
           <FilterInput column={filterColumn} />
         )}
-        <Button type="submit">
-          <Download />
-          <span>Download CSV</span>
+        <Button type="button" size="icon" onClick={downloadCsv}>
+          <Download className="size-4" />
+          <span className="sr-only">Download CSV</span>
         </Button>
-      </form>
+      </div>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map(group => (

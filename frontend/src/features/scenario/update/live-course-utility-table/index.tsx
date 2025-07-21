@@ -10,7 +10,7 @@ import { CourseUtilityTable } from "./table";
 export function LiveCourseUtilityTable() {
   const courseStore = useCourseStore();
   const handleRemove = useStore(courseStore, state => state.deselectCourse);
-  const available = useStore(courseStore, state => state.available);
-  const courses = useMemo(() => Array.from(available.values()), [available]);
+  const selected = useStore(courseStore, state => state.selected);
+  const courses = useMemo(() => Array.from(selected.values()), [selected]);
   return <CourseUtilityTable courses={courses} onRemove={handleRemove} />;
 }
