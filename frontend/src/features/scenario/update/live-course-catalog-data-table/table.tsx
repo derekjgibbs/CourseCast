@@ -140,7 +140,9 @@ const columns = [
         </Button>
       );
     },
-    cell: info => <span className="font-semibold text-gray-900">{info.getValue()}</span>,
+    cell: info => (
+      <div className="size-full text-left font-semibold text-gray-900">{info.getValue()}</div>
+    ),
   }),
   helper.accessor("department", {
     sortingFn: "basic",
