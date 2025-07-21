@@ -17,6 +17,7 @@ import {
 } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -192,6 +193,19 @@ function ScenarioUpdateForm({
           <LiveCourseCatalogDataTable />
         </CardContent>
       </Card>
+      <Button
+        type="submit"
+        size="icon"
+        className="fixed right-0 bottom-0 m-4 rounded-full p-8 shadow-2xl"
+        disabled={mutation.isPending}
+      >
+        {mutation.isPending ? (
+          <Loader2 className="size-8 animate-spin" />
+        ) : (
+          <Save className="size-8" />
+        )}
+        <span className="sr-only">Save Scenario</span>
+      </Button>
     </form>
   );
 }
@@ -209,7 +223,7 @@ export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
       <span className="text-sm font-medium text-gray-600">Fetching scenario</span>
     </div>
   ) : (
-    <div className="mx-auto w-full max-w-7xl grow justify-center px-6 py-8">
+    <div className="relative mx-auto w-full max-w-7xl grow justify-center px-6 py-8">
       <CourseProvider courses={courses}>
         <ScenarioUpdateForm
           id={id}
