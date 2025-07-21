@@ -3,8 +3,6 @@
 import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { Loader2 } from "lucide-react";
 
-import { LiveCourseCatalogDataTable } from "@/features/live-course-catalog-data-table";
-
 import { AuthenticationForm } from "./form";
 
 export function Dashboard() {
@@ -22,7 +20,7 @@ export function Dashboard() {
       </Unauthenticated>
       <Authenticated>
         <div className="mx-auto w-full max-w-7xl justify-center space-y-8 px-6 py-8">
-          <LiveCourseCatalogDataTable />
+          (scenarios)
         </div>
       </Authenticated>
     </>

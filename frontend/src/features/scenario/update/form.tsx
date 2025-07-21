@@ -23,6 +23,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
 
+import { CourseProvider } from "./store";
+import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
+import { LiveCourseUtilityTable } from "./live-course-utility-table";
+import { LiveFixedCourseCatalogTable } from "./live-fixed-course-catalog-table";
+
 function onSuccess() {
   toast.success("Scenario successfully updated");
 }
@@ -117,7 +122,7 @@ function ScenarioUpdateForm({
               />
             </div>
             <div className="grow space-y-2">
-              <Label htmlFor={`${id}-name`}>Name</Label>
+              <Label htmlFor={`${id}-name`}>Scenario Name</Label>
               <Input
                 id={`${id}-name`}
                 type="text"
@@ -157,6 +162,9 @@ function ScenarioUpdateForm({
             </div>
           </div>
         </form>
+        <LiveCourseCatalogDataTable />
+        <LiveFixedCourseCatalogTable />
+        <LiveCourseUtilityTable />
       </CardContent>
       <CardFooter className="justify-end">
         {mutation.isPending ? (
@@ -180,8 +188,9 @@ interface ScenarioUpdateProps {
 }
 
 export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
+  const courses = useQuery(api.courses.list);
   const scenario = useQuery(api.scenarios.get, { id });
-  return typeof scenario === "undefined" ? (
+  return typeof courses === "undefined" || typeof scenario === "undefined" ? (
     <CardContent>
       <div className="flex flex-col items-center space-y-2">
         <Loader2 className="size-16 animate-spin text-gray-400" />
@@ -189,12 +198,14 @@ export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
       </div>
     </CardContent>
   ) : (
-    <ScenarioUpdateForm
-      id={id}
-      name={scenario.name}
-      token_budget={scenario.token_budget}
-      min_credits={scenario.min_credits}
-      max_credits={scenario.max_credits}
-    />
+    <CourseProvider courses={courses}>
+      <ScenarioUpdateForm
+        id={id}
+        name={scenario.name}
+        token_budget={scenario.token_budget}
+        min_credits={scenario.min_credits}
+        max_credits={scenario.max_credits}
+      />
+    </CourseProvider>
   );
 }

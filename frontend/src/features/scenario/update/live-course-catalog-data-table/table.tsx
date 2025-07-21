@@ -94,20 +94,23 @@ const columns = [
   helper.accessor("course_id", {
     sortingFn: "alphanumeric",
     filterFn: "includesString",
-    header: ({ column }) => (
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={() => column.toggleSorting()}
-        className="w-full justify-between"
-      >
-        <div className="flex items-center space-x-2">
-          <BookOpen className="size-4" />
-          <span>Course ID</span>
-        </div>
-        <SortSymbol direction={column.getIsSorted()} />
-      </Button>
-    ),
+    header: function Header({ column }) {
+      const handleClick = useCallback(() => column.toggleSorting(), [column]);
+      return (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleClick}
+          className="w-full justify-between"
+        >
+          <div className="flex items-center space-x-2">
+            <BookOpen className="size-4" />
+            <span>Course ID</span>
+          </div>
+          <SortSymbol direction={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: info => {
       const value = info.getValue();
       return (
@@ -120,38 +123,44 @@ const columns = [
   helper.accessor("title", {
     sortingFn: "alphanumeric",
     filterFn: "includesString",
-    header: ({ column }) => (
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={() => column.toggleSorting()}
-        className="w-full justify-between"
-      >
-        <div className="flex items-center space-x-2">
-          <Pencil className="size-4" />
-          <span>Title</span>
-        </div>
-        <SortSymbol direction={column.getIsSorted()} />
-      </Button>
-    ),
+    header: function Header({ column }) {
+      const handleClick = useCallback(() => column.toggleSorting(), [column]);
+      return (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleClick}
+          className="w-full justify-between"
+        >
+          <div className="flex items-center space-x-2">
+            <Pencil className="size-4" />
+            <span>Title</span>
+          </div>
+          <SortSymbol direction={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: info => <span className="font-semibold text-gray-900">{info.getValue()}</span>,
   }),
   helper.accessor("department", {
     sortingFn: "basic",
-    header: ({ column }) => (
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={() => column.toggleSorting()}
-        className="w-full justify-between"
-      >
-        <div className="flex items-center space-x-2">
-          <Building className="size-4" />
-          <span>Department</span>
-        </div>
-        <SortSymbol direction={column.getIsSorted()} />
-      </Button>
-    ),
+    header: function Header({ column }) {
+      const handleClick = useCallback(() => column.toggleSorting(), [column]);
+      return (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleClick}
+          className="w-full justify-between"
+        >
+          <div className="flex items-center space-x-2">
+            <Building className="size-4" />
+            <span>Department</span>
+          </div>
+          <SortSymbol direction={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: info => {
       const dept = info.getValue();
       let gradientClass: string;
@@ -200,20 +209,23 @@ const columns = [
   }),
   helper.accessor("instructor", {
     sortingFn: "basic",
-    header: ({ column }) => (
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={() => column.toggleSorting()}
-        className="w-full justify-between"
-      >
-        <div className="flex items-center space-x-2">
-          <User className="size-4" />
-          <span>Instructor</span>
-        </div>
-        <SortSymbol direction={column.getIsSorted()} />
-      </Button>
-    ),
+    header: function Header({ column }) {
+      const handleClick = useCallback(() => column.toggleSorting(), [column]);
+      return (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleClick}
+          className="w-full justify-between"
+        >
+          <div className="flex items-center space-x-2">
+            <User className="size-4" />
+            <span>Instructor</span>
+          </div>
+          <SortSymbol direction={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: info => <span className="font-medium text-gray-600">{info.getValue()}</span>,
   }),
   helper.accessor(
@@ -240,38 +252,44 @@ const columns = [
   ),
   helper.accessor("credits", {
     sortingFn: "basic",
-    header: ({ column }) => (
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={() => column.toggleSorting()}
-        className="w-full justify-between"
-      >
-        <div className="flex items-center space-x-2">
-          <ClipboardList className="size-4" />
-          <span>Credits</span>
-        </div>
-        <SortSymbol direction={column.getIsSorted()} />
-      </Button>
-    ),
+    header: function Header({ column }) {
+      const handleClick = useCallback(() => column.toggleSorting(), [column]);
+      return (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleClick}
+          className="w-full justify-between"
+        >
+          <div className="flex items-center space-x-2">
+            <ClipboardList className="size-4" />
+            <span>Credits</span>
+          </div>
+          <SortSymbol direction={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: info => <span className="text-lg font-bold text-green-600">{info.getValue()}</span>,
   }),
   helper.accessor("price_forecast", {
     sortingFn: "basic",
-    header: ({ column }) => (
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={() => column.toggleSorting()}
-        className="w-full justify-between"
-      >
-        <div className="flex items-center space-x-2">
-          <DollarSign className="size-4" />
-          <span>Price Forecast</span>
-        </div>
-        <SortSymbol direction={column.getIsSorted()} />
-      </Button>
-    ),
+    header: function Header({ column }) {
+      const handleClick = useCallback(() => column.toggleSorting(), [column]);
+      return (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleClick}
+          className="w-full justify-between"
+        >
+          <div className="flex items-center space-x-2">
+            <DollarSign className="size-4" />
+            <span>Price Forecast</span>
+          </div>
+          <SortSymbol direction={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: info => {
       const value = info.getValue();
       const formattedPrice = formatter.format(value);
@@ -303,8 +321,8 @@ interface CourseCatalogTableProps {
 
 export function CourseCatalogDataTable({ courses, initialPageSize = 20 }: CourseCatalogTableProps) {
   const table = useReactTable({
-    data: courses,
     columns,
+    data: courses,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
