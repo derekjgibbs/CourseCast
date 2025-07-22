@@ -8,11 +8,13 @@ import {
   ArrowUpDown,
   ArrowUpNarrowWide,
   BookOpen,
+  BookmarkPlus,
   Building,
   ClipboardList,
   Clock,
   DollarSign,
   Download,
+  HeartPlus,
   Pencil,
   Search,
   User,
@@ -20,6 +22,7 @@ import {
 import { type ChangeEvent, type MouseEvent, useCallback, useState } from "react";
 import {
   type Column,
+  type RowData,
   type SortDirection,
   createColumnHelper,
   flexRender,
@@ -31,7 +34,7 @@ import {
 } from "@tanstack/react-table";
 import { unparse } from "papaparse";
 
-import type { CourseDoc } from "@/convex/types";
+import type { CourseDoc, CourseId } from "@/convex/types";
 
 import { cn } from "@/lib/utils";
 
@@ -52,6 +55,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
 
@@ -79,6 +83,7 @@ const formatter = new Intl.NumberFormat("en-US", {
 
 export type Course = Pick<
   CourseDoc,
+  | "_id"
   | "course_id"
   | "title"
   | "department"
@@ -91,6 +96,70 @@ export type Course = Pick<
 >;
 const helper = createColumnHelper<Course>();
 const columns = [
+  helper.display({
+    id: "fixed",
+    cell: function Cell({ table, row }) {
+      const onFixedCourseAdd = table.options.meta?.onFixedCourseAdd;
+      const handleClick = useCallback(
+        (event: MouseEvent<HTMLButtonElement>) => {
+          if (typeof onFixedCourseAdd === "undefined") return;
+          const id = event.currentTarget.dataset["id"];
+          if (typeof id === "undefined") return;
+          onFixedCourseAdd(id as CourseId);
+        },
+        [onFixedCourseAdd],
+      );
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              data-id={row.original._id}
+              onClick={handleClick}
+              className="border-0 bg-blue-800 text-blue-100 hover:bg-blue-900 hover:text-blue-50"
+            >
+              <BookmarkPlus />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Add to Fixed Courses</TooltipContent>
+        </Tooltip>
+      );
+    },
+  }),
+  helper.display({
+    id: "selected",
+    cell: function Cell({ table, row }) {
+      const onCourseSelected = table.options.meta?.onCourseSelected;
+      const handleClick = useCallback(
+        (event: MouseEvent<HTMLButtonElement>) => {
+          if (typeof onCourseSelected === "undefined") return;
+          const id = event.currentTarget.dataset["id"];
+          if (typeof id === "undefined") return;
+          onCourseSelected(id as CourseId);
+        },
+        [onCourseSelected],
+      );
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              data-id={row.original._id}
+              onClick={handleClick}
+              className="border-0 bg-pink-800 text-pink-100 hover:bg-pink-900 hover:text-pink-50"
+            >
+              <HeartPlus />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Add to Selected Courses</TooltipContent>
+        </Tooltip>
+      );
+    },
+  }),
   helper.accessor("course_id", {
     sortingFn: "alphanumeric",
     filterFn: "includesString",
@@ -105,7 +174,7 @@ const columns = [
         >
           <div className="flex items-center space-x-2">
             <BookOpen className="size-4" />
-            <span>Course ID</span>
+            <span>ID</span>
           </div>
           <SortSymbol direction={column.getIsSorted()} />
         </Button>
@@ -316,12 +385,27 @@ function FilterInput({ column }: FilterInputProps) {
   return <Input placeholder="Search..." value={value} onChange={handleChange} />;
 }
 
+declare module "@tanstack/table-core" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface TableMeta<TData extends RowData> {
+    onFixedCourseAdd?: (id: CourseId) => void;
+    onCourseSelected?: (id: CourseId) => void;
+  }
+}
+
 interface CourseCatalogTableProps {
   initialPageSize?: number;
   courses: Course[];
+  onFixedCourseAdd: (course: CourseId) => void;
+  onCourseSelected: (course: CourseId) => void;
 }
 
-export function CourseCatalogDataTable({ courses, initialPageSize = 20 }: CourseCatalogTableProps) {
+export function CourseCatalogDataTable({
+  courses,
+  initialPageSize = 20,
+  onFixedCourseAdd,
+  onCourseSelected,
+}: CourseCatalogTableProps) {
   const table = useReactTable({
     columns,
     data: courses,
@@ -329,7 +413,11 @@ export function CourseCatalogDataTable({ courses, initialPageSize = 20 }: Course
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    initialState: { pagination: { pageSize: initialPageSize } },
+    initialState: {
+      pagination: { pageSize: initialPageSize },
+      sorting: [{ id: "title", desc: false }],
+    },
+    meta: { onFixedCourseAdd, onCourseSelected },
   });
 
   const previousPage = useCallback(() => table.previousPage(), [table]);
