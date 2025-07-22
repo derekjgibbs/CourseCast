@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentProps, ReactNode } from "react";
+import { type ComponentProps, type MouseEvent, type ReactNode, useCallback } from "react";
 
 import { Copy, CopyCheck, CopyX, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -30,45 +30,41 @@ interface CopyToClipboardButtonProps extends Pick<ButtonProps, "variant" | "size
 
 export function CopyToClipboardButton({ value, children, ...props }: CopyToClipboardButtonProps) {
   const [_, mutationFn] = useCopyToClipboard();
-  const mutation = useMutation({ mutationFn, onSuccess, onError });
+  const { isIdle, isPending, isSuccess, mutate } = useMutation({ mutationFn, onSuccess, onError });
+  const handleClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      const value = event.currentTarget.dataset["value"];
+      if (typeof value === "undefined") return;
+      mutate(value);
+    },
+    [mutate],
+  );
   return (
-    <form
-      onSubmit={event => {
-        event.preventDefault();
-        event.stopPropagation();
-        const data = new FormData(event.currentTarget);
-        const value = data.get("value");
-        if (typeof value === "string") mutation.mutate(value);
-      }}
-      className="contents"
-    >
-      <input type="hidden" name="value" value={value} />
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {mutation.isIdle ? (
-            <Button type="submit" {...props}>
-              {children}
-              <Copy />
-            </Button>
-          ) : mutation.isPending ? (
-            <Button type="button" {...props} disabled>
-              {children}
-              <Loader2 className="animate-spin" />
-            </Button>
-          ) : mutation.isSuccess ? (
-            <Button type="submit" {...props}>
-              {children}
-              <CopyCheck />
-            </Button>
-          ) : (
-            <Button type="submit" {...props}>
-              {children}
-              <CopyX />
-            </Button>
-          )}
-        </TooltipTrigger>
-        <TooltipContent>Click to copy</TooltipContent>
-      </Tooltip>
-    </form>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {isIdle ? (
+          <Button type="button" onClick={handleClick} data-value={value} {...props}>
+            {children}
+            <Copy />
+          </Button>
+        ) : isPending ? (
+          <Button type="button" {...props} disabled>
+            {children}
+            <Loader2 className="animate-spin" />
+          </Button>
+        ) : isSuccess ? (
+          <Button type="button" onClick={handleClick} data-value={value} {...props}>
+            {children}
+            <CopyCheck />
+          </Button>
+        ) : (
+          <Button type="button" onClick={handleClick} data-value={value} {...props}>
+            {children}
+            <CopyX />
+          </Button>
+        )}
+      </TooltipTrigger>
+      <TooltipContent>Click to copy</TooltipContent>
+    </Tooltip>
   );
 }

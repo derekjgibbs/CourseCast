@@ -39,7 +39,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </QueryClientProvider>
       </LiveConvexProvider>
-      <Toaster richColors theme="light" />
+      <Toaster richColors closeButton position="bottom-left" theme="light" />
     </SidebarProvider>
   );
 }
