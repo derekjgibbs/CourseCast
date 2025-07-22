@@ -127,7 +127,11 @@ class PreProcessor:
         return class_combinations
 
     def _build_class_time_combinations(
-        self, part_of_term: str, days_code: str, start_time, stop_time
+        self,
+        part_of_term: str,
+        days_code: str,
+        start_time: datetime.time,
+        stop_time: datetime.time,
     ) -> List[str]:
         """Build class time combination strings for a single course.
 
@@ -178,7 +182,9 @@ class PreProcessor:
         for class_name in unique_classes:
             self.df[class_name] = 0
 
-    def _populate_class_time_columns(self, class_combinations: dict):
+    def _populate_class_time_columns(
+        self, class_combinations: dict[Hashable, List[str]]
+    ):
         """Populate binary class time columns with appropriate values.
 
         Args:
@@ -262,7 +268,11 @@ class PreProcessor:
 class DataService:
     """Main service for coordinating data processing operations."""
 
-    def __init__(self, z_table_filepath: Optional[str] = None, config: Optional[PreprocessingConfig] = None):
+    def __init__(
+        self,
+        z_table_filepath: Optional[str] = None,
+        config: Optional[PreprocessingConfig] = None,
+    ):
         """Initialize DataService with components.
 
         Args:
@@ -273,7 +283,9 @@ class DataService:
         self.preprocessor = PreProcessor(config)
         self.z_table_filepath = z_table_filepath
 
-    def load_excel_file(self, file_path: str, sheet_name: Optional[str] = None) -> pd.DataFrame:
+    def load_excel_file(
+        self, file_path: str, sheet_name: Optional[str] = None
+    ) -> pd.DataFrame:
         """Load course data from Excel file.
 
         Args:

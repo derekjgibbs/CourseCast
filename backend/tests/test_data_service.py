@@ -11,6 +11,7 @@ from datetime import time, datetime
 import tempfile
 import os
 
+
 class TestRandomManager:
     """Test suite for RandomManager class."""
 
@@ -22,8 +23,8 @@ class TestRandomManager:
         manager = RandomManager()
 
         # Assert
-        assert hasattr(manager, 'ztable')
-        assert hasattr(manager, 'rand_z_table_filepath')
+        assert hasattr(manager, "ztable")
+        assert hasattr(manager, "rand_z_table_filepath")
         assert manager.ztable is not None
         assert not manager.ztable.empty
 
@@ -40,7 +41,7 @@ class TestRandomManager:
         manager = RandomManager(temp_z_score_file)
 
         # Act
-        series = manager.getRandZSeries('seed1')
+        series = manager.getRandZSeries("seed1")
 
         # Assert
         assert len(series) == 5
@@ -55,7 +56,7 @@ class TestRandomManager:
 
         # Act & Assert
         with pytest.raises(KeyError):
-            manager.getRandZSeries('invalid_seed')
+            manager.getRandZSeries("invalid_seed")
 
     def test_z_table_file_not_found_raises_error(self):
         """Test that missing z-score table file raises appropriate error."""
@@ -75,7 +76,7 @@ class TestPreProcessor:
 
         # Assert
         assert preprocessor is not None
-        assert hasattr(preprocessor, 'config')
+        assert hasattr(preprocessor, "config")
 
     def test_preprocess_drops_unused_columns(self, sample_course_data: pd.DataFrame):
         """Test that preprocess drops specified columns."""
@@ -89,13 +90,20 @@ class TestPreProcessor:
         result = preprocessor.preprocess(sample_course_data)
 
         # Assert
-        dropped_columns = {'term', 'title', 'instructor', 'start_date', 'end_date', 'capacity'}
+        dropped_columns = {
+            "term",
+            "title",
+            "instructor",
+            "start_date",
+            "end_date",
+            "capacity",
+        }
         remaining_columns = set(result.columns)
 
         assert dropped_columns.isdisjoint(remaining_columns)
-        assert 'primary_section_id' in remaining_columns
-        assert 'course_id' in remaining_columns
-        assert 'section_code' in remaining_columns
+        assert "primary_section_id" in remaining_columns
+        assert "course_id" in remaining_columns
+        assert "section_code" in remaining_columns
 
     def test_preprocess_primary_section_id_splits_correctly(self):
         """Test primary section ID preprocessing splits course_id and section_code."""
@@ -107,29 +115,31 @@ class TestPreProcessor:
         from services.data_service import PreProcessor
 
         # Arrange
-        test_data = pd.DataFrame({
-            'primary_section_id': ['STAT6130001', 'ACCT7970002', 'MGMT6110003'],
-            'part_of_term': ['1', '2', 'F'],
-            'days_code': ['MW', 'TR', 'M'],
-            'start_time_24hr': [time(8, 30), time(10, 15), time(13, 45)],
-            'stop_time_24hr': [time(10, 15), time(12, 0), time(15, 30)],
-            'price_predicted': [1000.0, 1200.0, 1100.0],
-            'resid_mean': [100.0, 150.0, 120.0],
-            'resid_stdev': [50.0, 75.0, 60.0],
-            'uniqueid': [1, 2, 3]
-        })
+        test_data = pd.DataFrame(
+            {
+                "primary_section_id": ["STAT6130001", "ACCT7970002", "MGMT6110003"],
+                "part_of_term": ["1", "2", "F"],
+                "days_code": ["MW", "TR", "M"],
+                "start_time_24hr": [time(8, 30), time(10, 15), time(13, 45)],
+                "stop_time_24hr": [time(10, 15), time(12, 0), time(15, 30)],
+                "price_predicted": [1000.0, 1200.0, 1100.0],
+                "resid_mean": [100.0, 150.0, 120.0],
+                "resid_stdev": [50.0, 75.0, 60.0],
+                "uniqueid": [1, 2, 3],
+            }
+        )
         preprocessor = PreProcessor()
 
         # Act
         result = preprocessor.preprocess(test_data)
 
         # Assert
-        assert result.loc[0, 'course_id'] == 'FC_STAT'  # STAT6130 should map to FC_STAT
-        assert result.loc[1, 'course_id'] == 'TABS'     # ACCT7970 should map to TABS
-        assert result.loc[2, 'course_id'] == 'FC_MGMT'  # MGMT6110 should map to FC_MGMT
-        assert result.loc[0, 'section_code'] == '001'
-        assert result.loc[1, 'section_code'] == '002'
-        assert result.loc[2, 'section_code'] == '003'
+        assert result.loc[0, "course_id"] == "FC_STAT"  # STAT6130 should map to FC_STAT
+        assert result.loc[1, "course_id"] == "TABS"  # ACCT7970 should map to TABS
+        assert result.loc[2, "course_id"] == "FC_MGMT"  # MGMT6110 should map to FC_MGMT
+        assert result.loc[0, "section_code"] == "001"
+        assert result.loc[1, "section_code"] == "002"
+        assert result.loc[2, "section_code"] == "003"
 
     def test_preprocess_class_time_creates_conflict_fields(self):
         """Test class time preprocessing creates conflict detection fields."""
@@ -156,7 +166,9 @@ class TestPreProcessor:
         # RED: Should fail - method doesn't exist yet
         pass
 
-    def test_setup_price_calculates_correctly(self, sample_course_data: pd.DataFrame, temp_z_score_file: str):
+    def test_setup_price_calculates_correctly(
+        self, sample_course_data: pd.DataFrame, temp_z_score_file: str
+    ):
         """Test price calculation with z-score."""
         from services.data_service import PreProcessor
 
@@ -165,14 +177,14 @@ class TestPreProcessor:
         processed_data = preprocessor.preprocess(sample_course_data)
 
         # Act
-        result = preprocessor.setupPrice(processed_data, 'seed1', temp_z_score_file)
+        result = preprocessor.setupPrice(processed_data, "seed1", temp_z_score_file)
 
         # Assert
-        assert 'price' in result.columns
+        assert "price" in result.columns
         # Price should be: price_predicted + resid_mean + z * resid_stdev
         # For first row: 1000 + 100 + 0.1 * 50 = 1105
         expected_price_0 = 1000.0 + 100.0 + 0.1 * 50.0
-        assert abs(result.loc[0, 'price'] - expected_price_0) < 0.01
+        assert abs(result.loc[0, "price"] - expected_price_0) < 0.01
 
     def test_setup_price_caps_at_min_max(self):
         """Test price calculation caps at 0 and 4851."""
@@ -192,8 +204,8 @@ class TestDataService:
 
         # Assert
         assert service is not None
-        assert hasattr(service, 'random_manager')
-        assert hasattr(service, 'preprocessor')
+        assert hasattr(service, "random_manager")
+        assert hasattr(service, "preprocessor")
 
     def test_load_excel_file_success(self):
         """Test successful Excel file loading."""
@@ -202,19 +214,21 @@ class TestDataService:
         # Arrange
         service = DataService()
         # Create temp Excel file with required columns
-        test_data = pd.DataFrame({
-            'primary_section_id': ['STAT6130001'],
-            'part_of_term': ['1'],
-            'days_code': ['MW'],
-            'start_time_24hr': [time(8, 30)],
-            'stop_time_24hr': [time(10, 15)],
-            'price_predicted': [1000.0],
-            'resid_mean': [100.0],
-            'resid_stdev': [50.0],
-            'uniqueid': [1]
-        })
+        test_data = pd.DataFrame(
+            {
+                "primary_section_id": ["STAT6130001"],
+                "part_of_term": ["1"],
+                "days_code": ["MW"],
+                "start_time_24hr": [time(8, 30)],
+                "stop_time_24hr": [time(10, 15)],
+                "price_predicted": [1000.0],
+                "resid_mean": [100.0],
+                "resid_stdev": [50.0],
+                "uniqueid": [1],
+            }
+        )
 
-        with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
             test_data.to_excel(tmp.name, index=False)
             tmp_path = tmp.name
 
@@ -224,8 +238,8 @@ class TestDataService:
 
             # Assert
             assert len(result) == 1
-            assert 'primary_section_id' in result.columns
-            assert result.loc[0, 'primary_section_id'] == 'STAT6130001'
+            assert "primary_section_id" in result.columns
+            assert result.loc[0, "primary_section_id"] == "STAT6130001"
         finally:
             os.unlink(tmp_path)
 
@@ -265,39 +279,51 @@ class TestDataService:
 @pytest.fixture
 def sample_course_data():
     """Sample course data for testing."""
-    return pd.DataFrame({
-        'primary_section_id': ['STAT6130001', 'ACCT6110001', 'FNCE6110001'],
-        'term': ['Spring 2025', 'Spring 2025', 'Spring 2025'],
-        'title': ['Statistics', 'Accounting', 'Finance'],
-        'instructor': ['Dr. Smith', 'Dr. Jones', 'Dr. Brown'],
-        'part_of_term': ['1', '2', 'F'],
-        'days_code': ['MW', 'TR', 'M'],
-        'start_time_24hr': [time(8, 30), time(10, 15), time(13, 45)],
-        'stop_time_24hr': [time(10, 15), time(12, 0), time(15, 30)],
-        'start_date': [datetime(2025, 1, 15), datetime(2025, 3, 1), datetime(2025, 1, 15)],
-        'end_date': [datetime(2025, 3, 1), datetime(2025, 4, 30), datetime(2025, 4, 30)],
-        'capacity': [50, 40, 60],
-        'price_predicted': [1000.0, 1200.0, 1100.0],
-        'resid_mean': [100.0, 150.0, 120.0],
-        'resid_stdev': [50.0, 75.0, 60.0],
-        'uniqueid': [1, 2, 3]
-    })
+    return pd.DataFrame(
+        {
+            "primary_section_id": ["STAT6130001", "ACCT6110001", "FNCE6110001"],
+            "term": ["Spring 2025", "Spring 2025", "Spring 2025"],
+            "title": ["Statistics", "Accounting", "Finance"],
+            "instructor": ["Dr. Smith", "Dr. Jones", "Dr. Brown"],
+            "part_of_term": ["1", "2", "F"],
+            "days_code": ["MW", "TR", "M"],
+            "start_time_24hr": [time(8, 30), time(10, 15), time(13, 45)],
+            "stop_time_24hr": [time(10, 15), time(12, 0), time(15, 30)],
+            "start_date": [
+                datetime(2025, 1, 15),
+                datetime(2025, 3, 1),
+                datetime(2025, 1, 15),
+            ],
+            "end_date": [
+                datetime(2025, 3, 1),
+                datetime(2025, 4, 30),
+                datetime(2025, 4, 30),
+            ],
+            "capacity": [50, 40, 60],
+            "price_predicted": [1000.0, 1200.0, 1100.0],
+            "resid_mean": [100.0, 150.0, 120.0],
+            "resid_stdev": [50.0, 75.0, 60.0],
+            "uniqueid": [1, 2, 3],
+        }
+    )
 
 
 @pytest.fixture
 def sample_z_score_table():
     """Sample z-score table for testing."""
-    return pd.DataFrame({
-        'seed1': [0.1, 0.2, 0.3, 0.4, 0.5],
-        'seed2': [-0.1, -0.2, 0.1, 0.2, 0.3],
-        'seed3': [0.5, -0.5, 0.0, 0.1, -0.1]
-    })
+    return pd.DataFrame(
+        {
+            "seed1": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "seed2": [-0.1, -0.2, 0.1, 0.2, 0.3],
+            "seed3": [0.5, -0.5, 0.0, 0.1, -0.1],
+        }
+    )
 
 
 @pytest.fixture
 def temp_z_score_file(sample_z_score_table: pd.DataFrame):
     """Create temporary z-score table file."""
-    with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+    with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
         sample_z_score_table.to_excel(tmp.name, index=False)
         yield tmp.name
         os.unlink(tmp.name)

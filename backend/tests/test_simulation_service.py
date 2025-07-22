@@ -8,7 +8,11 @@ from services.simulation_service import SimulationService
 from services.data_service import DataService
 from services.optimization_service import OptimizationService
 from models.simulation_models import SimulationRequest, SimulationResponse
-from models.optimization_models import CourseInput, OptimizationResponse, OptimizedCourse
+from models.optimization_models import (
+    CourseInput,
+    OptimizationResponse,
+    OptimizedCourse,
+)
 
 
 class TestSimulationService:
@@ -36,15 +40,19 @@ class TestSimulationService:
 
         # Mock optimization response
         mock_courses = [
-            OptimizedCourse(uniqueid=1, price=100.0, credits=3, utility=5.0, selected=True),
-            OptimizedCourse(uniqueid=2, price=200.0, credits=4, utility=3.0, selected=False)
+            OptimizedCourse(
+                uniqueid=1, price=100.0, credits=3, utility=5.0, selected=True
+            ),
+            OptimizedCourse(
+                uniqueid=2, price=200.0, credits=4, utility=3.0, selected=False
+            ),
         ]
         mock_optimization_response = OptimizationResponse(
             selected_courses=mock_courses,
             total_cost=100.0,
             total_credits=3,
             total_utility=5.0,
-            optimization_status="Optimal"
+            optimization_status="Optimal",
         )
         mock_optimization_service.optimize.return_value = mock_optimization_response
 
@@ -56,10 +64,10 @@ class TestSimulationService:
             max_credits=9,
             courses=[
                 CourseInput(uniqueid=1, utility=5.0),
-                CourseInput(uniqueid=2, utility=3.0)
+                CourseInput(uniqueid=2, utility=3.0),
             ],
             num_simulations=1,
-            seed=42
+            seed=42,
         )
 
         # Act
@@ -87,12 +95,20 @@ class TestSimulationService:
 
         # Mock different optimization responses for different seeds
         mock_courses_result1 = [
-            OptimizedCourse(uniqueid=1, price=100.0, credits=3, utility=5.0, selected=True),
-            OptimizedCourse(uniqueid=2, price=200.0, credits=4, utility=3.0, selected=False)
+            OptimizedCourse(
+                uniqueid=1, price=100.0, credits=3, utility=5.0, selected=True
+            ),
+            OptimizedCourse(
+                uniqueid=2, price=200.0, credits=4, utility=3.0, selected=False
+            ),
         ]
         mock_courses_result2 = [
-            OptimizedCourse(uniqueid=1, price=100.0, credits=3, utility=5.0, selected=False),
-            OptimizedCourse(uniqueid=2, price=200.0, credits=4, utility=3.0, selected=True)
+            OptimizedCourse(
+                uniqueid=1, price=100.0, credits=3, utility=5.0, selected=False
+            ),
+            OptimizedCourse(
+                uniqueid=2, price=200.0, credits=4, utility=3.0, selected=True
+            ),
         ]
 
         mock_response1 = OptimizationResponse(
@@ -100,18 +116,21 @@ class TestSimulationService:
             total_cost=100.0,
             total_credits=3,
             total_utility=5.0,
-            optimization_status="Optimal"
+            optimization_status="Optimal",
         )
         mock_response2 = OptimizationResponse(
             selected_courses=mock_courses_result2,
             total_cost=200.0,
             total_credits=4,
             total_utility=3.0,
-            optimization_status="Optimal"
+            optimization_status="Optimal",
         )
 
         # Configure mock to return different responses based on call order
-        mock_optimization_service.optimize.side_effect = [mock_response1, mock_response2]
+        mock_optimization_service.optimize.side_effect = [
+            mock_response1,
+            mock_response2,
+        ]
 
         service = SimulationService(mock_data_service, mock_optimization_service)
 
@@ -121,10 +140,10 @@ class TestSimulationService:
             max_credits=9,
             courses=[
                 CourseInput(uniqueid=1, utility=5.0),
-                CourseInput(uniqueid=2, utility=3.0)
+                CourseInput(uniqueid=2, utility=3.0),
             ],
             num_simulations=2,
-            seed=42
+            seed=42,
         )
 
         # Act
@@ -138,8 +157,12 @@ class TestSimulationService:
 
         # Check course probabilities (both courses should have 0.5 probability)
         assert len(result.course_probabilities) == 2
-        course1_stats = next(cp for cp in result.course_probabilities if cp.uniqueid == 1)
-        course2_stats = next(cp for cp in result.course_probabilities if cp.uniqueid == 2)
+        course1_stats = next(
+            cp for cp in result.course_probabilities if cp.uniqueid == 1
+        )
+        course2_stats = next(
+            cp for cp in result.course_probabilities if cp.uniqueid == 2
+        )
         assert course1_stats.probability == 0.5
         assert course1_stats.selection_count == 1
         assert course2_stats.probability == 0.5
@@ -160,19 +183,26 @@ class TestSimulationService:
 
         # Mock one successful response and one that raises an exception
         mock_courses = [
-            OptimizedCourse(uniqueid=1, price=100.0, credits=3, utility=5.0, selected=True),
-            OptimizedCourse(uniqueid=2, price=200.0, credits=4, utility=3.0, selected=False)
+            OptimizedCourse(
+                uniqueid=1, price=100.0, credits=3, utility=5.0, selected=True
+            ),
+            OptimizedCourse(
+                uniqueid=2, price=200.0, credits=4, utility=3.0, selected=False
+            ),
         ]
         mock_success_response = OptimizationResponse(
             selected_courses=mock_courses,
             total_cost=100.0,
             total_credits=3,
             total_utility=5.0,
-            optimization_status="Optimal"
+            optimization_status="Optimal",
         )
 
         # Configure mock to succeed once then fail once
-        mock_optimization_service.optimize.side_effect = [mock_success_response, Exception("Optimization failed")]
+        mock_optimization_service.optimize.side_effect = [
+            mock_success_response,
+            Exception("Optimization failed"),
+        ]
 
         service = SimulationService(mock_data_service, mock_optimization_service)
 
@@ -182,10 +212,10 @@ class TestSimulationService:
             max_credits=9,
             courses=[
                 CourseInput(uniqueid=1, utility=5.0),
-                CourseInput(uniqueid=2, utility=3.0)
+                CourseInput(uniqueid=2, utility=3.0),
             ],
             num_simulations=2,
-            seed=42
+            seed=42,
         )
 
         # Act
@@ -199,11 +229,19 @@ class TestSimulationService:
 
         # Course probabilities based on 1 successful simulation
         assert len(result.course_probabilities) == 2
-        course1_stats = next(cp for cp in result.course_probabilities if cp.uniqueid == 1)
-        course2_stats = next(cp for cp in result.course_probabilities if cp.uniqueid == 2)
-        assert course1_stats.probability == 1.0  # Selected in 1 out of 1 successful simulation
+        course1_stats = next(
+            cp for cp in result.course_probabilities if cp.uniqueid == 1
+        )
+        course2_stats = next(
+            cp for cp in result.course_probabilities if cp.uniqueid == 2
+        )
+        assert (
+            course1_stats.probability == 1.0
+        )  # Selected in 1 out of 1 successful simulation
         assert course1_stats.selection_count == 1
-        assert course2_stats.probability == 0.0  # Not selected in the successful simulation
+        assert (
+            course2_stats.probability == 0.0
+        )  # Not selected in the successful simulation
         assert course2_stats.selection_count == 0
 
     def test_simulation_request_validation_constraints(self):
@@ -214,7 +252,7 @@ class TestSimulationService:
             max_credits=5.0,
             courses=[CourseInput(uniqueid=1, utility=80.0)],
             num_simulations=10,
-            seed=42
+            seed=42,
         )
         assert valid_request.max_credits == 5.0
 
@@ -224,15 +262,17 @@ class TestSimulationService:
                 budget=4500.0,
                 max_credits=-1.0,  # Negative not allowed
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
-                num_simulations=10
+                num_simulations=10,
             )
 
-        with pytest.raises(ValueError, match="Input should be less than or equal to 10"):
+        with pytest.raises(
+            ValueError, match="Input should be less than or equal to 10"
+        ):
             SimulationRequest(
                 budget=4500.0,
                 max_credits=15.0,  # Too high
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
-                num_simulations=10
+                num_simulations=10,
             )
 
         # Test budget constraints
@@ -241,7 +281,7 @@ class TestSimulationService:
                 budget=-100.0,  # Negative not allowed
                 max_credits=5.0,
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
-                num_simulations=10
+                num_simulations=10,
             )
 
         # Test num_simulations constraints
@@ -250,15 +290,17 @@ class TestSimulationService:
                 budget=4500.0,
                 max_credits=5.0,
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
-                num_simulations=0  # Must be positive
+                num_simulations=0,  # Must be positive
             )
 
-        with pytest.raises(ValueError, match="Input should be less than or equal to 1000"):
+        with pytest.raises(
+            ValueError, match="Input should be less than or equal to 1000"
+        ):
             SimulationRequest(
                 budget=4500.0,
                 max_credits=5.0,
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
-                num_simulations=1001  # Too high
+                num_simulations=1001,  # Too high
             )
 
         # Test empty courses list
@@ -267,5 +309,5 @@ class TestSimulationService:
                 budget=4500.0,
                 max_credits=5.0,
                 courses=[],  # Empty not allowed
-                num_simulations=10
+                num_simulations=10,
             )
