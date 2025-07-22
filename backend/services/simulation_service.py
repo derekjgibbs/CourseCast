@@ -11,7 +11,7 @@ from models.simulation_models import (
     CourseStatistics,
     ScheduleStatistics,
 )
-from models.optimization_models import OptimizationRequest
+from models.optimization_models import OptimizationRequest, OptimizedCourse
 
 
 class SimulationService:
@@ -50,8 +50,8 @@ class SimulationService:
 
     def _execute_simulations(self, request: SimulationRequest):
         """Execute multiple optimization simulations and collect results."""
-        simulation_results = []
-        schedule_counter = Counter()
+        simulation_results: list[list[OptimizedCourse]] = []
+        schedule_counter = Counter[frozenset[int]]()
 
         for i in range(request.num_simulations):
             try:
@@ -78,12 +78,16 @@ class SimulationService:
         return OptimizationRequest(
             budget=request.budget,
             max_credits=request.max_credits,
+            min_credits=0,  # Assuming 0 as a default for min_credits
             courses=request.courses,
             seed=seed,
         )
 
     def _calculate_course_probabilities(
-        self, request: SimulationRequest, simulation_results, successful_simulations
+        self,
+        request: SimulationRequest,
+        simulation_results: list[list[OptimizedCourse]],
+        successful_simulations: int,
     ):
         """Calculate probability statistics for each course."""
         all_course_ids = [course.uniqueid for course in request.courses]
@@ -105,7 +109,9 @@ class SimulationService:
         ]
 
     def _calculate_schedule_probabilities(
-        self, schedule_counter, successful_simulations
+        self,
+        schedule_counter: Counter[frozenset[int]],
+        successful_simulations: int,
     ):
         """Calculate probability statistics for schedule combinations."""
         return [

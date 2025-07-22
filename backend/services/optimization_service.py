@@ -3,8 +3,6 @@ Optimization service for course schedule optimization using linear programming.
 """
 
 import pulp
-import pandas as pd
-from typing import List
 from services.data_service import DataService
 from models.optimization_models import (
     OptimizationRequest,
