@@ -69,9 +69,9 @@ class TestOptimizationService:
         # Assert
         assert isinstance(result, OptimizationResponse)
         assert result.total_cost <= 5000, "Total cost should not exceed budget"
-        assert (
-            len(result.selected_courses) >= 1
-        ), "At least one course should be selected"
+        assert len(result.selected_courses) >= 1, (
+            "At least one course should be selected"
+        )
         assert result.optimization_status in [
             "Optimal",
             "Feasible",
@@ -115,12 +115,12 @@ class TestOptimizationService:
 
         # Assert
         assert isinstance(result, OptimizationResponse)
-        assert (
-            result.total_credits <= 4.0
-        ), "Total credits should not exceed max_credits"
-        assert (
-            len(result.selected_courses) >= 1
-        ), "At least one course should be selected"
+        assert result.total_credits <= 4.0, (
+            "Total credits should not exceed max_credits"
+        )
+        assert len(result.selected_courses) >= 1, (
+            "At least one course should be selected"
+        )
         assert result.optimization_status in [
             "Optimal",
             "Feasible",
@@ -174,9 +174,9 @@ class TestOptimizationService:
         conflicting_courses_selected = len(
             [cid for cid in selected_course_ids if cid in [1, 2]]
         )
-        assert (
-            conflicting_courses_selected <= 1
-        ), "Should not select conflicting courses 1 and 2"
+        assert conflicting_courses_selected <= 1, (
+            "Should not select conflicting courses 1 and 2"
+        )
 
         assert len(selected_course_ids) >= 1, "At least one course should be selected"
         assert result.optimization_status in [
@@ -234,9 +234,9 @@ class TestOptimizationService:
         fnce_sections_selected = len(
             [cid for cid in selected_course_ids if cid in [1, 2]]
         )
-        assert (
-            fnce_sections_selected <= 1
-        ), "Should not select multiple sections of same course"
+        assert fnce_sections_selected <= 1, (
+            "Should not select multiple sections of same course"
+        )
 
         assert len(selected_course_ids) >= 1, "At least one course should be selected"
         assert result.optimization_status in [
@@ -283,15 +283,15 @@ class TestOptimizationService:
         assert isinstance(result, OptimizationResponse)
         # With no courses fitting constraints, the problem should be "Optimal" with empty solution
         # PuLP considers an empty feasible solution as "Optimal" (not infeasible)
-        assert (
-            result.optimization_status == "Optimal"
-        ), "Should find optimal empty solution"
-        assert (
-            result.total_cost == 0
-        ), "No courses should be selected when none fit constraints"
+        assert result.optimization_status == "Optimal", (
+            "Should find optimal empty solution"
+        )
+        assert result.total_cost == 0, (
+            "No courses should be selected when none fit constraints"
+        )
         assert result.total_credits == 0, "No credits when no courses selected"
         # Check that no courses are actually selected
         selected_courses = [c for c in result.selected_courses if c.selected]
-        assert (
-            len(selected_courses) == 0
-        ), "No courses should be selected when none fit constraints"
+        assert len(selected_courses) == 0, (
+            "No courses should be selected when none fit constraints"
+        )

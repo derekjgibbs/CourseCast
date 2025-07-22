@@ -22,33 +22,38 @@ class OptimizationService:
         """Optimize course selection using linear programming."""
 
         # Process course data through DataService
-        course_ids = [course.uniqueid for course in request.courses]
-        course_utilities = {
-            course.uniqueid: course.utility for course in request.courses
-        }
+        # course_ids = [course.uniqueid for course in request.courses]
 
         # Get processed course data from DataService
         course_data = self.data_service.process_course_data(
-            course_ids=course_ids, seed=request.seed, budget=request.budget
+            "./data/data_spring_2025.xlsx",
+            request.seed,
         )
 
         # Add utility values to course data
-        course_data["utility"] = course_data["uniqueid"].map(course_utilities)
+        course_data["utility"] = (
+            course_data["uniqueid"]
+            .map({course.uniqueid: course.utility for course in request.courses})
+            .fillna(0.0)
+        )
 
         # Create Linear Programming problem
         problem = pulp.LpProblem("CourseOptimization", pulp.LpMaximize)
 
         # Create binary decision variables for each course
-        course_vars = {}
+        course_vars = dict[int, pulp.LpVariable]()
         for _, course in course_data.iterrows():
-            course_vars[course["uniqueid"]] = pulp.LpVariable(
-                f"course_{course['uniqueid']}", cat="Binary"
+            unique_id = int(course["uniqueid"])
+            course_vars[unique_id] = pulp.LpVariable(
+                f"course_{unique_id}", cat="Binary"
             )
 
         # Objective function: maximize total utility * credits
         problem += pulp.lpSum(
             [
-                course_vars[course["uniqueid"]] * course["utility"] * course["credits"]
+                course_vars[course["uniqueid"]]
+                * course["utility"]
+                * course["credit_unit"]
                 for _, course in course_data.iterrows()
             ]
         )
@@ -68,7 +73,7 @@ class OptimizationService:
         problem += (
             pulp.lpSum(
                 [
-                    course_vars[course["uniqueid"]] * course["credits"]
+                    course_vars[course["uniqueid"]] * course["credit_unit"]
                     for _, course in course_data.iterrows()
                 ]
             )
@@ -119,14 +124,14 @@ class OptimizationService:
 
             if is_selected:
                 total_cost += course["price"]
-                total_credits += course["credits"]
+                total_credits += course["credit_unit"]
                 total_utility += course["utility"]
 
             selected_courses.append(
                 OptimizedCourse(
                     uniqueid=course_id,
                     price=course["price"],
-                    credits=course["credits"],
+                    credits=course["credit_unit"],
                     utility=course["utility"],
                     selected=is_selected,
                 )

@@ -260,7 +260,7 @@ class PreProcessor:
         # Calculate price for each course
         start_of_uniqueid = 1  # From original code
         for index, row in df.iterrows():
-            idx = row["uniqueid"] - start_of_uniqueid
+            idx = int(row["uniqueid"]) - start_of_uniqueid
             price = (
                 row["price_predicted"]
                 + row["resid_mean"]

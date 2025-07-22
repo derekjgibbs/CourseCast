@@ -892,7 +892,7 @@ with tab3:
             # Display metrics in columns
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                st.metric("Probability", f"{schedule['probability']*100:.0f}%")
+                st.metric("Probability", f"{schedule['probability'] * 100:.0f}%")
             with col2:
                 st.metric("Total Credits", f"{total_credits:.1f}")
             with col3:
