@@ -4,7 +4,6 @@ Integration tests for the data processing service.
 This module tests the complete data processing pipeline with real-world scenarios.
 """
 
-import pytest
 import pandas as pd
 from datetime import time
 import tempfile
@@ -16,7 +15,7 @@ from models.data_models import PreprocessingConfig
 
 class TestDataServiceIntegration:
     """Integration tests for the complete data processing pipeline."""
-    
+
     def test_complete_processing_pipeline(self):
         """Test the complete data processing pipeline with realistic data."""
         # Create test data similar to the original Excel file
@@ -46,22 +45,22 @@ class TestDataServiceIntegration:
             'resid_stdev': [50.0, 75.0, 60.0, 65.0, 55.0, 80.0],
             'uniqueid': [1, 2, 3, 4, 5, 6]
         })
-        
+
         # Create temporary Excel file
         with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
             test_data.to_excel(tmp.name, index=False)
             tmp_path = tmp.name
-        
+
         try:
             # Initialize service
             service = DataService()
-            
+
             # Process data
             result = service.process_course_data(tmp_path, 1)
-            
+
             # Verify results
             assert len(result) == 6
-            
+
             # Check course ID mapping worked
             assert result.loc[0, 'course_id'] == 'FC_STAT'  # STAT6130 -> FC_STAT
             assert result.loc[1, 'course_id'] == 'TABS'     # ACCT7970 -> TABS
@@ -69,33 +68,33 @@ class TestDataServiceIntegration:
             assert result.loc[3, 'course_id'] == 'FC_FNCE'  # FNCE6110 -> FC_FNCE
             assert result.loc[4, 'course_id'] == 'NEGO'     # OIDD6910 -> NEGO
             assert result.loc[5, 'course_id'] == 'REIAF'    # REAL7210 -> REIAF
-            
+
             # Check section codes
             assert result.loc[0, 'section_code'] == '001'
             assert result.loc[1, 'section_code'] == '002'
-            
+
             # Check prices were calculated
             assert 'price' in result.columns
             assert all(result['price'] > 0)
             assert all(result['price'] <= 4851)
-            
+
             # Check class time fields were created
             class_time_columns = [col for col in result.columns if col.startswith('ct_')]
             assert len(class_time_columns) > 0
-            
+
             # Verify specific class time conflicts
             # STAT6130001 is MW 8:30-10:15 in Q1
             assert 'ct_q1MA' in result.columns
             assert result.loc[0, 'ct_q1MA'] == 1  # Monday 8:30
             assert 'ct_q1WA' in result.columns
             assert result.loc[0, 'ct_q1WA'] == 1  # Wednesday 8:30
-            
+
             # Validate the processed data
             assert service.validate_course_data(result)
-            
+
         finally:
             os.unlink(tmp_path)
-    
+
     def test_monte_carlo_price_variation(self):
         """Test that different seeds produce different prices."""
         # Create simple test data
@@ -110,37 +109,37 @@ class TestDataServiceIntegration:
             'resid_stdev': [100.0],
             'uniqueid': [1]
         })
-        
+
         with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
             test_data.to_excel(tmp.name, index=False)
             tmp_path = tmp.name
-        
+
         try:
             service = DataService()
-            
+
             # Process with different seeds
             result1 = service.process_course_data(tmp_path, 1)
             result2 = service.process_course_data(tmp_path, 2)
             result3 = service.process_course_data(tmp_path, 3)
-            
+
             # Prices should be different due to different z-scores
             price1 = result1.loc[0, 'price']
             price2 = result2.loc[0, 'price']
             price3 = result3.loc[0, 'price']
-            
+
             # With different seeds, at least one price should be different
             assert not (price1 == price2 == price3)
-            
+
         finally:
             os.unlink(tmp_path)
-    
+
     def test_custom_configuration(self):
         """Test data processing with custom configuration."""
         # Create custom config that doesn't drop 'capacity' column
         custom_config = PreprocessingConfig(
             drop_columns=['term', 'title', 'instructor', 'start_date', 'end_date']
         )
-        
+
         test_data = pd.DataFrame({
             'primary_section_id': ['STAT6130001'],
             'term': ['Spring 2025'],
@@ -158,25 +157,25 @@ class TestDataServiceIntegration:
             'resid_stdev': [50.0],
             'uniqueid': [1]
         })
-        
+
         with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
             test_data.to_excel(tmp.name, index=False)
             tmp_path = tmp.name
-        
+
         try:
             # Initialize service with custom config
             service = DataService(config=custom_config)
-            
+
             # Process data
             result = service.process_course_data(tmp_path, 1)
-            
+
             # Capacity should still be present
             assert 'capacity' in result.columns
             assert result.loc[0, 'capacity'] == 50
-            
+
             # But other columns should be dropped
             assert 'term' not in result.columns
             assert 'title' not in result.columns
-            
+
         finally:
             os.unlink(tmp_path)

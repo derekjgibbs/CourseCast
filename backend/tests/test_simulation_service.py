@@ -13,27 +13,27 @@ from models.optimization_models import CourseInput, OptimizationResponse, Optimi
 
 class TestSimulationService:
     """Test cases for SimulationService."""
-    
+
     def test_simulation_service_can_be_instantiated(self):
         """Test that SimulationService can be instantiated with required dependencies."""
         # Arrange
         mock_data_service = Mock(spec=DataService)
         mock_optimization_service = Mock(spec=OptimizationService)
-        
+
         # Act
         service = SimulationService(mock_data_service, mock_optimization_service)
-        
+
         # Assert
         assert service is not None
         assert service.data_service == mock_data_service
         assert service.optimization_service == mock_optimization_service
-    
+
     def test_run_simulation_with_single_iteration(self):
         """Test that run_simulation can handle a single iteration and return proper results."""
         # Arrange
         mock_data_service = Mock(spec=DataService)
         mock_optimization_service = Mock(spec=OptimizationService)
-        
+
         # Mock optimization response
         mock_courses = [
             OptimizedCourse(uniqueid=1, price=100.0, credits=3, utility=5.0, selected=True),
@@ -47,9 +47,9 @@ class TestSimulationService:
             optimization_status="Optimal"
         )
         mock_optimization_service.optimize.return_value = mock_optimization_response
-        
+
         service = SimulationService(mock_data_service, mock_optimization_service)
-        
+
         # Create request with single simulation
         request = SimulationRequest(
             budget=500.0,
@@ -61,10 +61,10 @@ class TestSimulationService:
             num_simulations=1,
             seed=42
         )
-        
+
         # Act
         result = service.run_simulation(request)
-        
+
         # Assert
         assert isinstance(result, SimulationResponse)
         assert result.total_simulations == 1
@@ -78,13 +78,13 @@ class TestSimulationService:
         assert len(result.schedule_probabilities) == 1
         assert result.schedule_probabilities[0].courses == [1]
         assert result.schedule_probabilities[0].probability == 1.0
-    
+
     def test_run_simulation_with_multiple_iterations(self):
         """Test that run_simulation handles multiple iterations with different results."""
         # Arrange
         mock_data_service = Mock(spec=DataService)
         mock_optimization_service = Mock(spec=OptimizationService)
-        
+
         # Mock different optimization responses for different seeds
         mock_courses_result1 = [
             OptimizedCourse(uniqueid=1, price=100.0, credits=3, utility=5.0, selected=True),
@@ -94,7 +94,7 @@ class TestSimulationService:
             OptimizedCourse(uniqueid=1, price=100.0, credits=3, utility=5.0, selected=False),
             OptimizedCourse(uniqueid=2, price=200.0, credits=4, utility=3.0, selected=True)
         ]
-        
+
         mock_response1 = OptimizationResponse(
             selected_courses=mock_courses_result1,
             total_cost=100.0,
@@ -109,12 +109,12 @@ class TestSimulationService:
             total_utility=3.0,
             optimization_status="Optimal"
         )
-        
+
         # Configure mock to return different responses based on call order
         mock_optimization_service.optimize.side_effect = [mock_response1, mock_response2]
-        
+
         service = SimulationService(mock_data_service, mock_optimization_service)
-        
+
         # Create request with multiple simulations
         request = SimulationRequest(
             budget=500.0,
@@ -126,16 +126,16 @@ class TestSimulationService:
             num_simulations=2,
             seed=42
         )
-        
+
         # Act
         result = service.run_simulation(request)
-        
+
         # Assert
         assert isinstance(result, SimulationResponse)
         assert result.total_simulations == 2
         assert result.successful_simulations == 2
         assert result.failed_simulations == 0
-        
+
         # Check course probabilities (both courses should have 0.5 probability)
         assert len(result.course_probabilities) == 2
         course1_stats = next(cp for cp in result.course_probabilities if cp.uniqueid == 1)
@@ -144,20 +144,20 @@ class TestSimulationService:
         assert course1_stats.selection_count == 1
         assert course2_stats.probability == 0.5
         assert course2_stats.selection_count == 1
-        
+
         # Check schedule probabilities (two different schedules, each with 0.5 probability)
         assert len(result.schedule_probabilities) == 2
         assert result.schedule_probabilities[0].probability == 0.5
         assert result.schedule_probabilities[1].probability == 0.5
         assert result.schedule_probabilities[0].count == 1
         assert result.schedule_probabilities[1].count == 1
-    
+
     def test_run_simulation_handles_optimization_failures(self):
         """Test that run_simulation handles failures in individual optimization runs."""
         # Arrange
         mock_data_service = Mock(spec=DataService)
         mock_optimization_service = Mock(spec=OptimizationService)
-        
+
         # Mock one successful response and one that raises an exception
         mock_courses = [
             OptimizedCourse(uniqueid=1, price=100.0, credits=3, utility=5.0, selected=True),
@@ -170,12 +170,12 @@ class TestSimulationService:
             total_utility=5.0,
             optimization_status="Optimal"
         )
-        
+
         # Configure mock to succeed once then fail once
         mock_optimization_service.optimize.side_effect = [mock_success_response, Exception("Optimization failed")]
-        
+
         service = SimulationService(mock_data_service, mock_optimization_service)
-        
+
         # Create request with 2 simulations, but only 1 will succeed
         request = SimulationRequest(
             budget=500.0,
@@ -187,16 +187,16 @@ class TestSimulationService:
             num_simulations=2,
             seed=42
         )
-        
+
         # Act
         result = service.run_simulation(request)
-        
+
         # Assert
         assert isinstance(result, SimulationResponse)
         assert result.total_simulations == 2
         assert result.successful_simulations == 1
         assert result.failed_simulations == 1
-        
+
         # Course probabilities based on 1 successful simulation
         assert len(result.course_probabilities) == 2
         course1_stats = next(cp for cp in result.course_probabilities if cp.uniqueid == 1)
@@ -205,7 +205,7 @@ class TestSimulationService:
         assert course1_stats.selection_count == 1
         assert course2_stats.probability == 0.0  # Not selected in the successful simulation
         assert course2_stats.selection_count == 0
-    
+
     def test_simulation_request_validation_constraints(self):
         """Test that SimulationRequest validates input constraints properly."""
         # Valid request should work
@@ -217,7 +217,7 @@ class TestSimulationService:
             seed=42
         )
         assert valid_request.max_credits == 5.0
-        
+
         # Test max_credits constraints
         with pytest.raises(ValueError, match="Input should be greater than 0"):
             SimulationRequest(
@@ -226,7 +226,7 @@ class TestSimulationService:
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
                 num_simulations=10
             )
-        
+
         with pytest.raises(ValueError, match="Input should be less than or equal to 10"):
             SimulationRequest(
                 budget=4500.0,
@@ -234,7 +234,7 @@ class TestSimulationService:
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
                 num_simulations=10
             )
-        
+
         # Test budget constraints
         with pytest.raises(ValueError, match="Input should be greater than 0"):
             SimulationRequest(
@@ -243,7 +243,7 @@ class TestSimulationService:
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
                 num_simulations=10
             )
-        
+
         # Test num_simulations constraints
         with pytest.raises(ValueError, match="Input should be greater than 0"):
             SimulationRequest(
@@ -252,7 +252,7 @@ class TestSimulationService:
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
                 num_simulations=0  # Must be positive
             )
-        
+
         with pytest.raises(ValueError, match="Input should be less than or equal to 1000"):
             SimulationRequest(
                 budget=4500.0,
@@ -260,7 +260,7 @@ class TestSimulationService:
                 courses=[CourseInput(uniqueid=1, utility=80.0)],
                 num_simulations=1001  # Too high
             )
-        
+
         # Test empty courses list
         with pytest.raises(ValueError, match="at least 1 item"):
             SimulationRequest(

@@ -46,11 +46,11 @@ class OptimizationResponse(BaseModel):
     total_credits: float = Field(..., description="Total credits of selected courses")
     total_utility: float = Field(..., description="Total utility of selected courses")
     optimization_status: str = Field(..., description="Status of optimization (Optimal, Infeasible, etc.)")
-    message: Optional[str] = Field(None, description="Additional information about the optimization")
+    message: Optional[str] = Field(default=None, description="Additional information about the optimization")
 
 
 class OptimizationError(BaseModel):
     """Error model for optimization failures."""
     error_type: str = Field(..., description="Type of error")
     message: str = Field(..., description="Error message")
-    details: Optional[dict] = Field(None, description="Additional error details")
+    details: Optional[dict] = Field(default=None, description="Additional error details")
