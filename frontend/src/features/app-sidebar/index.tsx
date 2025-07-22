@@ -44,7 +44,7 @@ export function AppSidebar() {
           <SidebarMenu>
             <MenuItem href="/dashboard">
               <Home />
-              <span>Course Catalog</span>
+              <span>Dashboard</span>
             </MenuItem>
           </SidebarMenu>
         </SidebarGroup>
@@ -93,7 +93,7 @@ function AppHeaderBreadcrumbs({ href, children }: AppHeaderBreadcrumbsProps) {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/dashboard">Course Catalog</Link>
+            <Link href="/dashboard">Dashboard</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         {typeof href === "undefined" ? null : (
