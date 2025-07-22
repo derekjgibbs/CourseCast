@@ -105,7 +105,7 @@ class OptimizationService:
             )
 
         # Solve the problem
-        problem.solve(pulp.PULP_CBC_CMD(msg=0))
+        problem.solve(pulp.PULP_CBC_CMD(msg=False))
 
         # Process results
         selected_courses = []

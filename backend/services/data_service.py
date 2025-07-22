@@ -7,7 +7,7 @@ for handling course data processing, z-score table management, and price forecas
 
 import datetime
 from pathlib import Path
-from typing import Hashable, List, Optional
+from typing import Any, Hashable, List, Optional
 
 import pandas as pd
 
@@ -86,20 +86,24 @@ class PreProcessor:
     def preprocess_primary_section_id(self):
         """Split primary section ID into course_id and section_code."""
 
-        def rename_course_id(course_id: str) -> str:
+        def rename_course_id(course_id: str):
             """Map course IDs to standardized names."""
             return self.config.course_id_mapping.get(course_id, course_id)
 
-        def split_primary_section_id(section_id: str) -> tuple[str, str]:
+        def split_primary_section_id(section_id: str):
             """Split section ID into course ID and section code."""
             course_id = rename_course_id(section_id[:8])
             section_code = section_id[8:]
             return course_id, section_code
 
+        def apply_split(section_id: Any):
+            assert isinstance(section_id, str)
+            return pd.Series(split_primary_section_id(section_id))
+
         # Split into separate columns
         assert self.df is not None
         self.df[["course_id", "section_code"]] = self.df["primary_section_id"].apply(
-            lambda x: pd.Series(split_primary_section_id(x))
+            apply_split
         )
 
     def preprocess_class_time(self):
@@ -109,7 +113,7 @@ class PreProcessor:
         self._create_class_time_columns(unique_classes)
         self._populate_class_time_columns(class_combinations)
 
-    def _generate_class_combinations(self) -> dict[Hashable, List[str]]:
+    def _generate_class_combinations(self):
         """Generate class time combinations for each course row.
 
         Returns:
@@ -199,18 +203,16 @@ class PreProcessor:
             for class_name in combinations:
                 self.df.loc[index, class_name] = 1
 
-    def get_terms(self, part_of_term: str) -> List[str]:
+    def get_terms(self, part_of_term: str):
         """Get term codes from part_of_term."""
         part_of_term = str(part_of_term)
         return self.config.term_mapping.get(part_of_term, [part_of_term])
 
-    def get_days(self, days_code: str) -> List[str]:
+    def get_days(self, days_code: str):
         """Get individual days from days_code."""
         return self.config.days_mapping.get(days_code, [days_code])
 
-    def get_time_class(
-        self, start_time: datetime.time, stop_time: datetime.time
-    ) -> List[str]:
+    def get_time_class(self, start_time: datetime.time, stop_time: datetime.time):
         """Get time class codes for a given time period."""
         # Handle both time objects and string representations
         if isinstance(start_time, str):
@@ -223,7 +225,7 @@ class PreProcessor:
         duration = (stop_dt - start_dt).total_seconds() / 3600  # Hours
 
         # Convert time mapping keys to time objects
-        time_mapping = {}
+        time_mapping: dict[datetime.time, str] = {}
         for time_str, code in self.config.time_mapping.items():
             time_obj = datetime.time.fromisoformat(time_str)
             time_mapping[time_obj] = code
