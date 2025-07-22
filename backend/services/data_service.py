@@ -5,16 +5,20 @@ This module contains the RandomManager, PreProcessor, and DataService classes
 for handling course data processing, z-score table management, and price forecasting.
 """
 
-import pandas as pd
-from pathlib import Path
 import datetime
-from typing import List
+from pathlib import Path
+from typing import Hashable, List, Optional
+
+import pandas as pd
+
+
+from models.data_models import PreprocessingConfig
 
 
 class RandomManager:
     """Manages Z-score table operations for Monte Carlo simulations."""
 
-    def __init__(self, z_table_filepath: str = None):
+    def __init__(self, z_table_filepath: Optional[str] = None):
         """Initialize RandomManager and load z-score table.
 
         Args:
@@ -29,7 +33,7 @@ class RandomManager:
         self.rand_z_table_filepath = z_table_filepath
         self.ztable = pd.read_excel(self.rand_z_table_filepath)
 
-    def getRandZSeries(self, seed) -> pd.Series:
+    def getRandZSeries(self, seed: int) -> pd.Series:
         """Get random Z-series for a given seed.
 
         Args:
@@ -44,17 +48,17 @@ class RandomManager:
 class PreProcessor:
     """Preprocesses course data for optimization and simulation."""
 
-    def __init__(self, config=None):
+    df: Optional[pd.DataFrame] = None
+
+    def __init__(self, config: Optional[PreprocessingConfig] = None):
         """Initialize PreProcessor with optional configuration.
 
         Args:
             config: PreprocessingConfig object with custom settings.
                    Defaults to standard configuration if not provided.
         """
-        from models.data_models import PreprocessingConfig
 
         self.config = config or PreprocessingConfig()
-        self.df = None
 
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         """Preprocess course data for optimization.
@@ -85,7 +89,7 @@ class PreProcessor:
             """Map course IDs to standardized names."""
             return self.config.course_id_mapping.get(course_id, course_id)
 
-        def split_primary_section_id(section_id: str) -> tuple:
+        def split_primary_section_id(section_id: str) -> tuple[str, str]:
             """Split section ID into course ID and section code."""
             course_id = rename_course_id(section_id[:8])
             section_code = section_id[8:]
@@ -103,13 +107,13 @@ class PreProcessor:
         self._create_class_time_columns(unique_classes)
         self._populate_class_time_columns(class_combinations)
 
-    def _generate_class_combinations(self) -> dict:
+    def _generate_class_combinations(self) -> dict[Hashable, List[str]]:
         """Generate class time combinations for each course row.
 
         Returns:
             Dictionary mapping row indices to their class time combinations.
         """
-        class_combinations = {}
+        class_combinations: dict[Hashable, List[str]] = {}
 
         for index, row in self.df.iterrows():
             combinations = self._build_class_time_combinations(
@@ -149,7 +153,7 @@ class PreProcessor:
 
         return combinations
 
-    def _extract_unique_classes(self, class_combinations: dict) -> set:
+    def _extract_unique_classes(self, class_combinations: dict[Hashable, List[str]]):
         """Extract all unique class time combinations from the data.
 
         Args:
@@ -158,7 +162,7 @@ class PreProcessor:
         Returns:
             Set of all unique class time combination strings
         """
-        unique_classes = set()
+        unique_classes = set[str]()
 
         for combinations in class_combinations.values():
             unique_classes.update(combinations)
@@ -222,7 +226,7 @@ class PreProcessor:
         return [time_mapping.get(start_time, "Z")]
 
     def setupPrice(
-        self, df: pd.DataFrame, seed, z_table_filepath: str = None
+        self, df: pd.DataFrame, seed: int, z_table_filepath: Optional[str] = None
     ) -> pd.DataFrame:
         """Calculate final prices using z-score based Monte Carlo simulation.
 
@@ -258,7 +262,7 @@ class PreProcessor:
 class DataService:
     """Main service for coordinating data processing operations."""
 
-    def __init__(self, z_table_filepath: str = None, config=None):
+    def __init__(self, z_table_filepath: Optional[str] = None, config: Optional[PreprocessingConfig] = None):
         """Initialize DataService with components.
 
         Args:
@@ -269,7 +273,7 @@ class DataService:
         self.preprocessor = PreProcessor(config)
         self.z_table_filepath = z_table_filepath
 
-    def load_excel_file(self, file_path: str, sheet_name: str = None) -> pd.DataFrame:
+    def load_excel_file(self, file_path: str, sheet_name: Optional[str] = None) -> pd.DataFrame:
         """Load course data from Excel file.
 
         Args:
@@ -320,7 +324,7 @@ class DataService:
         return df
 
     def process_course_data(
-        self, file_path: str, seed, sheet_name: str = None
+        self, file_path: str, seed: int, sheet_name: Optional[str] = None
     ) -> pd.DataFrame:
         """Complete processing pipeline for course data.
 
