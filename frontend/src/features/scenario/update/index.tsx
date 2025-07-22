@@ -196,7 +196,7 @@ function ScenarioUpdateForm({
       <Button
         type="submit"
         size="icon"
-        className="fixed right-0 bottom-0 m-4 rounded-full p-8 shadow-2xl"
+        className="fixed right-0 bottom-0 m-4 rounded-full p-8 shadow-2xl disabled:opacity-100"
         disabled={mutation.isPending}
       >
         {mutation.isPending ? (
