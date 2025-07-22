@@ -228,7 +228,8 @@ with st.sidebar:
 st.title("CourseCast v1.0")
 
 with st.expander("⭐️ **CLICK ME! LEARN HOW TO USE THIS TOOL!** ⭐️"):
-    st.markdown("""
+    st.markdown(
+        """
     #### A Note from Derek
 
     Hi there! I built this tool to help you (and me) get more out of CourseMatch.
@@ -298,7 +299,8 @@ with st.expander("⭐️ **CLICK ME! LEARN HOW TO USE THIS TOOL!** ⭐️"):
     - Save your utility values frequently
     - Experiment with different utility values and examine schedule outcomes
     - Make sure to add enough courses that don't occupy the same timeslots
-    """)
+    """
+    )
 
 # Create tabs right after the title and welcome message
 tab1, tab2, tab3 = st.tabs(
@@ -308,11 +310,13 @@ tab1, tab2, tab3 = st.tabs(
 # Move into tab1 (removing the welcome message since it's now above)
 with tab1:
     st.header("Course Information")
-    st.write("""
+    st.write(
+        """
                 1. Use the table and filters below to browse the course and evaluation data (downloadable as CSV with button in upper right of table).
                 2. Input utility values and click the 'Save Utility Values' button below the table to preserve your changes.
                 3. Run the schedule forecaster by clicking 'Forecast Schedule (1x)' or 'Simulate Schedule (100x)' in the sidebar.
-    """)
+    """
+    )
 
     # Initialize filter states if needed
     if "filters" not in st.session_state:
@@ -613,9 +617,9 @@ with tab1:
                 utility_updates.index
             )
             st.session_state.utility_data.loc[mask, "Utility"] = (
-                st.session_state.utility_data.loc[
-                    mask, "primary_section_id"
-                ].map(utility_updates)
+                st.session_state.utility_data.loc[mask, "primary_section_id"].map(
+                    utility_updates
+                )
             )
             # Store a flag to show success message after rerun
             st.session_state.show_save_success = True
@@ -629,7 +633,8 @@ with tab1:
 
 with tab2:
     st.header("Forecasted Schedule")
-    st.write("""
+    st.write(
+        """
         This schedule represents an optimized solution based on:
         - Your assigned utility values
         - Token budget constraints
@@ -642,7 +647,8 @@ with tab2:
 
         Use this forecast as a planning tool, not as a guarantee of your final schedule.
         **I recommend re-running the 'Forecast Schedule (1x)' multiple times to see how your schedule may change.**
-    """)
+    """
+    )
 
     st.write("")
 
@@ -754,17 +760,21 @@ with tab2:
             st.metric(
                 "Total Credits",
                 f"{selected_courses['credit_unit'].sum():.1f}",
-                delta=f"{delta_credits:.1f}"
-                if delta_credits is not None and delta_credits != 0
-                else None,
+                delta=(
+                    f"{delta_credits:.1f}"
+                    if delta_credits is not None and delta_credits != 0
+                    else None
+                ),
             )
         with summary_cols[1]:
             st.metric(
                 "Total Price",
                 f"{selected_courses['price_predicted'].sum():,.0f}",
-                delta=f"{delta_price:,.0f}"
-                if delta_price is not None and delta_price != 0
-                else None,
+                delta=(
+                    f"{delta_price:,.0f}"
+                    if delta_price is not None and delta_price != 0
+                    else None
+                ),
             )
         with summary_cols[2]:
             weighted_utility = (
@@ -773,22 +783,26 @@ with tab2:
             st.metric(
                 "Total Weighted Utility",
                 f"{weighted_utility:,.0f}",
-                delta=f"{delta_utility:,.0f}"
-                if delta_utility is not None and delta_utility != 0
-                else None,
+                delta=(
+                    f"{delta_utility:,.0f}"
+                    if delta_utility is not None and delta_utility != 0
+                    else None
+                ),
             )
 
 with tab3:
     st.header("Simulation Results")
 
-    st.write("""
+    st.write(
+        """
         This tab shows the results of a Monte Carlo simulation of your schedule.
         It does the following:
         - Simulates your schedule 100 times (rolling the dice each time)
         - Tracks the number of times each course and complete schedule appeared
         - Calculates the probability of receiving a given course
         - Calculates the probability of receiving a given schedule (top 3 most common)
-    """)
+    """
+    )
 
     if "monte_carlo_results" not in st.session_state:
         st.info("Click 'Simulate Schedule (100x)' in the sidebar to see results here.")
@@ -878,7 +892,7 @@ with tab3:
             # Display metrics in columns
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                st.metric("Probability", f"{schedule['probability']*100:.0f}%")
+                st.metric("Probability", f"{schedule['probability'] * 100:.0f}%")
             with col2:
                 st.metric("Total Credits", f"{total_credits:.1f}")
             with col3:

@@ -5,16 +5,20 @@ This module contains the RandomManager, PreProcessor, and DataService classes
 for handling course data processing, z-score table management, and price forecasting.
 """
 
-import pandas as pd
-from pathlib import Path
 import datetime
-from typing import List
+from pathlib import Path
+from typing import Any, Hashable, List, Optional
+
+import pandas as pd
+
+
+from models.data_models import PreprocessingConfig
 
 
 class RandomManager:
     """Manages Z-score table operations for Monte Carlo simulations."""
 
-    def __init__(self, z_table_filepath: str = None):
+    def __init__(self, z_table_filepath: Optional[str] = None):
         """Initialize RandomManager and load z-score table.
 
         Args:
@@ -29,7 +33,7 @@ class RandomManager:
         self.rand_z_table_filepath = z_table_filepath
         self.ztable = pd.read_excel(self.rand_z_table_filepath)
 
-    def getRandZSeries(self, seed) -> pd.Series:
+    def getRandZSeries(self, seed: int) -> pd.Series:
         """Get random Z-series for a given seed.
 
         Args:
@@ -44,17 +48,17 @@ class RandomManager:
 class PreProcessor:
     """Preprocesses course data for optimization and simulation."""
 
-    def __init__(self, config=None):
+    df: Optional[pd.DataFrame] = None
+
+    def __init__(self, config: Optional[PreprocessingConfig] = None):
         """Initialize PreProcessor with optional configuration.
 
         Args:
             config: PreprocessingConfig object with custom settings.
                    Defaults to standard configuration if not provided.
         """
-        from models.data_models import PreprocessingConfig
 
         self.config = config or PreprocessingConfig()
-        self.df = None
 
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         """Preprocess course data for optimization.
@@ -73,6 +77,7 @@ class PreProcessor:
 
     def drop_unused_columns(self):
         """Drop columns that are not needed for optimization."""
+        assert self.df is not None
         columns_to_drop = [
             col for col in self.config.drop_columns if col in self.df.columns
         ]
@@ -81,19 +86,24 @@ class PreProcessor:
     def preprocess_primary_section_id(self):
         """Split primary section ID into course_id and section_code."""
 
-        def rename_course_id(course_id: str) -> str:
+        def rename_course_id(course_id: str):
             """Map course IDs to standardized names."""
             return self.config.course_id_mapping.get(course_id, course_id)
 
-        def split_primary_section_id(section_id: str) -> tuple:
+        def split_primary_section_id(section_id: str):
             """Split section ID into course ID and section code."""
             course_id = rename_course_id(section_id[:8])
             section_code = section_id[8:]
             return course_id, section_code
 
+        def apply_split(section_id: Any):
+            assert isinstance(section_id, str)
+            return pd.Series(split_primary_section_id(section_id))
+
         # Split into separate columns
+        assert self.df is not None
         self.df[["course_id", "section_code"]] = self.df["primary_section_id"].apply(
-            lambda x: pd.Series(split_primary_section_id(x))
+            apply_split
         )
 
     def preprocess_class_time(self):
@@ -103,14 +113,15 @@ class PreProcessor:
         self._create_class_time_columns(unique_classes)
         self._populate_class_time_columns(class_combinations)
 
-    def _generate_class_combinations(self) -> dict:
+    def _generate_class_combinations(self):
         """Generate class time combinations for each course row.
 
         Returns:
             Dictionary mapping row indices to their class time combinations.
         """
-        class_combinations = {}
+        class_combinations: dict[Hashable, List[str]] = {}
 
+        assert self.df is not None
         for index, row in self.df.iterrows():
             combinations = self._build_class_time_combinations(
                 row["part_of_term"],
@@ -123,7 +134,11 @@ class PreProcessor:
         return class_combinations
 
     def _build_class_time_combinations(
-        self, part_of_term: str, days_code: str, start_time, stop_time
+        self,
+        part_of_term: str,
+        days_code: str,
+        start_time: datetime.time,
+        stop_time: datetime.time,
     ) -> List[str]:
         """Build class time combination strings for a single course.
 
@@ -149,7 +164,7 @@ class PreProcessor:
 
         return combinations
 
-    def _extract_unique_classes(self, class_combinations: dict) -> set:
+    def _extract_unique_classes(self, class_combinations: dict[Hashable, List[str]]):
         """Extract all unique class time combinations from the data.
 
         Args:
@@ -158,44 +173,46 @@ class PreProcessor:
         Returns:
             Set of all unique class time combination strings
         """
-        unique_classes = set()
+        unique_classes = set[str]()
 
         for combinations in class_combinations.values():
             unique_classes.update(combinations)
 
         return unique_classes
 
-    def _create_class_time_columns(self, unique_classes: set):
+    def _create_class_time_columns(self, unique_classes: set[str]):
         """Create binary columns for each unique class time combination.
 
         Args:
             unique_classes: Set of unique class time combinations
         """
+        assert self.df is not None
         for class_name in unique_classes:
             self.df[class_name] = 0
 
-    def _populate_class_time_columns(self, class_combinations: dict):
+    def _populate_class_time_columns(
+        self, class_combinations: dict[Hashable, List[str]]
+    ):
         """Populate binary class time columns with appropriate values.
 
         Args:
             class_combinations: Dictionary mapping row indices to their combinations
         """
+        assert self.df is not None
         for index, combinations in class_combinations.items():
             for class_name in combinations:
                 self.df.loc[index, class_name] = 1
 
-    def get_terms(self, part_of_term: str) -> List[str]:
+    def get_terms(self, part_of_term: str):
         """Get term codes from part_of_term."""
         part_of_term = str(part_of_term)
         return self.config.term_mapping.get(part_of_term, [part_of_term])
 
-    def get_days(self, days_code: str) -> List[str]:
+    def get_days(self, days_code: str):
         """Get individual days from days_code."""
         return self.config.days_mapping.get(days_code, [days_code])
 
-    def get_time_class(
-        self, start_time: datetime.time, stop_time: datetime.time
-    ) -> List[str]:
+    def get_time_class(self, start_time: datetime.time, stop_time: datetime.time):
         """Get time class codes for a given time period."""
         # Handle both time objects and string representations
         if isinstance(start_time, str):
@@ -208,7 +225,7 @@ class PreProcessor:
         duration = (stop_dt - start_dt).total_seconds() / 3600  # Hours
 
         # Convert time mapping keys to time objects
-        time_mapping = {}
+        time_mapping: dict[datetime.time, str] = {}
         for time_str, code in self.config.time_mapping.items():
             time_obj = datetime.time.fromisoformat(time_str)
             time_mapping[time_obj] = code
@@ -222,7 +239,7 @@ class PreProcessor:
         return [time_mapping.get(start_time, "Z")]
 
     def setupPrice(
-        self, df: pd.DataFrame, seed, z_table_filepath: str = None
+        self, df: pd.DataFrame, seed: int, z_table_filepath: Optional[str] = None
     ) -> pd.DataFrame:
         """Calculate final prices using z-score based Monte Carlo simulation.
 
@@ -243,7 +260,7 @@ class PreProcessor:
         # Calculate price for each course
         start_of_uniqueid = 1  # From original code
         for index, row in df.iterrows():
-            idx = row["uniqueid"] - start_of_uniqueid
+            idx = int(row["uniqueid"]) - start_of_uniqueid
             price = (
                 row["price_predicted"]
                 + row["resid_mean"]
@@ -258,7 +275,11 @@ class PreProcessor:
 class DataService:
     """Main service for coordinating data processing operations."""
 
-    def __init__(self, z_table_filepath: str = None, config=None):
+    def __init__(
+        self,
+        z_table_filepath: Optional[str] = None,
+        config: Optional[PreprocessingConfig] = None,
+    ):
         """Initialize DataService with components.
 
         Args:
@@ -269,7 +290,9 @@ class DataService:
         self.preprocessor = PreProcessor(config)
         self.z_table_filepath = z_table_filepath
 
-    def load_excel_file(self, file_path: str, sheet_name: str = None) -> pd.DataFrame:
+    def load_excel_file(
+        self, file_path: str, sheet_name: Optional[str] = None
+    ) -> pd.DataFrame:
         """Load course data from Excel file.
 
         Args:
@@ -320,7 +343,7 @@ class DataService:
         return df
 
     def process_course_data(
-        self, file_path: str, seed, sheet_name: str = None
+        self, file_path: str, seed: int, sheet_name: Optional[str] = None
     ) -> pd.DataFrame:
         """Complete processing pipeline for course data.
 

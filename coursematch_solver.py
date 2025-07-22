@@ -1,5 +1,7 @@
-import pandas as pd
 import datetime
+from typing import Hashable, Optional
+
+import pandas as pd
 from pulp import LpMaximize, LpProblem, LpVariable, lpSum
 
 example_input = {
@@ -44,23 +46,25 @@ example_output = [
 ]
 
 
-class RandomManager(object):
+class RandomManager:
     rand_z_table_filepath = "z_score_table.xlsx"
 
     def __init__(self):
         self.ztable = pd.read_excel(self.rand_z_table_filepath)
 
-    def getRandZSeries(self, seed):
+    def getRandZSeries(self, seed: int):
         return self.ztable[seed]
 
 
 class PreProcessor(object):
     START_OF_UNIQUEID = 1
 
+    df: Optional[pd.DataFrame] = None
+
     def __init__(self):
         pass
 
-    def preprocess(self, df):
+    def preprocess(self, df: pd.DataFrame):
         self.df = df
         # print(self.df)
         self.drop_unused_columns()
@@ -78,10 +82,11 @@ class PreProcessor(object):
             "end_date",
             "capacity",
         ]
+        assert self.df is not None
         self.df = self.df.drop(columns=columns_to_drop)
 
     def preprocess_primary_section_id(self):
-        def rename_course_id(course_id):
+        def rename_course_id(course_id: str):
             map = {
                 "STAT6130": "FC_STAT",
                 "STAT6210": "FC_STAT",
@@ -133,19 +138,20 @@ class PreProcessor(object):
                 return map[course_id]
             return course_id
 
-        def split_primary_section_id(section_id):
+        def split_primary_section_id(section_id: str):
             course_id = rename_course_id(section_id[:8])
             section_code = section_id[8:]
             return course_id, section_code
 
         # Split into separate columns
+        assert self.df is not None
         self.df[["course_id", "section_code"]] = self.df["primary_section_id"].apply(
             lambda x: pd.Series(split_primary_section_id(x))
         )
 
     def preprocess_class_time(self):
-        all_classes = set()
-        classes = dict()
+        all_classes = set[str]()
+        classes = dict[Hashable, list[str]]()
         for index, row in self.df.iterrows():
             part_of_term = row["part_of_term"]
             days_code = row["days_code"]
@@ -164,6 +170,7 @@ class PreProcessor(object):
                 all_classes.add(c)
 
         # make new columns filled with 0
+        assert self.df is not None
         for c in all_classes:
             self.df[c] = [0] * len(self.df)
 
@@ -202,7 +209,7 @@ class PreProcessor(object):
         }
         return map[days_code]
 
-    def get_time_class(self, start_time, stop_time):
+    def get_time_class(self, start_time: datetime.time, stop_time: datetime.time):
         start_dt = datetime.datetime.combine(datetime.datetime.today(), start_time)
         stop_dt = datetime.datetime.combine(datetime.datetime.today(), stop_time)
         duration = (stop_dt - start_dt).total_seconds() / 3600  # HRs
@@ -224,7 +231,7 @@ class PreProcessor(object):
             return [map[start_time], map[new_start_time]]
         return [map[start_time]]
 
-    def setupPrice(self, df, seed):
+    def setupPrice(self, df: pd.DataFrame, seed: int):
         randomManager = RandomManager()
         z_series = randomManager.getRandZSeries(seed)
         # price = price_predicted + resid_mean + z * resid_stdev

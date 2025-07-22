@@ -23,7 +23,9 @@ logger = get_logger(__name__)
 # Initialize services
 data_service = DataService()
 optimization_service = OptimizationService(data_service=data_service)
-simulation_service = SimulationService(data_service=data_service, optimization_service=optimization_service)
+simulation_service = SimulationService(
+    data_service=data_service, optimization_service=optimization_service
+)
 
 
 @asynccontextmanager
@@ -100,27 +102,24 @@ async def optimize_courses(request: OptimizationRequest) -> OptimizationResponse
             budget=request.budget,
             max_credits=request.max_credits,
             course_count=len(request.courses),
-            seed=request.seed
+            seed=request.seed,
         )
-        
+
         result = optimization_service.optimize(request)
-        
+
         logger.info(
             "Optimization completed",
             status=result.optimization_status,
             selected_courses=len([c for c in result.selected_courses if c.selected]),
             total_cost=result.total_cost,
-            total_credits=result.total_credits
+            total_credits=result.total_credits,
         )
-        
+
         return result
-        
+
     except Exception as e:
         logger.error("Optimization failed", error=str(e), exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Optimization failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Optimization failed: {str(e)}")
 
 
 @app.post(f"{settings.api_v1_prefix}/simulate", response_model=SimulationResponse)
@@ -133,27 +132,24 @@ async def simulate_courses(request: SimulationRequest) -> SimulationResponse:
             max_credits=request.max_credits,
             course_count=len(request.courses),
             num_simulations=request.num_simulations,
-            seed=request.seed
+            seed=request.seed,
         )
-        
+
         result = simulation_service.run_simulation(request)
-        
+
         logger.info(
             "Simulation completed",
             total_simulations=result.total_simulations,
             successful_simulations=result.successful_simulations,
             failed_simulations=result.failed_simulations,
-            unique_schedules=len(result.schedule_probabilities)
+            unique_schedules=len(result.schedule_probabilities),
         )
-        
+
         return result
-        
+
     except Exception as e:
         logger.error("Simulation failed", error=str(e), exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Simulation failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Simulation failed: {str(e)}")
 
 
 if __name__ == "__main__":
