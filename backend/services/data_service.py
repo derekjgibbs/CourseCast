@@ -77,6 +77,7 @@ class PreProcessor:
 
     def drop_unused_columns(self):
         """Drop columns that are not needed for optimization."""
+        assert self.df is not None
         columns_to_drop = [
             col for col in self.config.drop_columns if col in self.df.columns
         ]
@@ -96,6 +97,7 @@ class PreProcessor:
             return course_id, section_code
 
         # Split into separate columns
+        assert self.df is not None
         self.df[["course_id", "section_code"]] = self.df["primary_section_id"].apply(
             lambda x: pd.Series(split_primary_section_id(x))
         )
@@ -115,6 +117,7 @@ class PreProcessor:
         """
         class_combinations: dict[Hashable, List[str]] = {}
 
+        assert self.df is not None
         for index, row in self.df.iterrows():
             combinations = self._build_class_time_combinations(
                 row["part_of_term"],
@@ -173,12 +176,13 @@ class PreProcessor:
 
         return unique_classes
 
-    def _create_class_time_columns(self, unique_classes: set):
+    def _create_class_time_columns(self, unique_classes: set[str]):
         """Create binary columns for each unique class time combination.
 
         Args:
             unique_classes: Set of unique class time combinations
         """
+        assert self.df is not None
         for class_name in unique_classes:
             self.df[class_name] = 0
 
@@ -190,6 +194,7 @@ class PreProcessor:
         Args:
             class_combinations: Dictionary mapping row indices to their combinations
         """
+        assert self.df is not None
         for index, combinations in class_combinations.items():
             for class_name in combinations:
                 self.df.loc[index, class_name] = 1
