@@ -7,10 +7,14 @@ import { useCourseStore } from "@/features/scenario/update/store";
 
 import { CourseUtilityTable } from "./table";
 
-export function LiveCourseUtilityTable() {
+interface LiveCourseUtilityTableProps {
+  name?: string;
+}
+
+export function LiveCourseUtilityTable({ name }: LiveCourseUtilityTableProps) {
   const courseStore = useCourseStore();
   const handleRemove = useStore(courseStore, state => state.deselectCourse);
   const selected = useStore(courseStore, state => state.selected);
   const courses = useMemo(() => Array.from(selected.values()), [selected]);
-  return <CourseUtilityTable courses={courses} onRemove={handleRemove} />;
+  return <CourseUtilityTable name={name} courses={courses} onRemove={handleRemove} />;
 }

@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/table";
 
 import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
+import type { CourseDocWithUtility } from "@/features/scenario/update/store";
 
 interface SortSymbolProps {
   direction: SortDirection | false;
@@ -78,7 +79,7 @@ export type Course = Pick<
   | "credits"
   | "price_forecast"
 >;
-const helper = createColumnHelper<Course>();
+const helper = createColumnHelper<CourseDocWithUtility>();
 const columns = [
   helper.display({
     id: "remove",
@@ -114,18 +115,25 @@ const columns = [
         <span>Utility</span>
       </div>
     ),
-    cell: () => (
-      <Input
-        type="number"
-        required
-        placeholder="0-100"
-        min={CONSTRAINTS.COURSE_UTILITY.MIN_VALUE.toString()}
-        max={CONSTRAINTS.COURSE_UTILITY.MAX_VALUE.toString()}
-        step={1}
-        defaultValue={CONSTRAINTS.COURSE_UTILITY.MIN_VALUE.toString()}
-        className="min-w-20"
-      />
-    ),
+    cell: ({ table, row }) => {
+      let name: string | undefined;
+      if (typeof table.options.meta?.name !== "undefined")
+        name = `${table.options.meta.name}.${row.original._id}`;
+      const utility = row.original.utility ?? CONSTRAINTS.COURSE_UTILITY.MIN_VALUE;
+      return (
+        <Input
+          type="number"
+          required
+          placeholder="0-100"
+          min={CONSTRAINTS.COURSE_UTILITY.MIN_VALUE.toString()}
+          max={CONSTRAINTS.COURSE_UTILITY.MAX_VALUE.toString()}
+          step={1}
+          name={name}
+          defaultValue={utility.toString()}
+          className="min-w-24"
+        />
+      );
+    },
   }),
   helper.accessor("course_id", {
     sortingFn: "alphanumeric",
@@ -342,19 +350,20 @@ declare module "@tanstack/table-core" {
 }
 
 interface CourseUtilityTableProps {
-  courses: Course[];
+  name?: string;
+  courses: CourseDocWithUtility[];
   onRemove: (id: CourseId) => void;
 }
 
-export function CourseUtilityTable({ courses, onRemove }: CourseUtilityTableProps) {
+export function CourseUtilityTable({ name, courses, onRemove }: CourseUtilityTableProps) {
   const table = useReactTable({
     columns,
     data: courses,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    meta: { onRemove },
+    meta: { name, onRemove },
   });
-  const rowModel = table.getRowModel();
+  const { rows } = table.getRowModel();
   return (
     <Table>
       <TableHeader>
@@ -371,7 +380,7 @@ export function CourseUtilityTable({ courses, onRemove }: CourseUtilityTableProp
         ))}
       </TableHeader>
       <TableBody className="text-center">
-        {rowModel.rows.length === 0 ? (
+        {rows.length === 0 ? (
           <TableRow>
             <TableCell colSpan={columns.length}>
               <div className="flex flex-col items-center space-y-2 p-4">
@@ -381,7 +390,7 @@ export function CourseUtilityTable({ courses, onRemove }: CourseUtilityTableProp
             </TableCell>
           </TableRow>
         ) : (
-          rowModel.rows.map(row => (
+          rows.map(row => (
             <TableRow key={row.id}>
               {row.getVisibleCells().map(cell => (
                 <TableCell key={cell.id}>

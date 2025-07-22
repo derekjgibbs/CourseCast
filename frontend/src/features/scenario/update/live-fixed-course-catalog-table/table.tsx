@@ -314,61 +314,72 @@ const columns = [
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
+    name?: string;
     onRemove?: (id: CourseId) => void;
   }
 }
 
 interface FixedCourseCatalogTableProps {
+  name?: string;
   courses: Course[];
   onRemove: (id: CourseId) => void;
 }
 
-export function FixedCourseCatalogTable({ courses, onRemove }: FixedCourseCatalogTableProps) {
+export function FixedCourseCatalogTable({ name, courses, onRemove }: FixedCourseCatalogTableProps) {
   const table = useReactTable({
     columns,
     data: courses,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    meta: { onRemove },
+    meta: { name, onRemove },
   });
-  const rowModel = table.getRowModel();
+  const { rows } = table.getRowModel();
   return (
-    <Table>
-      <TableHeader>
-        {table.getHeaderGroups().map(group => (
-          <TableRow key={group.id} className="hover:bg-inherit">
-            {group.headers.map(header => (
-              <TableHead key={header.id} className="text-gray-700">
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(header.column.columnDef.header, header.getContext())}
-              </TableHead>
-            ))}
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody className="text-center">
-        {rowModel.rows.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={columns.length}>
-              <div className="flex flex-col items-center space-y-2 p-4">
-                <BookOpen className="size-8 text-gray-400" />
-                <span className="text-sm font-medium text-gray-600">No fixed courses selected</span>
-              </div>
-            </TableCell>
-          </TableRow>
-        ) : (
-          rowModel.rows.map(row => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map(cell => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
+    <>
+      {typeof name === "undefined"
+        ? null
+        : rows.map(row => (
+            <input key={row.original._id} type="hidden" name={name} value={row.original._id} />
+          ))}
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map(group => (
+            <TableRow key={group.id} className="hover:bg-inherit">
+              {group.headers.map(header => (
+                <TableHead key={header.id} className="text-gray-700">
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(header.column.columnDef.header, header.getContext())}
+                </TableHead>
               ))}
             </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
+          ))}
+        </TableHeader>
+        <TableBody className="text-center">
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={columns.length}>
+                <div className="flex flex-col items-center space-y-2 p-4">
+                  <BookOpen className="size-8 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-600">
+                    No fixed courses selected
+                  </span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map(row => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map(cell => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </>
   );
 }

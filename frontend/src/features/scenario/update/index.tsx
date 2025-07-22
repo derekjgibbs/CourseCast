@@ -54,6 +54,16 @@ const updateUserScenarioSchema = v.object({
   name: v.string(),
   token_budget: v.pipe(v.number(), v.integer()),
   credit_range: v.tuple([stringAsNumberSchema, stringAsNumberSchema]),
+  fixed_courses: v.optional(v.array(v.string())),
+  utilities: v.optional(
+    v.record(
+      v.string(),
+      v.pipe(
+        v.string(),
+        v.transform(val => BigInt(val)),
+      ),
+    ),
+  ),
 });
 
 /** Needs a submit button elsewhere. */
@@ -81,7 +91,11 @@ function ScenarioUpdateForm({
         event.preventDefault();
         event.stopPropagation();
         const data = new FormData(event.currentTarget);
-        const json = decode(data, { arrays: ["credit_range"], numbers: ["token_budget"] });
+        console.log(data);
+        const json = decode(data, {
+          arrays: ["credit_range", "fixed_courses"],
+          numbers: ["token_budget"],
+        });
         const {
           id,
           token_budget,
@@ -94,7 +108,6 @@ function ScenarioUpdateForm({
           token_budget: BigInt(token_budget),
           min_credits,
           max_credits,
-          // TODO: utilities and fixed_courses
         });
       }}
       className="space-y-8"
@@ -172,7 +185,7 @@ function ScenarioUpdateForm({
           <CardDescription>Set up the courses that are fixed by your curriculum</CardDescription>
         </CardHeader>
         <CardContent>
-          <LiveFixedCourseCatalogTable />
+          <LiveFixedCourseCatalogTable name="fixed_courses" />
         </CardContent>
       </Card>
       <Card>
@@ -181,7 +194,7 @@ function ScenarioUpdateForm({
           <CardDescription>Configure the utility for each of your courses</CardDescription>
         </CardHeader>
         <CardContent>
-          <LiveCourseUtilityTable />
+          <LiveCourseUtilityTable name="utilities" />
         </CardContent>
       </Card>
       <Card>
@@ -224,7 +237,11 @@ export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
     </div>
   ) : (
     <div className="relative mx-auto w-full max-w-7xl grow justify-center px-6 py-8">
-      <CourseProvider courses={courses}>
+      <CourseProvider
+        courses={courses}
+        fixedCourses={scenario.fixed_courses}
+        utilities={scenario.utilities}
+      >
         <ScenarioUpdateForm
           id={id}
           name={scenario.name}

@@ -7,10 +7,14 @@ import { useCourseStore } from "@/features/scenario/update/store";
 
 import { FixedCourseCatalogTable } from "./table";
 
-export function LiveFixedCourseCatalogTable() {
+interface LiveFixedCourseCatalogTableProps {
+  name?: string;
+}
+
+export function LiveFixedCourseCatalogTable({ name }: LiveFixedCourseCatalogTableProps) {
   const courseStore = useCourseStore();
   const handleRemove = useStore(courseStore, state => state.removeFixedCourse);
   const fixed = useStore(courseStore, state => state.fixed);
   const fixedCourses = useMemo(() => Array.from(fixed.values()), [fixed]);
-  return <FixedCourseCatalogTable courses={fixedCourses} onRemove={handleRemove} />;
+  return <FixedCourseCatalogTable name={name} courses={fixedCourses} onRemove={handleRemove} />;
 }
