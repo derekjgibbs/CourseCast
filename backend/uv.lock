@@ -158,6 +158,7 @@ dev = [
 [package.dev-dependencies]
 dev = [
     { name = "pandas-stubs" },
+    { name = "pulp" },
     { name = "pytest" },
 ]
 
@@ -191,6 +192,7 @@ provides-extras = ["dev"]
 [package.metadata.requires-dev]
 dev = [
     { name = "pandas-stubs", specifier = ">=2.3.0.250703" },
+    { name = "pulp", specifier = ">=3.2.1" },
     { name = "pytest", specifier = ">=8.4.1" },
 ]
 

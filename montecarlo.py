@@ -6,7 +6,7 @@ class MonteCarloSimulator:
     def __init__(self, source_xlsx):
         self.source_xlsx = source_xlsx
 
-    def run_simulation(self, base_input, num_simulations, callback=None):
+    def run_simulation(self, base_input, num_simulations: int, callback=None):
         """
         Runs Monte Carlo simulation multiple times with different seeds
 

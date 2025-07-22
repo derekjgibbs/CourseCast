@@ -93,5 +93,6 @@ asyncio_mode = "auto"
 [dependency-groups]
 dev = [
     "pandas-stubs>=2.3.0.250703",
+    "pulp>=3.2.1",
     "pytest>=8.4.1",
 ]
