@@ -1,9 +1,9 @@
 import Link from "next/link";
 
+import { Authenticated, useQuery } from "convex/react";
 import { Home, Ellipsis } from "lucide-react";
 import type { ReactNode } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
 
 import type { UserScenarioId } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
@@ -48,13 +48,15 @@ export function AppSidebar() {
             </MenuItem>
           </SidebarMenu>
         </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Scenarios</SidebarGroupLabel>
-          <ScenarioGroupAction />
-          <SidebarGroupContent>
-            <ScenarioMenu />
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <Authenticated>
+          <SidebarGroup>
+            <SidebarGroupLabel>Scenarios</SidebarGroupLabel>
+            <ScenarioGroupAction />
+            <SidebarGroupContent>
+              <ScenarioMenu />
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </Authenticated>
       </SidebarContent>
     </Sidebar>
   );
@@ -63,7 +65,9 @@ export function AppSidebar() {
 export function LiveAppHeader() {
   const { scenarioId } = useParams();
   return typeof scenarioId === "string" ? (
-    <LiveAppHeaderTitle scenarioId={scenarioId} />
+    <Authenticated>
+      <LiveAppHeaderTitle scenarioId={scenarioId} />
+    </Authenticated>
   ) : (
     <AppHeaderBreadcrumbs />
   );
