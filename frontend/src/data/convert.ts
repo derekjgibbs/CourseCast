@@ -27,12 +27,12 @@ for (const course of courses) {
     if (typeof value !== "number") continue;
     randoms.push(value);
   }
-  // @ts-expect-error
+  // @ts-expect-error - We're appending the random scores to the course object.
   course.truncated_price_fluctuations = randoms;
 }
 
 parquetWriteFile({
-  filename: "src/data/courses.parquet",
+  filename: "public/courses.parquet",
   columnData: [
     { name: "forecast_id", data: courses.map(c => c.forecast_id), type: "STRING" },
     { name: "term", data: courses.map(c => c.term), type: "STRING" },

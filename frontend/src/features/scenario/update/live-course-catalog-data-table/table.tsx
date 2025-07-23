@@ -34,8 +34,7 @@ import {
 } from "@tanstack/react-table";
 import { unparse } from "papaparse";
 
-import type { CourseDoc, CourseId } from "@/convex/types";
-
+import type { Course } from "@/lib/schema/course";
 import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
@@ -82,23 +81,6 @@ const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-export type Course = Pick<
-  CourseDoc,
-  | "_id"
-  | "title"
-  | "department"
-  | "course_code"
-  | "instructors"
-  | "days"
-  | "start_date"
-  | "end_date"
-  | "days_code"
-  | "start_time"
-  | "end_time"
-  | "start_category"
-  | "credits"
-  | "truncated_price_prediction"
->;
 const helper = createColumnHelper<Course>();
 const columns = [
   helper.display({
@@ -110,7 +92,7 @@ const columns = [
           if (typeof onFixedCourseAdd === "undefined") return;
           const id = event.currentTarget.dataset["id"];
           if (typeof id === "undefined") return;
-          onFixedCourseAdd(id as CourseId);
+          onFixedCourseAdd(id);
         },
         [onFixedCourseAdd],
       );
@@ -121,7 +103,7 @@ const columns = [
               type="button"
               variant="outline"
               size="icon"
-              data-id={row.original._id}
+              data-id={row.original.forecast_id}
               onClick={handleClick}
               className="border-0 bg-blue-800 text-blue-100 hover:bg-blue-900 hover:text-blue-50"
             >
@@ -142,7 +124,7 @@ const columns = [
           if (typeof onCourseSelected === "undefined") return;
           const id = event.currentTarget.dataset["id"];
           if (typeof id === "undefined") return;
-          onCourseSelected(id as CourseId);
+          onCourseSelected(id);
         },
         [onCourseSelected],
       );
@@ -153,7 +135,7 @@ const columns = [
               type="button"
               variant="outline"
               size="icon"
-              data-id={row.original._id}
+              data-id={row.original.forecast_id}
               onClick={handleClick}
               className="border-0 bg-pink-800 text-pink-100 hover:bg-pink-900 hover:text-pink-50"
             >
@@ -165,7 +147,7 @@ const columns = [
       );
     },
   }),
-  helper.accessor("course_code", {
+  helper.accessor("section_code", {
     sortingFn: "alphanumeric",
     filterFn: "includesString",
     header: function Header({ column }) {
@@ -179,7 +161,7 @@ const columns = [
         >
           <div className="flex items-center space-x-2">
             <BookOpen className="size-4" />
-            <span>ID</span>
+            <span>Section Code</span>
           </div>
           <SortSymbol direction={column.getIsSorted()} />
         </Button>
@@ -310,7 +292,10 @@ const columns = [
       )),
   }),
   helper.accessor(
-    ({ days, start_time, end_time }) => ({ days, time: `${start_time} - ${end_time}` }),
+    ({ days_code, start_time, stop_time }) => ({
+      days: days_code,
+      time: `${start_time} - ${stop_time}`,
+    }),
     {
       // TODO: sortingFn
       id: "schedule",
@@ -398,16 +383,16 @@ function FilterInput({ column }: FilterInputProps) {
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
-    onFixedCourseAdd?: (id: CourseId) => void;
-    onCourseSelected?: (id: CourseId) => void;
+    onFixedCourseAdd?: (id: string) => void;
+    onCourseSelected?: (id: string) => void;
   }
 }
 
 interface CourseCatalogTableProps {
   initialPageSize?: number;
   courses: Course[];
-  onFixedCourseAdd: (course: CourseId) => void;
-  onCourseSelected: (course: CourseId) => void;
+  onFixedCourseAdd: (course: string) => void;
+  onCourseSelected: (course: string) => void;
 }
 
 export function CourseCatalogDataTable({
@@ -433,7 +418,7 @@ export function CourseCatalogDataTable({
   const previousPage = useCallback(() => table.previousPage(), [table]);
   const nextPage = useCallback(() => table.nextPage(), [table]);
 
-  const [selectedFilter, setSelectedFilter] = useState("course_id");
+  const [selectedFilter, setSelectedFilter] = useState("section_code");
   const handleValueChange = useCallback(
     (value: string) => {
       setSelectedFilter(value);
@@ -449,7 +434,7 @@ export function CourseCatalogDataTable({
       {
         header: true,
         columns: [
-          "course_id",
+          "forecast_id",
           "title",
           "department",
           "instructor",
@@ -488,7 +473,7 @@ export function CourseCatalogDataTable({
             <SelectValue placeholder="Filter by..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="course_id">Course ID</SelectItem>
+            <SelectItem value="section_code">Section Code</SelectItem>
             <SelectItem value="title">Course Title</SelectItem>
           </SelectContent>
         </Select>

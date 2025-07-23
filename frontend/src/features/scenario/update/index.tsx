@@ -27,6 +27,7 @@ import { CourseProvider } from "./store";
 import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
 import { LiveCourseUtilityTable } from "./live-course-utility-table";
 import { LiveFixedCourseCatalogTable } from "./live-fixed-course-catalog-table";
+import { useCourses } from "./query";
 
 function onSuccess() {
   toast.success("Scenario successfully updated");
@@ -228,7 +229,7 @@ interface ScenarioUpdateProps {
 }
 
 export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
-  const courses = useQuery(api.courses.list);
+  const { data: courses } = useCourses();
   const scenario = useQuery(api.scenarios.get, { id });
   return typeof courses === "undefined" || typeof scenario === "undefined" ? (
     <div className="flex h-full flex-col items-center justify-center space-y-2">

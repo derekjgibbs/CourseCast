@@ -25,8 +25,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import type { CourseDoc, CourseId } from "@/convex/types";
-
+import type { Course } from "@/lib/schema/course";
 import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
@@ -64,23 +63,6 @@ const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-export type Course = Pick<
-  CourseDoc,
-  | "_id"
-  | "course_code"
-  | "title"
-  | "department"
-  | "instructors"
-  | "days"
-  | "start_date"
-  | "end_date"
-  | "days_code"
-  | "start_time"
-  | "end_time"
-  | "start_category"
-  | "credits"
-  | "truncated_price_prediction"
->;
 const helper = createColumnHelper<Course>();
 const columns = [
   helper.display({
@@ -92,7 +74,7 @@ const columns = [
           if (typeof onRemove === "undefined") return;
           const id = event.currentTarget.dataset["id"];
           if (typeof id === "undefined") return;
-          onRemove(id as CourseId);
+          onRemove(id);
         },
         [onRemove],
       );
@@ -101,7 +83,7 @@ const columns = [
           type="button"
           variant="destructive"
           size="icon"
-          data-id={row.original._id}
+          data-id={row.original.forecast_id}
           onClick={handleClick}
         >
           <Trash2 />
@@ -109,7 +91,7 @@ const columns = [
       );
     },
   }),
-  helper.accessor("course_code", {
+  helper.accessor("section_code", {
     sortingFn: "alphanumeric",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -122,7 +104,7 @@ const columns = [
         >
           <div className="flex items-center space-x-2">
             <BookOpen className="size-4" />
-            <span>Course ID</span>
+            <span>Section Code</span>
           </div>
           <SortSymbol direction={column.getIsSorted()} />
         </Button>
@@ -252,7 +234,10 @@ const columns = [
       )),
   }),
   helper.accessor(
-    ({ days, start_time, end_time }) => ({ days, time: `${start_time} - ${end_time}` }),
+    ({ days_code, start_time, stop_time }) => ({
+      days: days_code,
+      time: `${start_time} - ${stop_time}`,
+    }),
     {
       // TODO: sortingFn
       id: "schedule",
@@ -325,14 +310,14 @@ declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
     name?: string;
-    onRemove?: (id: CourseId) => void;
+    onRemove?: (id: string) => void;
   }
 }
 
 interface FixedCourseCatalogTableProps {
   name?: string;
   courses: Course[];
-  onRemove: (id: CourseId) => void;
+  onRemove: (id: string) => void;
 }
 
 export function FixedCourseCatalogTable({ name, courses, onRemove }: FixedCourseCatalogTableProps) {
@@ -349,7 +334,12 @@ export function FixedCourseCatalogTable({ name, courses, onRemove }: FixedCourse
       {typeof name === "undefined"
         ? null
         : rows.map(row => (
-            <input key={row.original._id} type="hidden" name={name} value={row.original._id} />
+            <input
+              key={row.original.forecast_id}
+              type="hidden"
+              name={name}
+              value={row.original.forecast_id}
+            />
           ))}
       <Table>
         <TableHeader>
