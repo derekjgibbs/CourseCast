@@ -29,6 +29,7 @@ import type { CourseDoc, CourseId } from "@/convex/types";
 
 import { cn } from "@/lib/utils";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -66,15 +67,19 @@ const formatter = new Intl.NumberFormat("en-US", {
 export type Course = Pick<
   CourseDoc,
   | "_id"
-  | "course_id"
+  | "course_code"
   | "title"
   | "department"
-  | "instructor"
+  | "instructors"
   | "days"
+  | "start_date"
+  | "end_date"
+  | "days_code"
   | "start_time"
   | "end_time"
+  | "start_category"
   | "credits"
-  | "price_forecast"
+  | "truncated_price_prediction"
 >;
 const helper = createColumnHelper<Course>();
 const columns = [
@@ -104,7 +109,7 @@ const columns = [
       );
     },
   }),
-  helper.accessor("course_id", {
+  helper.accessor("course_code", {
     sortingFn: "alphanumeric",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -220,7 +225,7 @@ const columns = [
       );
     },
   }),
-  helper.accessor("instructor", {
+  helper.accessor("instructors", {
     sortingFn: "basic",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -239,7 +244,12 @@ const columns = [
         </Button>
       );
     },
-    cell: info => <span className="font-medium text-gray-600">{info.getValue()}</span>,
+    cell: info =>
+      info.getValue().map(instructor => (
+        <Badge key={instructor} variant="outline">
+          {instructor}
+        </Badge>
+      )),
   }),
   helper.accessor(
     ({ days, start_time, end_time }) => ({ days, time: `${start_time} - ${end_time}` }),
@@ -284,7 +294,7 @@ const columns = [
     },
     cell: info => <span className="text-lg font-bold text-green-600">{info.getValue()}</span>,
   }),
-  helper.accessor("price_forecast", {
+  helper.accessor("truncated_price_prediction", {
     sortingFn: "basic",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
