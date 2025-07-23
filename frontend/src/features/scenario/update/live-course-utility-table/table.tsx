@@ -26,10 +26,11 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { CONSTRAINTS, type CourseDoc, type CourseId } from "@/convex/types";
+import { CONSTRAINTS } from "@/convex/types";
 
 import { cn } from "@/lib/utils";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,7 +43,7 @@ import {
 } from "@/components/ui/table";
 
 import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
-import type { CourseDocWithUtility } from "@/features/scenario/update/store";
+import type { CourseWithUtility } from "@/features/scenario/update/store";
 
 interface SortSymbolProps {
   direction: SortDirection | false;
@@ -66,20 +67,7 @@ const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-export type Course = Pick<
-  CourseDoc,
-  | "_id"
-  | "course_id"
-  | "title"
-  | "department"
-  | "instructor"
-  | "days"
-  | "start_time"
-  | "end_time"
-  | "credits"
-  | "price_forecast"
->;
-const helper = createColumnHelper<CourseDocWithUtility>();
+const helper = createColumnHelper<CourseWithUtility>();
 const columns = [
   helper.display({
     id: "remove",
@@ -90,7 +78,7 @@ const columns = [
           if (typeof onRemove === "undefined") return;
           const id = event.currentTarget.dataset["id"];
           if (typeof id === "undefined") return;
-          onRemove(id as CourseId);
+          onRemove(id);
         },
         [onRemove],
       );
@@ -99,7 +87,7 @@ const columns = [
           type="button"
           variant="destructive"
           size="icon"
-          data-id={row.original._id}
+          data-id={row.original.forecast_id}
           onClick={handleClick}
         >
           <Trash2 />
@@ -118,7 +106,7 @@ const columns = [
     cell: ({ table, row }) => {
       let name: string | undefined;
       if (typeof table.options.meta?.name !== "undefined")
-        name = `${table.options.meta.name}.${row.original._id}`;
+        name = `${table.options.meta.name}.${row.original.forecast_id}`;
       const utility = row.original.utility ?? CONSTRAINTS.COURSE_UTILITY.MIN_VALUE;
       return (
         <Input
@@ -135,7 +123,7 @@ const columns = [
       );
     },
   }),
-  helper.accessor("course_id", {
+  helper.accessor("section_code", {
     sortingFn: "alphanumeric",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -148,7 +136,7 @@ const columns = [
         >
           <div className="flex items-center space-x-2">
             <BookOpen className="size-4" />
-            <span>Course ID</span>
+            <span>Section Code</span>
           </div>
           <SortSymbol direction={column.getIsSorted()} />
         </Button>
@@ -251,7 +239,7 @@ const columns = [
       );
     },
   }),
-  helper.accessor("instructor", {
+  helper.accessor("instructors", {
     sortingFn: "basic",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -270,10 +258,18 @@ const columns = [
         </Button>
       );
     },
-    cell: info => <span className="font-medium text-gray-600">{info.getValue()}</span>,
+    cell: info =>
+      info.getValue().map(instructor => (
+        <Badge key={instructor} variant="outline">
+          {instructor}
+        </Badge>
+      )),
   }),
   helper.accessor(
-    ({ days, start_time, end_time }) => ({ days, time: `${start_time} - ${end_time}` }),
+    ({ days_code, start_time, stop_time }) => ({
+      days: days_code,
+      time: `${start_time} - ${stop_time}`,
+    }),
     {
       // TODO: sortingFn
       id: "schedule",
@@ -315,7 +311,7 @@ const columns = [
     },
     cell: info => <span className="text-lg font-bold text-green-600">{info.getValue()}</span>,
   }),
-  helper.accessor("price_forecast", {
+  helper.accessor("truncated_price_prediction", {
     sortingFn: "basic",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -345,14 +341,14 @@ const columns = [
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
-    onRemove?: (id: CourseId) => void;
+    onRemove?: (id: string) => void;
   }
 }
 
 interface CourseUtilityTableProps {
   name?: string;
-  courses: CourseDocWithUtility[];
-  onRemove: (id: CourseId) => void;
+  courses: CourseWithUtility[];
+  onRemove: (id: string) => void;
 }
 
 export function CourseUtilityTable({ name, courses, onRemove }: CourseUtilityTableProps) {

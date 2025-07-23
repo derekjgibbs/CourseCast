@@ -17,23 +17,4 @@ export default defineSchema({
   })
     .index("by_user_id", ["user_id"])
     .index("by_created_at", ["created_at"]),
-  courses: defineTable({
-    course_id: v.string(),
-    title: v.string(),
-    department: v.string(),
-    instructor: v.string(),
-    days: v.string(),
-    start_time: v.string(),
-    end_time: v.string(),
-    term: v.string(),
-    credits: v.number(),
-    price_forecast: v.number(),
-    price_std_dev: v.number(),
-    course_quality: v.number(),
-    instructor_quality: v.number(),
-    difficulty: v.number(),
-    work_required: v.number(),
-  })
-    .index("by_course_id", ["course_id"])
-    .index("by_department", ["department"]),
 });

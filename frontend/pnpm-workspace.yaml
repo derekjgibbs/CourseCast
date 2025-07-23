@@ -2,6 +2,7 @@ onlyBuiltDependencies:
   - "@swc/core"
   - "@tailwindcss/oxide"
   - esbuild
+  - lzo
   - msw
   - sharp
   - unrs-resolver

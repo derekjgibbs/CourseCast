@@ -1,23 +1,23 @@
 import { type ReactNode, createContext, useContext, useMemo } from "react";
 import { create } from "zustand";
 
-import type { CourseDoc, CourseId } from "@/convex/types";
+import type { Course } from "@/lib/schema/course";
 
 interface CourseStore {
-  available: Map<CourseId, CourseDoc>;
-  selected: Map<CourseId, CourseDocWithUtility>;
-  fixed: Map<CourseId, CourseDoc>;
-  selectCourse: (course: CourseId) => void;
-  deselectCourse: (course: CourseId) => void;
-  addFixedCourse: (course: CourseId) => void;
-  removeFixedCourse: (course: CourseId) => void;
+  available: Map<string, Course>;
+  selected: Map<string, CourseWithUtility>;
+  fixed: Map<string, Course>;
+  selectCourse: (course: string) => void;
+  deselectCourse: (course: string) => void;
+  addFixedCourse: (course: string) => void;
+  removeFixedCourse: (course: string) => void;
 }
 
-export interface CourseDocWithUtility extends CourseDoc {
+export interface CourseWithUtility extends Course {
   utility?: bigint;
 }
 
-type CourseMap = Map<CourseId, CourseDocWithUtility>;
+type CourseMap = Map<string, CourseWithUtility>;
 
 function createCourseStore(available: CourseMap, selected: CourseMap, fixed: CourseMap) {
   return create<CourseStore>(set => ({
@@ -72,9 +72,9 @@ function createCourseStore(available: CourseMap, selected: CourseMap, fixed: Cou
 }
 
 interface CourseProviderProps {
-  courses: CourseDoc[];
+  courses: Course[];
   fixedCourses: string[];
-  utilities: Record<CourseId, bigint>;
+  utilities: Record<string, bigint>;
   children: ReactNode;
 }
 
@@ -88,25 +88,25 @@ export function CourseProvider({
   const store = useMemo(() => {
     const available: CourseMap = new Map(
       courses.map(
-        course => [course._id, structuredClone(course)] as [CourseId, CourseDocWithUtility],
+        course => [course.forecast_id, structuredClone(course)] as [string, CourseWithUtility],
       ),
     );
 
     const fixed: CourseMap = new Map();
     for (const id of fixedCourses) {
-      const course = available.get(id as CourseId);
+      const course = available.get(id);
       if (typeof course === "undefined") continue;
-      fixed.set(id as CourseId, course);
-      available.delete(id as CourseId);
+      fixed.set(id, course);
+      available.delete(id);
     }
 
     const selected: CourseMap = new Map();
     for (const [id, utility] of Object.entries(utilities)) {
-      const course = available.get(id as CourseId);
+      const course = available.get(id);
       if (typeof course === "undefined") continue;
       course.utility = utility;
-      selected.set(id as CourseId, course);
-      available.delete(id as CourseId);
+      selected.set(id, course);
+      available.delete(id);
     }
 
     return createCourseStore(available, selected, fixed);
