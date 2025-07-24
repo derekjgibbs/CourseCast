@@ -3,6 +3,8 @@ import { create } from "zustand";
 
 import type { Course } from "@/lib/schema/course";
 
+import { useFetchedCourses } from "./query";
+
 interface CourseStore {
   available: Map<string, Course>;
   selected: Map<string, CourseWithUtility>;
@@ -71,20 +73,19 @@ function createCourseStore(available: CourseMap, selected: CourseMap, fixed: Cou
   }));
 }
 
-interface CourseProviderProps {
-  courses: Course[];
+interface UserScenarioProviderProps {
   fixedCourses: string[];
   utilities: Record<string, bigint>;
   children: ReactNode;
 }
 
 const CourseContext = createContext(createCourseStore(new Map(), new Map(), new Map()));
-export function CourseProvider({
-  courses,
+export function UserScenarioProvider({
   fixedCourses,
   utilities,
   children,
-}: CourseProviderProps) {
+}: UserScenarioProviderProps) {
+  const courses = useFetchedCourses();
   const store = useMemo(() => {
     const available: CourseMap = new Map(
       courses.map(

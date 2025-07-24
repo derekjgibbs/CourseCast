@@ -17,7 +17,7 @@ import {
 } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
 
-import { optimize } from "@/lib/solver/optimize";
+import { spawnOptimizer } from "@/lib/solver";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,18 +26,30 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
 
-import { CourseProvider } from "./store";
+import { UserScenarioProvider } from "./store";
 import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
 import { LiveCourseUtilityTable } from "./live-course-utility-table";
 import { LiveFixedCourseCatalogTable } from "./live-fixed-course-catalog-table";
-import { fetchCourses, useCourses } from "./query";
+import { FetchedCoursesProvider, useFetchCourses, useFetchedCourses } from "./query";
 
-function onSuccess() {
+function onSaveSuccess() {
   toast.success("Scenario successfully updated");
 }
 
-function onError() {
+function onSaveError() {
   toast.error("Failed to update scenario", {
+    description: "Please try again later.",
+    duration: Infinity,
+    dismissible: true,
+  });
+}
+
+function onSimulateSuccess() {
+  toast.success("Simulation completed");
+}
+
+function onSimulateError() {
+  toast.error("Failed to run simulation", {
     description: "Please try again later.",
     duration: Infinity,
     dismissible: true,
@@ -98,11 +110,78 @@ function ScenarioUpdateForm({
   ]);
 
   const mutationFn = useConvexMutation(api.scenarios.update);
-  const saveMutation = useTanstackMutation({ mutationFn, onSuccess, onError });
-  const isLoading = saveMutation.isPending;
+  const saveMutation = useTanstackMutation({
+    mutationFn,
+    onSuccess: onSaveSuccess,
+    onError: onSaveError,
+  });
+  const simulateMutation = useTanstackMutation({
+    mutationFn: spawnOptimizer,
+    onSuccess: onSimulateSuccess,
+    onError: onSimulateError,
+  });
+  const isPending = saveMutation.isPending || simulateMutation.isPending;
 
+  const fetchedCourses = useFetchedCourses();
   return (
-    <form className="space-y-8">
+    <form
+      onSubmit={event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (event.currentTarget.reportValidity() && event.nativeEvent instanceof SubmitEvent) {
+          const button = event.nativeEvent.submitter;
+          if (button === null) return;
+
+          const data = new FormData(event.currentTarget);
+          const parsed = parseUpdateUserScenarioFormData(data);
+          switch (button.id) {
+            case saveId: {
+              const {
+                id,
+                token_budget,
+                credit_range: [min_credits, max_credits],
+                ...rest
+              } = parsed;
+              saveMutation.mutate({
+                ...rest,
+                id: id as UserScenarioId,
+                token_budget: BigInt(token_budget),
+                min_credits,
+                max_credits,
+              });
+              break;
+            }
+            case runId: {
+              const {
+                token_budget,
+                credit_range: [min_credits, max_credits],
+                fixed_courses = [],
+                utilities = {},
+              } = parsed;
+              simulateMutation.mutate({
+                budget: token_budget,
+                min_credits,
+                max_credits,
+                utilities: new Map(
+                  Object.entries(utilities).map(([forecast_id, utility]) => [
+                    forecast_id,
+                    Number(utility),
+                  ]),
+                ),
+                fixed_courses,
+                courses: fetchedCourses,
+                seed: 0,
+              });
+              break;
+            }
+            default:
+              return;
+          }
+        }
+      }}
+      className="space-y-8"
+    >
       <input type="hidden" name="id" value={scenarioId} />
       <Card>
         <CardHeader>
@@ -205,22 +284,7 @@ function ScenarioUpdateForm({
               type="submit"
               size="icon"
               className="rounded-full p-8 shadow-2xl disabled:opacity-100"
-              disabled={isLoading}
-              formAction={async data => {
-                const {
-                  id,
-                  token_budget,
-                  credit_range: [min_credits, max_credits],
-                  ...rest
-                } = parseUpdateUserScenarioFormData(data);
-                await saveMutation.mutateAsync({
-                  ...rest,
-                  id: id as UserScenarioId,
-                  token_budget: BigInt(token_budget),
-                  min_credits,
-                  max_credits,
-                });
-              }}
+              disabled={isPending}
             >
               {saveMutation.isPending ? (
                 <Loader2 className="size-8 animate-spin" />
@@ -238,33 +302,9 @@ function ScenarioUpdateForm({
               type="submit"
               size="icon"
               className="rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 shadow-2xl hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 disabled:opacity-100"
-              disabled={isLoading}
-              formAction={async data => {
-                const {
-                  token_budget,
-                  credit_range: [min_credits, max_credits],
-                  fixed_courses = [],
-                  utilities = {},
-                } = parseUpdateUserScenarioFormData(data);
-                console.log(
-                  optimize({
-                    budget: token_budget,
-                    min_credits,
-                    max_credits,
-                    utilities: new Map(
-                      Object.entries(utilities).map(([forecast_id, utility]) => [
-                        forecast_id,
-                        Number(utility),
-                      ]),
-                    ),
-                    fixed_courses,
-                    courses: await fetchCourses(),
-                    seed: 0,
-                  }),
-                );
-              }}
+              disabled={isPending}
             >
-              {isLoading ? (
+              {simulateMutation.isPending ? (
                 <Loader2 className="size-8 animate-spin" />
               ) : (
                 <Play className="size-8" />
@@ -283,28 +323,26 @@ interface ScenarioUpdateProps {
 }
 
 export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
-  const { data: courses } = useCourses();
+  const { data } = useFetchCourses();
   const scenario = useQuery(api.scenarios.get, { id });
-  return typeof courses === "undefined" || typeof scenario === "undefined" ? (
+  return typeof data === "undefined" || typeof scenario === "undefined" ? (
     <div className="flex h-full flex-col items-center justify-center space-y-2">
       <Loader2 className="size-16 animate-spin text-gray-400" />
       <span className="text-sm font-medium text-gray-600">Fetching scenario</span>
     </div>
   ) : (
     <div className="relative mx-auto w-full max-w-7xl grow justify-center px-6 py-8">
-      <CourseProvider
-        courses={courses}
-        fixedCourses={scenario.fixed_courses}
-        utilities={scenario.utilities}
-      >
-        <ScenarioUpdateForm
-          id={id}
-          name={scenario.name}
-          token_budget={scenario.token_budget}
-          min_credits={scenario.min_credits}
-          max_credits={scenario.max_credits}
-        />
-      </CourseProvider>
+      <FetchedCoursesProvider courses={data}>
+        <UserScenarioProvider fixedCourses={scenario.fixed_courses} utilities={scenario.utilities}>
+          <ScenarioUpdateForm
+            id={id}
+            name={scenario.name}
+            token_budget={scenario.token_budget}
+            min_credits={scenario.min_credits}
+            max_credits={scenario.max_credits}
+          />
+        </UserScenarioProvider>
+      </FetchedCoursesProvider>
     </div>
   );
 }

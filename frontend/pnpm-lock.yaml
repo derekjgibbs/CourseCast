@@ -86,6 +86,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      promise-pool-executor:
+        specifier: ^2.0.0
+        version: 2.0.0
       react:
         specifier: ^19.1.0
         version: 19.1.0
@@ -3724,6 +3727,10 @@ packages:
     resolution: {integrity: sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg==}
     engines: {node: '>= 0.4'}
 
+  p-defer@3.0.0:
+    resolution: {integrity: sha512-ugZxsxmtTln604yeYd29EGrNhazN2lywetzpKhfmQjW/VJmhpDmWbiX+h0zL8V91R0UXkhb3KtPmyq9PZw3aYw==}
+    engines: {node: '>=8'}
+
   p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
     engines: {node: '>=10'}
@@ -3902,6 +3909,14 @@ packages:
   pretty-format@27.5.1:
     resolution: {integrity: sha512-Qb1gy5OrP5+zDf2Bvnzdl3jsTf1qXVMazbvCoKhtKqVs4/YK4ozX4gKQJJVyNe+cajNPn0KoC0MC3FUmaHWEmQ==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+
+  promise-batcher@1.1.1:
+    resolution: {integrity: sha512-DtGBp8OQlAtALDFoVphyAz6Vn1c0GyelKU5smpMQEXpEAcWWxY3fC5JT0AkpWqrljvJrhC6zVdWbK/jx6NNG2A==}
+    engines: {node: '>=8'}
+
+  promise-pool-executor@2.0.0:
+    resolution: {integrity: sha512-oFPHBbonNrx2TZ4q2BoPA5R1gemhGcj4ZZ43nJPRmdGygUUCYwX3Vmb72jxRcV/3XP6nNMimQY+sgF7MRSU9WQ==}
+    engines: {node: '>=18'}
 
   prompts@2.4.2:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
@@ -8201,6 +8216,8 @@ snapshots:
       object-keys: 1.1.1
       safe-push-apply: 1.0.0
 
+  p-defer@3.0.0: {}
+
   p-limit@3.1.0:
     dependencies:
       yocto-queue: 0.1.0
@@ -8293,6 +8310,15 @@ snapshots:
       ansi-regex: 5.0.1
       ansi-styles: 5.2.0
       react-is: 17.0.2
+
+  promise-batcher@1.1.1:
+    dependencies:
+      p-defer: 3.0.0
+
+  promise-pool-executor@2.0.0:
+    dependencies:
+      p-defer: 3.0.0
+      promise-batcher: 1.1.1
 
   prompts@2.4.2:
     dependencies:

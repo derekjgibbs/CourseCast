@@ -2,6 +2,8 @@ import { type Constraint, solve } from "yalps";
 
 import type { Course } from "@/lib/schema/course";
 
+import type { OptimizationRequest, OptimizationResponse } from "./schema";
+
 // String literal unions for type safety
 type PartOfTerm = "Q1" | "Q2" | "Q3" | "Q4" | "Modular" | "Full";
 type DaysCode = "M" | "T" | "W" | "R" | "F" | "S" | "U" | "MW" | "TR" | "FS" | "TBA";
@@ -26,25 +28,6 @@ class MissingCourseVariablesError extends Error {
     super(`Variables object not found for course: ${courseId}`);
     this.name = "MissingCourseVariablesError";
   }
-}
-
-interface OptimizationRequest {
-  budget: number;
-  max_credits: number;
-  min_credits: number;
-  utilities: Map<string, number>; // forecast_id -> utility
-  fixed_courses: string[]; // forecast_id[]
-  courses: Course[];
-  seed: number;
-}
-
-interface OptimizedCourse {
-  forecast_id: string;
-  price: number;
-  credits: number;
-  utility: number;
-  department: string;
-  title: string;
 }
 
 /** Calculate final price using Monte Carlo simulation with z-scores */
@@ -212,7 +195,7 @@ export function optimize(request: OptimizationRequest) {
   });
 
   // Process results
-  const selectedCourses: OptimizedCourse[] = [];
+  const selectedCourses: string[] = [];
   let totalCost = 0;
   let totalCredits = 0;
   let totalUtility = 0;
@@ -224,14 +207,7 @@ export function optimize(request: OptimizationRequest) {
       totalCost += course.price;
       totalCredits += course.credits;
       totalUtility += course.utility;
-      selectedCourses.push({
-        forecast_id: course.forecast_id,
-        price: course.price,
-        credits: course.credits,
-        utility: course.utility,
-        department: course.department,
-        title: course.title,
-      });
+      selectedCourses.push(course.forecast_id);
     }
   }
 
@@ -241,5 +217,5 @@ export function optimize(request: OptimizationRequest) {
     totalCredits,
     totalUtility,
     optimizationStatus: result.status,
-  };
+  } satisfies OptimizationResponse;
 }
