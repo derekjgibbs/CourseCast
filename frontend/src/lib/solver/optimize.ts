@@ -114,13 +114,14 @@ export function optimize(request: OptimizationRequest) {
   // Variables map
   const variables = new Map<string, Map<string, number>>();
   for (const course of coursesWithPrices) {
-    variables.set(course.forecast_id, new Map([
+    const courseVariables = new Map([
       // Objective Function
       ["weighted_credit_utility", course.utility * course.credits],
       ["budget", course.truncated_price],
       ["min_credits", course.credits],
       ["max_credits", course.credits],
-    ]));
+    ]);
+    variables.set(course.forecast_id, courseVariables);
 
     // Collect time conflicts
     const conflicts = generateTimeConflicts(course);
@@ -133,16 +134,11 @@ export function optimize(request: OptimizationRequest) {
         constraints.set(conflict, { max: 1 }); // At most one course per time slot
       }
       conflictCourses.push(course);
-
-      // Assert that variables object exists for this course
-      const courseVariables = variables.get(course.forecast_id);
-      if (typeof courseVariables === "undefined")
-        throw new MissingCourseVariablesError(course.forecast_id);
       courseVariables.set(conflict, 1);
     }
 
     // Get or initialize course sections list
-    const courseId = extractCourseId(course.forecast_id); // deduplication
+    const courseId = extractCourseId(course.forecast_id);
     let courseList = courseIdMap.get(courseId);
     if (typeof courseList === "undefined") {
       courseList = [];
@@ -151,25 +147,19 @@ export function optimize(request: OptimizationRequest) {
       constraints.set(`course_${courseId}`, { max: 1 });
     }
     courseList.push(course);
-
-    // Assert that variables object exists for this course
-    const courseVariables = variables.get(course.forecast_id);
-    if (typeof courseVariables === "undefined")
-      throw new MissingCourseVariablesError(course.forecast_id);
     courseVariables.set(`course_${courseId}`, 1);
   }
 
   // Add fixed course constraints
   for (const fixedCourseId of request.fixed_courses) {
     const fixedCourseVariables = variables.get(fixedCourseId);
-    if (typeof fixedCourseVariables !== "undefined") {
-      constraints.set(`fixed_${fixedCourseId}`, { equal: 1 });
-      fixedCourseVariables.set(`fixed_${fixedCourseId}`, 1);
-    }
+    if (typeof fixedCourseVariables === "undefined") continue;
+    constraints.set(`fixed_${fixedCourseId}`, { equal: 1 });
+    fixedCourseVariables.set(`fixed_${fixedCourseId}`, 1);
   }
 
   // Solve the YALPS model
-  const result = solve({
+  const solution = solve({
     direction: "maximize",
     objective: "utility_credits",
     constraints,
@@ -184,9 +174,8 @@ export function optimize(request: OptimizationRequest) {
   let totalUtility = 0;
 
   for (const course of coursesWithPrices) {
-    const variableResult = result.variables.find(([name]) => name === course.forecast_id);
-    const variableValue = variableResult?.[1] ?? 0;
-    if (variableValue === 1) {
+    const value = solution.variables.find(([name]) => name === course.forecast_id)?.[1] ?? 0;
+    if (value === 1) {
       totalCost += course.truncated_price;
       totalCredits += course.credits;
       totalUtility += course.utility;
@@ -199,6 +188,6 @@ export function optimize(request: OptimizationRequest) {
     totalCost,
     totalCredits,
     totalUtility,
-    optimizationStatus: result.status,
+    optimizationStatus: solution.status,
   } satisfies OptimizationResponse;
 }

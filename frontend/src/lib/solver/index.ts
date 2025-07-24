@@ -59,10 +59,7 @@ export async function spawnOptimizerPool({ courses, ...request }: OptimizationPo
               const truncatedPrice = truncated_price_fluctuations[seed];
               if (typeof truncatedPrice === "undefined")
                 throw new MissingSimulationSeedValue(course.forecast_id);
-              return {
-                ...course,
-                truncated_price: truncatedPrice,
-              };
+              return { ...course, truncated_price: truncatedPrice };
             }),
           }),
         );
