@@ -100,28 +100,27 @@ export function optimize(request: OptimizationRequest) {
     utility: request.utilities.get(course.forecast_id) ?? 0,
   }));
 
-  // Build variables map for YALPS
-  const variables = new Map<string, Map<string, number>>();
+  // Generate time conflicts and course duplicates constraint data
+  const timeConflictMap = new Map<string, CourseInput[]>();
+  const courseIdMap = new Map<string, CourseInput[]>();
+
+  // Constraints map
   const constraints = new Map<string, Constraint>([
     ["budget", { max: request.budget }],
     ["max_credits", { max: request.max_credits }],
     ["min_credits", { min: request.min_credits }],
   ]);
 
-  // Generate time conflicts and course duplicates constraint data
-  const timeConflictMap = new Map<string, CourseInput[]>();
-  const courseIdMap = new Map<string, CourseInput[]>();
+  // Variables map
+  const variables = new Map<string, Map<string, number>>();
   for (const course of coursesWithPrices) {
-    // Add course variables
-    variables.set(
-      course.forecast_id,
-      new Map([
-        ["utility_credits", course.utility * course.credits], // objective function
-        ["budget", course.truncated_price], // budget constraint
-        ["max_credits", course.credits], // max credits constraint
-        ["min_credits", course.credits], // min credits constraint
-      ]),
-    );
+    variables.set(course.forecast_id, new Map([
+      // Objective Function
+      ["weighted_credit_utility", course.utility * course.credits],
+      ["budget", course.truncated_price],
+      ["min_credits", course.credits],
+      ["max_credits", course.credits],
+    ]));
 
     // Collect time conflicts
     const conflicts = generateTimeConflicts(course);
@@ -142,10 +141,8 @@ export function optimize(request: OptimizationRequest) {
       courseVariables.set(conflict, 1);
     }
 
-    // Collect course duplicates
-    const courseId = extractCourseId(course.forecast_id);
-
     // Get or initialize course sections list
+    const courseId = extractCourseId(course.forecast_id); // deduplication
     let courseList = courseIdMap.get(courseId);
     if (typeof courseList === "undefined") {
       courseList = [];
