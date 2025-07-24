@@ -1,7 +1,7 @@
 "use client";
 
 import * as v from "valibot";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Play, Save } from "lucide-react";
 import { decode } from "decode-formdata";
 import { toast } from "sonner";
 import { useId, useState } from "react";
@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
 
 import { CourseProvider } from "./store";
@@ -28,6 +29,7 @@ import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
 import { LiveCourseUtilityTable } from "./live-course-utility-table";
 import { LiveFixedCourseCatalogTable } from "./live-fixed-course-catalog-table";
 import { useCourses } from "./query";
+import { mutation } from "@/convex/_generated/server";
 
 function onSuccess() {
   toast.success("Scenario successfully updated");
@@ -67,6 +69,14 @@ const updateUserScenarioSchema = v.object({
   ),
 });
 
+function parseUpdateUserScenarioFormData(data: FormData) {
+  const json = decode(data, {
+    arrays: ["credit_range", "fixed_courses"],
+    numbers: ["token_budget"],
+  });
+  return v.parse(updateUserScenarioSchema, json);
+}
+
 /** Needs a submit button elsewhere. */
 function ScenarioUpdateForm({
   id: scenarioId,
@@ -76,6 +86,9 @@ function ScenarioUpdateForm({
   max_credits: initialMaxCredits,
 }: ScenarioUpdateFormProps) {
   const id = useId();
+  const saveId = `${id}-save`;
+  const runId = `${id}-run`;
+
   const [name, setName] = useState(initialName);
   const [tokenBudget, setTokenBudget] = useState(Number(initialTokenBudget));
   const [creditRange, setCreditRange] = useState<[number, number]>([
@@ -84,35 +97,11 @@ function ScenarioUpdateForm({
   ]);
 
   const mutationFn = useConvexMutation(api.scenarios.update);
-  const mutation = useTanstackMutation({ mutationFn, onSuccess, onError });
+  const saveMutation = useTanstackMutation({ mutationFn, onSuccess, onError });
+  const isLoading = saveMutation.isPending;
 
   return (
-    <form
-      onSubmit={event => {
-        event.preventDefault();
-        event.stopPropagation();
-        const data = new FormData(event.currentTarget);
-        console.log(data);
-        const json = decode(data, {
-          arrays: ["credit_range", "fixed_courses"],
-          numbers: ["token_budget"],
-        });
-        const {
-          id,
-          token_budget,
-          credit_range: [min_credits, max_credits],
-          ...rest
-        } = v.parse(updateUserScenarioSchema, json);
-        mutation.mutate({
-          ...rest,
-          id: id as UserScenarioId,
-          token_budget: BigInt(token_budget),
-          min_credits,
-          max_credits,
-        });
-      }}
-      className="space-y-8"
-    >
+    <form className="space-y-8">
       <input type="hidden" name="id" value={scenarioId} />
       <Card>
         <CardHeader>
@@ -207,19 +196,67 @@ function ScenarioUpdateForm({
           <LiveCourseCatalogDataTable />
         </CardContent>
       </Card>
-      <Button
-        type="submit"
-        size="icon"
-        className="fixed right-0 bottom-0 m-4 rounded-full p-8 shadow-2xl disabled:opacity-100"
-        disabled={mutation.isPending}
-      >
-        {mutation.isPending ? (
-          <Loader2 className="size-8 animate-spin" />
-        ) : (
-          <Save className="size-8" />
-        )}
-        <span className="sr-only">Save Scenario</span>
-      </Button>
+      <div className="fixed right-0 bottom-0 m-4 flex gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              id={saveId}
+              type="submit"
+              size="icon"
+              className="rounded-full p-8 shadow-2xl disabled:opacity-100"
+              disabled={isLoading}
+              formAction={data => {
+                const {
+                  id,
+                  token_budget,
+                  credit_range: [min_credits, max_credits],
+                  ...rest
+                } = parseUpdateUserScenarioFormData(data);
+                saveMutation.mutate({
+                  ...rest,
+                  id: id as UserScenarioId,
+                  token_budget: BigInt(token_budget),
+                  min_credits,
+                  max_credits,
+                });
+              }}
+            >
+              {saveMutation.isPending ? (
+                <Loader2 className="size-8 animate-spin" />
+              ) : (
+                <Save className="size-8" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent collisionPadding={16}>Save Scenario</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              id={runId}
+              type="submit"
+              size="icon"
+              className="rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 shadow-2xl hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 disabled:opacity-100"
+              disabled={isLoading}
+              formAction={data => {
+                const {
+                  id,
+                  token_budget,
+                  credit_range: [min_credits, max_credits],
+                } = parseUpdateUserScenarioFormData(data);
+                // TODO
+              }}
+            >
+              {isLoading ? (
+                <Loader2 className="size-8 animate-spin" />
+              ) : (
+                <Play className="size-8" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent collisionPadding={16}>Run Simulation</TooltipContent>
+        </Tooltip>
+      </div>
     </form>
   );
 }
