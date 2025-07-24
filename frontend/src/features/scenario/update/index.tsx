@@ -17,7 +17,8 @@ import {
 } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
 
-import { spawnOptimizer } from "@/lib/solver";
+import type { OptimizationResponse } from "@/lib/solver/schema";
+import { spawnOptimizerPool } from "@/lib/solver";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,7 +45,8 @@ function onSaveError() {
   });
 }
 
-function onSimulateSuccess() {
+function onSimulateSuccess(results: OptimizationResponse[]) {
+  console.log(results);
   toast.success("Simulation completed");
 }
 
@@ -116,7 +118,7 @@ function ScenarioUpdateForm({
     onError: onSaveError,
   });
   const simulateMutation = useTanstackMutation({
-    mutationFn: spawnOptimizer,
+    mutationFn: spawnOptimizerPool,
     onSuccess: onSimulateSuccess,
     onError: onSimulateError,
   });
@@ -171,7 +173,6 @@ function ScenarioUpdateForm({
                 ),
                 fixed_courses,
                 courses: fetchedCourses,
-                seed: 0,
               });
               break;
             }

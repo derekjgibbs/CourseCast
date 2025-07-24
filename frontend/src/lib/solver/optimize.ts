@@ -2,7 +2,7 @@ import { type Constraint, solve } from "yalps";
 
 import type { Course } from "@/lib/schema/course";
 
-import type { OptimizationRequest, OptimizationResponse } from "./schema";
+import type { CourseInput, OptimizationRequest, OptimizationResponse } from "./schema";
 
 // String literal unions for type safety
 type PartOfTerm = "Q1" | "Q2" | "Q3" | "Q4" | "Modular" | "Full";
@@ -28,23 +28,6 @@ class MissingCourseVariablesError extends Error {
     super(`Variables object not found for course: ${courseId}`);
     this.name = "MissingCourseVariablesError";
   }
-}
-
-/** Calculate final price using Monte Carlo simulation with z-scores */
-function calculatePrice(course: Course, seed: number): number {
-  // Use the seed to deterministically select from price fluctuations
-  const fluctuationIndex =
-    Math.abs(Number.parseInt(course.forecast_id, 36) + seed) %
-    course.truncated_price_fluctuations.length;
-  const zScore = course.truncated_price_fluctuations[fluctuationIndex] ?? 0;
-
-  const price =
-    course.truncated_price_prediction +
-    course.price_prediction_residual_mean +
-    zScore * course.price_prediction_residual_std_dev;
-
-  // Clamp price between 0 and 4851 (same as backend)
-  return Math.min(4851, Math.max(0, price));
 }
 
 function mapTermToQuarters(term: PartOfTerm | (string & {})): string[] {
@@ -90,7 +73,9 @@ function mapDaysToArray(daysCode: DaysCode | (string & {})) {
 /**
  * Generate time conflict identifiers for courses
  */
-function generateTimeConflicts(course: Course): string[] {
+function generateTimeConflicts(
+  course: Pick<Course, "part_of_term" | "days_code" | "start_category">,
+): string[] {
   const quarters = mapTermToQuarters(course.part_of_term);
   const days = mapDaysToArray(course.days_code);
   const timePeriod = course.start_category;
@@ -109,12 +94,9 @@ function extractCourseId(forecast_id: string): string {
 }
 
 export function optimize(request: OptimizationRequest) {
-  console.log(request);
-
   // Calculate prices for all courses
   const coursesWithPrices = request.courses.map(course => ({
     ...course,
-    price: calculatePrice(course, request.seed),
     utility: request.utilities.get(course.forecast_id) ?? 0,
   }));
 
@@ -127,16 +109,19 @@ export function optimize(request: OptimizationRequest) {
   ]);
 
   // Generate time conflicts and course duplicates constraint data
-  const timeConflictMap = new Map<string, Course[]>();
-  const courseIdMap = new Map<string, Course[]>();
+  const timeConflictMap = new Map<string, CourseInput[]>();
+  const courseIdMap = new Map<string, CourseInput[]>();
   for (const course of coursesWithPrices) {
     // Add course variables
-    const courseVariableMap = new Map<string, number>();
-    courseVariableMap.set("utility_credits", course.utility * course.credits); // objective function
-    courseVariableMap.set("budget", course.price); // budget constraint
-    courseVariableMap.set("max_credits", course.credits); // max credits constraint
-    courseVariableMap.set("min_credits", course.credits); // min credits constraint
-    variables.set(course.forecast_id, courseVariableMap);
+    variables.set(
+      course.forecast_id,
+      new Map([
+        ["utility_credits", course.utility * course.credits], // objective function
+        ["budget", course.truncated_price], // budget constraint
+        ["max_credits", course.credits], // max credits constraint
+        ["min_credits", course.credits], // min credits constraint
+      ]),
+    );
 
     // Collect time conflicts
     const conflicts = generateTimeConflicts(course);
@@ -159,6 +144,7 @@ export function optimize(request: OptimizationRequest) {
 
     // Collect course duplicates
     const courseId = extractCourseId(course.forecast_id);
+
     // Get or initialize course sections list
     let courseList = courseIdMap.get(courseId);
     if (typeof courseList === "undefined") {
@@ -204,7 +190,7 @@ export function optimize(request: OptimizationRequest) {
     const variableResult = result.variables.find(([name]) => name === course.forecast_id);
     const variableValue = variableResult?.[1] ?? 0;
     if (variableValue === 1) {
-      totalCost += course.price;
+      totalCost += course.truncated_price;
       totalCredits += course.credits;
       totalUtility += course.utility;
       selectedCourses.push(course.forecast_id);
