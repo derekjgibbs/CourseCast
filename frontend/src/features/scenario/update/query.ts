@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Course } from "@/lib/schema/course";
 
-async function fetchCourses() {
+export async function fetchCourses() {
   const file = await asyncBufferFromUrl({ url: "/courses.parquet" });
   const data = await parquetReadObjects({ file });
   return data.map(data => parse(Course, data));

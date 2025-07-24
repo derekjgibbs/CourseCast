@@ -17,6 +17,8 @@ import {
 } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
 
+import { optimize } from "@/lib/solver/optimize";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,8 +30,7 @@ import { CourseProvider } from "./store";
 import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
 import { LiveCourseUtilityTable } from "./live-course-utility-table";
 import { LiveFixedCourseCatalogTable } from "./live-fixed-course-catalog-table";
-import { useCourses } from "./query";
-import { mutation } from "@/convex/_generated/server";
+import { fetchCourses, useCourses } from "./query";
 
 function onSuccess() {
   toast.success("Scenario successfully updated");
@@ -205,14 +206,14 @@ function ScenarioUpdateForm({
               size="icon"
               className="rounded-full p-8 shadow-2xl disabled:opacity-100"
               disabled={isLoading}
-              formAction={data => {
+              formAction={async data => {
                 const {
                   id,
                   token_budget,
                   credit_range: [min_credits, max_credits],
                   ...rest
                 } = parseUpdateUserScenarioFormData(data);
-                saveMutation.mutate({
+                await saveMutation.mutateAsync({
                   ...rest,
                   id: id as UserScenarioId,
                   token_budget: BigInt(token_budget),
@@ -238,13 +239,29 @@ function ScenarioUpdateForm({
               size="icon"
               className="rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 shadow-2xl hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 disabled:opacity-100"
               disabled={isLoading}
-              formAction={data => {
+              formAction={async data => {
                 const {
-                  id,
                   token_budget,
                   credit_range: [min_credits, max_credits],
+                  fixed_courses = [],
+                  utilities = {},
                 } = parseUpdateUserScenarioFormData(data);
-                // TODO
+                console.log(
+                  optimize({
+                    budget: token_budget,
+                    min_credits,
+                    max_credits,
+                    utilities: new Map(
+                      Object.entries(utilities).map(([forecast_id, utility]) => [
+                        forecast_id,
+                        Number(utility),
+                      ]),
+                    ),
+                    fixed_courses,
+                    courses: await fetchCourses(),
+                    seed: 0,
+                  }),
+                );
               }}
             >
               {isLoading ? (

@@ -1,4 +1,4 @@
-import { Coefficients, type Constraint, solve } from "yalps";
+import { type Constraint, solve } from "yalps";
 
 import type { Course } from "@/lib/schema/course";
 
@@ -43,17 +43,8 @@ interface OptimizedCourse {
   price: number;
   credits: number;
   utility: number;
-  selected: boolean;
   department: string;
   title: string;
-}
-
-interface OptimizationResponse {
-  selectedCourses: OptimizedCourse[];
-  totalCost: number;
-  totalCredits: number;
-  totalUtility: number;
-  optimizationStatus: string;
 }
 
 /** Calculate final price using Monte Carlo simulation with z-scores */
@@ -134,7 +125,9 @@ function extractCourseId(forecast_id: string): string {
   return forecast_id.substring(0, 8);
 }
 
-export function optimize(request: OptimizationRequest): OptimizationResponse {
+export function optimize(request: OptimizationRequest) {
+  console.log(request);
+
   // Calculate prices for all courses
   const coursesWithPrices = request.courses.map(course => ({
     ...course,
@@ -227,23 +220,19 @@ export function optimize(request: OptimizationRequest): OptimizationResponse {
   for (const course of coursesWithPrices) {
     const variableResult = result.variables.find(([name]) => name === course.forecast_id);
     const variableValue = variableResult?.[1] ?? 0;
-
-    const isSelected = variableValue === 1;
     if (variableValue === 1) {
       totalCost += course.price;
       totalCredits += course.credits;
       totalUtility += course.utility;
+      selectedCourses.push({
+        forecast_id: course.forecast_id,
+        price: course.price,
+        credits: course.credits,
+        utility: course.utility,
+        department: course.department,
+        title: course.title,
+      });
     }
-
-    selectedCourses.push({
-      forecast_id: course.forecast_id,
-      price: course.price,
-      credits: course.credits,
-      utility: course.utility,
-      selected: isSelected,
-      department: course.department,
-      title: course.title,
-    });
   }
 
   return {
