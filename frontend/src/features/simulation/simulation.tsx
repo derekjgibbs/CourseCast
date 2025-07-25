@@ -159,13 +159,13 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
               {courseProbabilities.map(course => {
                 let progressClass: string;
                 let labelClass: string;
-                if (course.probability < 0.2) {
+                if (course.probability < 0.4) {
                   progressClass = "stroke-red-600";
                   labelClass = "text-red-600";
-                } else if (course.probability < 0.4) {
+                } else if (course.probability < 0.6) {
                   progressClass = "stroke-orange-600";
                   labelClass = "text-orange-600";
-                } else if (course.probability < 0.6) {
+                } else if (course.probability < 0.8) {
                   progressClass = "stroke-yellow-600";
                   labelClass = "text-yellow-600";
                 } else {
@@ -182,8 +182,8 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                           value={course.probability * 100}
                           className="stroke-muted"
                           progressClassName={progressClass}
-                          showLabel={true}
                           labelClassName={cn("text-xs font-semibold", labelClass)}
+                          showLabel
                         />
                       </div>
                     </TableCell>
@@ -236,13 +236,13 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
               {scheduleProbabilities.map(schedule => {
                 let progressClass: string;
                 let labelClass: string;
-                if (schedule.probability < 0.2) {
+                if (schedule.probability < 0.4) {
                   progressClass = "stroke-red-600";
                   labelClass = "text-red-600";
-                } else if (schedule.probability < 0.4) {
+                } else if (schedule.probability < 0.6) {
                   progressClass = "stroke-orange-600";
                   labelClass = "text-orange-600";
-                } else if (schedule.probability < 0.6) {
+                } else if (schedule.probability < 0.8) {
                   progressClass = "stroke-yellow-600";
                   labelClass = "text-yellow-600";
                 } else {
@@ -258,17 +258,19 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                     <TableCell>
                       <div className="flex items-center justify-center space-x-3">
                         <RadialProgress
-                          size={64}
-                          strokeWidth={4}
+                          size={96}
+                          strokeWidth={8}
                           value={schedule.probability * 100}
                           className="stroke-muted"
                           progressClassName={progressClass}
                           showLabel={true}
-                          labelClassName={cn("text-xs font-semibold", labelClass)}
+                          labelClassName={cn("text-lg font-semibold", labelClass)}
                         />
                       </div>
                     </TableCell>
-                    <TableCell className="text-center font-semibold">{totalCredits}</TableCell>
+                    <TableCell className="text-center text-lg font-semibold">
+                      {totalCredits}
+                    </TableCell>
                     <TableCell>
                       <div className="space-y-2">
                         {schedule.courses.map(course => (

@@ -71,7 +71,7 @@ export function RadialProgress({
             labelClassName,
           )}
         >
-          {typeof renderLabel === "undefined" ? value : renderLabel(value)}
+          {typeof renderLabel === "undefined" ? value.toFixed(0) : renderLabel(value)}
         </div>
       )}
     </div>
