@@ -16,8 +16,16 @@ export function HomeMain() {
       </AuthLoading>
       <Unauthenticated>
         <div className="flex grow items-center justify-center px-6 py-8">
-          <div className="w-full max-w-7xl">
-            <AuthenticationForm />
+          <div className="w-full max-w-md">
+            <div className="space-y-6 text-center">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold text-gray-900">Welcome to CourseCast</h1>
+                <p className="text-lg text-gray-600">
+                  Get started with course optimization using Monte Carlo simulation.
+                </p>
+              </div>
+              <AuthenticationForm />
+            </div>
           </div>
         </div>
       </Unauthenticated>
