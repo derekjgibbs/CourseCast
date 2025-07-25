@@ -2,8 +2,11 @@ import type { OptimizationResponse } from "./solver";
 
 import { useMemo } from "react";
 
-import { useFetchedCourses } from "@/hooks/use-fetch-courses";
+import type { Course } from "@/lib/schema/course";
 import { cn } from "@/lib/utils";
+
+import { useFetchedCourses } from "@/hooks/use-fetch-courses";
+
 import {
   Table,
   TableBody,
@@ -14,6 +17,8 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { RadialProgress } from "@/components/ui/radial-progress";
+
+import { DepartmentBadge } from "@/features/department-badge";
 
 interface SimulationSummaryProps {
   responses: OptimizationResponse[];
@@ -28,6 +33,23 @@ interface CourseProbabilityData {
   credits: number;
   instructors: string[];
   sectionCode: string;
+}
+
+interface ScheduleCourseData {
+  courseId: string;
+  title: string;
+  department: string;
+  sectionCode: string;
+  startTime: string;
+  stopTime: string;
+  credits: number;
+}
+
+interface ScheduleProbabilityData {
+  scheduleHash: string;
+  probability: number;
+  occurrences: number;
+  courses: ScheduleCourseData[];
 }
 
 export function SimulationSummary({ responses }: SimulationSummaryProps) {
@@ -46,23 +68,67 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
     const probabilityData: CourseProbabilityData[] = [];
     for (const [courseId, occurrences] of courseCounts) {
       const course = courses.get(courseId);
-      if (typeof course !== "undefined")
-        probabilityData.push({
-          courseId,
-          probability: occurrences / responses.length,
-          occurrences,
-          title: course.title,
-          department: course.department,
-          credits: course.credits,
-          instructors: course.instructors,
-          sectionCode: course.section_code,
-        });
+      if (typeof course === "undefined") continue;
+      probabilityData.push({
+        courseId,
+        probability: occurrences / responses.length,
+        occurrences,
+        title: course.title,
+        department: course.department,
+        credits: course.credits,
+        instructors: course.instructors,
+        sectionCode: course.section_code,
+      });
     }
 
     return probabilityData.sort((a, b) => {
       const diff = b.probability - a.probability;
       return diff === 0 ? a.title.localeCompare(b.title) : diff;
     });
+  }, [responses, courses]);
+
+  const scheduleProbabilities = useMemo(() => {
+    // Count occurrences of each unique schedule
+    const scheduleCounts = new Map<string, ScheduleProbabilityData>();
+
+    for (const response of responses) {
+      // Get course details and sort by start_category
+      const selectedCourseDetails = response.selectedCourses
+        .reduce<Course[]>((acc, courseId) => {
+          const course = courses.get(courseId);
+          if (typeof course !== "undefined") acc.push(course);
+          return acc;
+        }, [])
+        .sort((a, b) => a.start_category.localeCompare(b.start_category));
+
+      // Create schedule hash by concatenating course IDs with start categories
+      const scheduleHash = selectedCourseDetails
+        .map(course => `${course.forecast_id}:${course.start_category}`)
+        .join("|");
+
+      const existing = scheduleCounts.get(scheduleHash);
+      if (typeof existing === "undefined")
+        scheduleCounts.set(scheduleHash, {
+          scheduleHash,
+          probability: 1 / responses.length,
+          occurrences: 1,
+          courses: selectedCourseDetails.map(course => ({
+            courseId: course.forecast_id,
+            title: course.title,
+            department: course.department,
+            sectionCode: course.section_code,
+            startTime: course.start_time,
+            stopTime: course.stop_time,
+            credits: course.credits,
+          })),
+        });
+      else {
+        existing.occurrences += 1;
+        existing.probability = existing.occurrences / responses.length;
+      }
+    }
+
+    return Array.from(scheduleCounts.values()).sort((a, b) => b.probability - a.probability);
   }, [responses, courses]);
 
   return (
@@ -123,51 +189,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {(() => {
-                        const dept = course.department;
-                        let gradientClass: string;
-                        switch (dept) {
-                          case "ACCT":
-                            gradientClass = "bg-gradient-to-r from-blue-500 to-indigo-600";
-                            break;
-                          case "REAL":
-                            gradientClass = "bg-gradient-to-r from-green-500 to-emerald-600";
-                            break;
-                          case "FINC":
-                            gradientClass = "bg-gradient-to-r from-purple-500 to-violet-600";
-                            break;
-                          case "MKTG":
-                            gradientClass = "bg-gradient-to-r from-pink-500 to-rose-600";
-                            break;
-                          case "OIDD":
-                            gradientClass = "bg-gradient-to-r from-orange-500 to-amber-600";
-                            break;
-                          case "MGMT":
-                            gradientClass = "bg-gradient-to-r from-cyan-500 to-blue-600";
-                            break;
-                          case "STAT":
-                            gradientClass = "bg-gradient-to-r from-red-500 to-pink-600";
-                            break;
-                          case "BEPP":
-                            gradientClass = "bg-gradient-to-r from-teal-500 to-cyan-600";
-                            break;
-                          case "LGST":
-                            gradientClass = "bg-gradient-to-r from-slate-500 to-gray-600";
-                            break;
-                          default:
-                            gradientClass = "bg-gradient-to-r from-gray-500 to-gray-600";
-                        }
-                        return (
-                          <span
-                            className={cn(
-                              "bg-opacity-90 rounded-full px-3 py-1 text-center text-xs font-medium text-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl",
-                              gradientClass,
-                            )}
-                          >
-                            {dept}
-                          </span>
-                        );
-                      })()}
+                      <DepartmentBadge department={course.department} />
                     </TableCell>
                     <TableCell className="max-w-48">
                       <div className="flex flex-wrap gap-1">
@@ -183,6 +205,82 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                       </div>
                     </TableCell>
                     <TableCell>{course.credits}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Schedule Probabilities</h3>
+        {scheduleProbabilities.length === 0 ? (
+          <p className="text-muted-foreground py-8 text-center">
+            No schedules were generated in simulation runs
+          </p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">Probability</TableHead>
+                <TableHead className="text-center">Total Credits</TableHead>
+                <TableHead>Schedule</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {scheduleProbabilities.map(schedule => {
+                let progressClass: string;
+                let labelClass: string;
+                if (schedule.probability < 0.2) {
+                  progressClass = "stroke-red-600";
+                  labelClass = "text-red-600";
+                } else if (schedule.probability < 0.4) {
+                  progressClass = "stroke-orange-600";
+                  labelClass = "text-orange-600";
+                } else if (schedule.probability < 0.6) {
+                  progressClass = "stroke-yellow-600";
+                  labelClass = "text-yellow-600";
+                } else {
+                  progressClass = "stroke-green-600";
+                  labelClass = "text-green-600";
+                }
+                const totalCredits = schedule.courses.reduce(
+                  (sum, course) => sum + course.credits,
+                  0,
+                );
+                return (
+                  <TableRow key={schedule.scheduleHash}>
+                    <TableCell>
+                      <div className="flex items-center justify-center space-x-3">
+                        <RadialProgress
+                          size={64}
+                          strokeWidth={4}
+                          value={schedule.probability * 100}
+                          className="stroke-muted"
+                          progressClassName={progressClass}
+                          showLabel={true}
+                          labelClassName={cn("text-xs font-semibold", labelClass)}
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center font-semibold">{totalCredits}</TableCell>
+                    <TableCell>
+                      <div className="space-y-2">
+                        {schedule.courses.map(course => (
+                          <div key={course.courseId} className="flex items-center space-x-3">
+                            <div className="flex-1">
+                              <div className="text-sm font-medium">{course.title}</div>
+                              <div className="text-muted-foreground text-xs">
+                                {course.sectionCode}
+                              </div>
+                              <div className="text-muted-foreground text-xs">
+                                {course.startTime} &ndash; {course.stopTime}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 );
               })}
