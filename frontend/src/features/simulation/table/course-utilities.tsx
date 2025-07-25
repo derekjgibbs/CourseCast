@@ -4,7 +4,6 @@ import type { Course } from "@/lib/schema/course";
 import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -75,89 +74,74 @@ interface CourseUtilitiesTableProps {
 }
 
 export function CourseUtilitiesTable({ coursesWithUtilities }: CourseUtilitiesTableProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="inline-flex items-center gap-2">
-          <Heart className="size-5 fill-red-800 text-red-800" />
-          <span>Course Utilities</span>
-        </CardTitle>
-        <CardDescription>Courses with assigned utility values for optimization</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {coursesWithUtilities.length === 0 ? (
-          <div className="flex flex-col items-center space-y-2 p-8">
-            <Heart className="size-8 text-gray-400" />
-            <span className="text-sm font-medium text-gray-600">
-              No course utilities configured
-            </span>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-center">Utility</TableHead>
-                <TableHead className="text-center">Section Code</TableHead>
-                <TableHead className="text-center">Title</TableHead>
-                <TableHead className="text-center">Department</TableHead>
-                <TableHead className="text-center">Instructor</TableHead>
-                <TableHead className="text-center">Schedule</TableHead>
-                <TableHead className="text-center">Credits</TableHead>
-                <TableHead className="text-center">Price Forecast</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="text-center">
-              {coursesWithUtilities
-                .sort((a, b) => Number(b.utility - a.utility))
-                .map(course => (
-                  <TableRow key={course.forecast_id}>
-                    <TableCell>
-                      <span className="text-lg font-bold text-purple-600">
-                        {course.utility.toString()}
-                      </span>
-                    </TableCell>
-                    <TableCell className="font-mono text-sm font-medium text-gray-600">
-                      {course.section_code}
-                    </TableCell>
-                    <TableCell>
-                      <div className="size-full text-left font-semibold text-gray-900">
-                        {course.title}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <DepartmentBadge department={course.department} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {course.instructors.map(instructor => (
-                          <Badge key={instructor} variant="outline" className="text-xs">
-                            {instructor}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div className="font-semibold text-gray-900">{course.days_code}</div>
-                        <div className="text-gray-500">
-                          {course.start_time} - {course.stop_time}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-lg font-bold text-green-600">{course.credits}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-lg font-bold text-red-500">
-                        {formatter.format(course.truncated_price_prediction)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+  return coursesWithUtilities.length === 0 ? (
+    <div className="flex flex-col items-center space-y-2 p-8">
+      <Heart className="size-8 text-gray-400" />
+      <span className="text-sm font-medium text-gray-600">No course utilities configured</span>
+    </div>
+  ) : (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="text-center">Utility</TableHead>
+          <TableHead className="text-center">Section Code</TableHead>
+          <TableHead className="text-center">Title</TableHead>
+          <TableHead className="text-center">Department</TableHead>
+          <TableHead className="text-center">Instructor</TableHead>
+          <TableHead className="text-center">Schedule</TableHead>
+          <TableHead className="text-center">Credits</TableHead>
+          <TableHead className="text-center">Price Forecast</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody className="text-center">
+        {coursesWithUtilities
+          .sort((a, b) => Number(b.utility - a.utility))
+          .map(course => (
+            <TableRow key={course.forecast_id}>
+              <TableCell>
+                <span className="text-lg font-bold text-purple-600">
+                  {course.utility.toString()}
+                </span>
+              </TableCell>
+              <TableCell className="font-mono text-sm font-medium text-gray-600">
+                {course.section_code}
+              </TableCell>
+              <TableCell>
+                <div className="size-full text-left font-semibold text-gray-900">
+                  {course.title}
+                </div>
+              </TableCell>
+              <TableCell>
+                <DepartmentBadge department={course.department} />
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-wrap gap-1">
+                  {course.instructors.map(instructor => (
+                    <Badge key={instructor} variant="outline" className="text-xs">
+                      {instructor}
+                    </Badge>
+                  ))}
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="text-sm">
+                  <div className="font-semibold text-gray-900">{course.days_code}</div>
+                  <div className="text-gray-500">
+                    {course.start_time} - {course.stop_time}
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <span className="text-lg font-bold text-green-600">{course.credits}</span>
+              </TableCell>
+              <TableCell>
+                <span className="text-lg font-bold text-red-500">
+                  {formatter.format(course.truncated_price_prediction)}
+                </span>
+              </TableCell>
+            </TableRow>
+          ))}
+      </TableBody>
+    </Table>
   );
 }
