@@ -83,12 +83,10 @@ export type UpdateUserScenarioInput = Infer<typeof updateUserScenarioValidator>;
 // Document types from schema (will be available after schema generation)
 export type UserDoc = Doc<"users">;
 export type UserScenarioDoc = Doc<"user_scenarios">;
-export type CourseDoc = Doc<"courses">;
 
 // ID types for type safety
 export type UserId = Id<"users">;
 export type UserScenarioId = Id<"user_scenarios">;
-export type CourseId = Id<"courses">;
 
 // Business logic constraints (for use in validation functions)
 export const CONSTRAINTS = {
