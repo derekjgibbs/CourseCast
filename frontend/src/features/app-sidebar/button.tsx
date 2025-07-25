@@ -9,7 +9,7 @@ import { ScenarioDialog } from "@/features/scenario/create";
 export function ScenarioGroupAction() {
   const router = useRouter();
   return (
-    <ScenarioDialog onSuccess={id => router.push(`/scenarios/${id}`)}>
+    <ScenarioDialog onSuccess={id => router.push(`/dashboard/${id}`)}>
       <SidebarGroupAction title="Create New Scenario">
         <Plus />
       </SidebarGroupAction>

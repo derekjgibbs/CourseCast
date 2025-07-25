@@ -294,7 +294,7 @@ export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
         <div className="grow">
           <h3 className="font-semibold text-white">Ready to run a simulation?</h3>
           <p className="mt-1 text-sm text-blue-50">
-            Discovery optimal strategies by simulating a hundred possible course registration
+            Discover optimal strategies by simulating a hundred possible course registration
             outcomes to see the probability of landing your desired classes.
           </p>
         </div>
