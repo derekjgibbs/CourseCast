@@ -1,12 +1,13 @@
 "use client";
 
 import * as v from "valibot";
-import { Loader2, Save } from "lucide-react";
+import { Bookmark, Heart, Loader2, Save, Settings } from "lucide-react";
 import { decode } from "decode-formdata";
 import { toast } from "sonner";
 import { useId, useState } from "react";
 import { useMutation as useConvexMutation, useQuery } from "convex/react";
 import { useMutation as useTanstackMutation } from "@tanstack/react-query";
+import Link from "next/link";
 
 import {
   CONSTRAINTS,
@@ -17,23 +18,25 @@ import {
 } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
 
+import { FetchedCoursesProvider, useFetchCourses } from "@/hooks/use-fetch-courses";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
 
-import { CourseProvider } from "./store";
 import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
 import { LiveCourseUtilityTable } from "./live-course-utility-table";
 import { LiveFixedCourseCatalogTable } from "./live-fixed-course-catalog-table";
-import { useCourses } from "./query";
+import { UserScenarioProvider } from "./store";
 
-function onSuccess() {
+function onSaveSuccess() {
   toast.success("Scenario successfully updated");
 }
 
-function onError() {
+function onSaveError() {
   toast.error("Failed to update scenario", {
     description: "Please try again later.",
     duration: Infinity,
@@ -67,6 +70,14 @@ const updateUserScenarioSchema = v.object({
   ),
 });
 
+function parseUpdateUserScenarioFormData(data: FormData) {
+  const json = decode(data, {
+    arrays: ["credit_range", "fixed_courses"],
+    numbers: ["token_budget"],
+  });
+  return v.parse(updateUserScenarioSchema, json);
+}
+
 /** Needs a submit button elsewhere. */
 function ScenarioUpdateForm({
   id: scenarioId,
@@ -76,6 +87,7 @@ function ScenarioUpdateForm({
   max_credits: initialMaxCredits,
 }: ScenarioUpdateFormProps) {
   const id = useId();
+
   const [name, setName] = useState(initialName);
   const [tokenBudget, setTokenBudget] = useState(Number(initialTokenBudget));
   const [creditRange, setCreditRange] = useState<[number, number]>([
@@ -84,39 +96,67 @@ function ScenarioUpdateForm({
   ]);
 
   const mutationFn = useConvexMutation(api.scenarios.update);
-  const mutation = useTanstackMutation({ mutationFn, onSuccess, onError });
+  const mutation = useTanstackMutation({
+    mutationFn,
+    onSuccess: onSaveSuccess,
+    onError: onSaveError,
+  });
 
   return (
     <form
       onSubmit={event => {
         event.preventDefault();
         event.stopPropagation();
-        const data = new FormData(event.currentTarget);
-        console.log(data);
-        const json = decode(data, {
-          arrays: ["credit_range", "fixed_courses"],
-          numbers: ["token_budget"],
-        });
-        const {
-          id,
-          token_budget,
-          credit_range: [min_credits, max_credits],
-          ...rest
-        } = v.parse(updateUserScenarioSchema, json);
-        mutation.mutate({
-          ...rest,
-          id: id as UserScenarioId,
-          token_budget: BigInt(token_budget),
-          min_credits,
-          max_credits,
-        });
+
+        if (event.currentTarget.reportValidity() && event.nativeEvent instanceof SubmitEvent) {
+          const button = event.nativeEvent.submitter;
+          if (button === null) return;
+
+          const data = new FormData(event.currentTarget);
+          const parsed = parseUpdateUserScenarioFormData(data);
+          const {
+            id,
+            token_budget,
+            credit_range: [min_credits, max_credits],
+            ...rest
+          } = parsed;
+          mutation.mutate({
+            ...rest,
+            id: id as UserScenarioId,
+            token_budget: BigInt(token_budget),
+            min_credits,
+            max_credits,
+          });
+          // const {
+          //   token_budget,
+          //   credit_range: [min_credits, max_credits],
+          //   fixed_courses = [],
+          //   utilities = {},
+          // } = parsed;
+          // simulateMutation.mutate({
+          //   budget: token_budget,
+          //   min_credits,
+          //   max_credits,
+          //   utilities: new Map(
+          //     Object.entries(utilities).map(([forecast_id, utility]) => [
+          //       forecast_id,
+          //       Number(utility),
+          //     ]),
+          //   ),
+          //   fixed_courses,
+          //   courses: fetchedCourses,
+          // });
+        }
       }}
       className="space-y-8"
     >
       <input type="hidden" name="id" value={scenarioId} />
       <Card>
         <CardHeader>
-          <CardTitle>Configure Constraints</CardTitle>
+          <CardTitle className="inline-flex items-center gap-2">
+            <Settings className="fill-gray-200 text-gray-500" />
+            <span>Configure Constraints</span>
+          </CardTitle>
           <CardDescription>Configure the simulation constraints for the scenario</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -182,7 +222,10 @@ function ScenarioUpdateForm({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Fixed Courses</CardTitle>
+          <CardTitle className="inline-flex items-center gap-2">
+            <Bookmark className="fill-blue-800 text-blue-800" />
+            <span>Fixed Courses</span>
+          </CardTitle>
           <CardDescription>Set up the courses that are fixed by your curriculum</CardDescription>
         </CardHeader>
         <CardContent>
@@ -191,7 +234,10 @@ function ScenarioUpdateForm({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Course Utility</CardTitle>
+          <CardTitle className="inline-flex items-center gap-2">
+            <Heart className="fill-red-800 text-red-800" />
+            <span>Course Utility</span>
+          </CardTitle>
           <CardDescription>Configure the utility for each of your courses</CardDescription>
         </CardHeader>
         <CardContent>
@@ -207,19 +253,25 @@ function ScenarioUpdateForm({
           <LiveCourseCatalogDataTable />
         </CardContent>
       </Card>
-      <Button
-        type="submit"
-        size="icon"
-        className="fixed right-0 bottom-0 m-4 rounded-full p-8 shadow-2xl disabled:opacity-100"
-        disabled={mutation.isPending}
-      >
-        {mutation.isPending ? (
-          <Loader2 className="size-8 animate-spin" />
-        ) : (
-          <Save className="size-8" />
-        )}
-        <span className="sr-only">Save Scenario</span>
-      </Button>
+      <div className="fixed right-0 bottom-0 m-4 flex gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="submit"
+              size="icon"
+              className="rounded-full p-8 shadow-2xl disabled:opacity-100"
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? (
+                <Loader2 className="size-8 animate-spin" />
+              ) : (
+                <Save className="size-8" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent collisionPadding={16}>Save Scenario</TooltipContent>
+        </Tooltip>
+      </div>
     </form>
   );
 }
@@ -229,28 +281,43 @@ interface ScenarioUpdateProps {
 }
 
 export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
-  const { data: courses } = useCourses();
+  const { data } = useFetchCourses();
   const scenario = useQuery(api.scenarios.get, { id });
-  return typeof courses === "undefined" || typeof scenario === "undefined" ? (
+  return typeof data === "undefined" || typeof scenario === "undefined" ? (
     <div className="flex h-full flex-col items-center justify-center space-y-2">
       <Loader2 className="size-16 animate-spin text-gray-400" />
       <span className="text-sm font-medium text-gray-600">Fetching scenario</span>
     </div>
   ) : (
-    <div className="relative mx-auto w-full max-w-7xl grow justify-center px-6 py-8">
-      <CourseProvider
-        courses={courses}
-        fixedCourses={scenario.fixed_courses}
-        utilities={scenario.utilities}
-      >
-        <ScenarioUpdateForm
-          id={id}
-          name={scenario.name}
-          token_budget={scenario.token_budget}
-          min_credits={scenario.min_credits}
-          max_credits={scenario.max_credits}
-        />
-      </CourseProvider>
+    <div className="relative mx-auto w-full max-w-7xl grow justify-center space-y-8 px-6 py-8">
+      <div className="flex items-center justify-between gap-6 rounded-lg border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-4 text-white shadow-lg">
+        <div className="grow">
+          <h3 className="font-semibold text-white">Ready to run a simulation?</h3>
+          <p className="mt-1 text-sm text-blue-50">
+            Discovery optimal strategies by simulating a hundred possible course registration
+            outcomes to see the probability of landing your desired classes.
+          </p>
+        </div>
+        <Button
+          asChild
+          variant="secondary"
+          size="lg"
+          className="shrink-0 bg-white font-medium text-blue-600 hover:bg-blue-50"
+        >
+          <Link href={`/dashboard/${id}/simulate`}>Let&apos;s go!</Link>
+        </Button>
+      </div>
+      <FetchedCoursesProvider courses={data}>
+        <UserScenarioProvider fixedCourses={scenario.fixed_courses} utilities={scenario.utilities}>
+          <ScenarioUpdateForm
+            id={id}
+            name={scenario.name}
+            token_budget={scenario.token_budget}
+            min_credits={scenario.min_credits}
+            max_credits={scenario.max_credits}
+          />
+        </UserScenarioProvider>
+      </FetchedCoursesProvider>
     </div>
   );
 }
