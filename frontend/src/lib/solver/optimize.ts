@@ -161,7 +161,7 @@ export function optimize(request: OptimizationRequest) {
   // Solve the YALPS model
   const solution = solve({
     direction: "maximize",
-    objective: "utility_credits",
+    objective: "weighted_credit_utility",
     constraints,
     variables,
     binaries: true,
