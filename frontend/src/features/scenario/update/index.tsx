@@ -1,12 +1,13 @@
 "use client";
 
 import * as v from "valibot";
-import { Loader2, Save } from "lucide-react";
+import { Bookmark, Heart, Loader2, Save } from "lucide-react";
 import { decode } from "decode-formdata";
 import { toast } from "sonner";
 import { useId, useState } from "react";
 import { useMutation as useConvexMutation, useQuery } from "convex/react";
 import { useMutation as useTanstackMutation } from "@tanstack/react-query";
+import Link from "next/link";
 
 import {
   CONSTRAINTS,
@@ -217,7 +218,10 @@ function ScenarioUpdateForm({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Fixed Courses</CardTitle>
+          <CardTitle className="inline-flex items-center gap-2">
+            <Bookmark className="fill-blue-800" />
+            <span>Fixed Courses</span>
+          </CardTitle>
           <CardDescription>Set up the courses that are fixed by your curriculum</CardDescription>
         </CardHeader>
         <CardContent>
@@ -226,7 +230,10 @@ function ScenarioUpdateForm({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Course Utility</CardTitle>
+          <CardTitle className="inline-flex items-center gap-2">
+            <Heart className="fill-red-800" />
+            <span>Course Utility</span>
+          </CardTitle>
           <CardDescription>Configure the utility for each of your courses</CardDescription>
         </CardHeader>
         <CardContent>
@@ -260,24 +267,6 @@ function ScenarioUpdateForm({
           </TooltipTrigger>
           <TooltipContent collisionPadding={16}>Save Scenario</TooltipContent>
         </Tooltip>
-        {/* <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              id={runId}
-              type="submit"
-              size="icon"
-              className="rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 shadow-2xl hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 disabled:opacity-100"
-              disabled={isPending}
-            >
-              {simulateMutation.isPending ? (
-                <Loader2 className="size-8 animate-spin" />
-              ) : (
-                <Play className="size-8" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent collisionPadding={16}>Run Simulation</TooltipContent>
-        </Tooltip> */}
       </div>
     </form>
   );
@@ -296,7 +285,24 @@ export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
       <span className="text-sm font-medium text-gray-600">Fetching scenario</span>
     </div>
   ) : (
-    <div className="relative mx-auto w-full max-w-7xl grow justify-center px-6 py-8">
+    <div className="relative mx-auto w-full max-w-7xl grow justify-center space-y-8 px-6 py-8">
+      <div className="flex items-center justify-between gap-6 rounded-lg border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-4 text-white shadow-lg">
+        <div className="grow">
+          <h3 className="font-semibold text-white">Ready to run a simulation?</h3>
+          <p className="mt-1 text-sm text-blue-50">
+            Discovery optimal strategies by simulating a hundred possible course registration
+            outcomes to see the probability of landing your desired classes.
+          </p>
+        </div>
+        <Button
+          asChild
+          variant="secondary"
+          size="lg"
+          className="shrink-0 bg-white font-medium text-blue-600 hover:bg-blue-50"
+        >
+          <Link href={`/dashboard/${id}/simulate`}>Let&apos;s go!</Link>
+        </Button>
+      </div>
       <FetchedCoursesProvider courses={data}>
         <UserScenarioProvider fixedCourses={scenario.fixed_courses} utilities={scenario.utilities}>
           <ScenarioUpdateForm
