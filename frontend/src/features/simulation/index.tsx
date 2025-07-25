@@ -1,7 +1,7 @@
 "use client";
 
 import { Bookmark, Heart, Loader2, Settings } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "convex/react";
 
 import type { UserScenarioDoc, UserScenarioId } from "@/convex/types";
@@ -21,10 +21,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { ConstraintsTable } from "./table/constraints";
-import { FixedCoursesTable } from "./table/fixed-courses";
 import { CourseUtilitiesTable } from "./table/course-utilities";
+import { FixedCoursesTable } from "./table/fixed-courses";
+import { SimulationSummary } from "./simulation";
 import { useSpawnOptimizerPool } from "./query";
 
 interface LiveSimulationProps {
@@ -59,6 +61,7 @@ interface SimulationProps {
 
 function SimulationContent({ scenario }: SimulationProps) {
   const courseMap = useFetchedCourses();
+
   const fixedCourses = useMemo(
     () =>
       scenario.fixed_courses.reduce((acc, courseId) => {
@@ -68,6 +71,7 @@ function SimulationContent({ scenario }: SimulationProps) {
       }, [] as Course[]),
     [scenario.fixed_courses, courseMap],
   );
+
   const coursesWithUtilities = useMemo(
     () =>
       Object.entries(scenario.utilities).reduce((acc, [courseId, utility]) => {
@@ -77,8 +81,10 @@ function SimulationContent({ scenario }: SimulationProps) {
       }, [] as CourseWithUtility[]),
     [scenario.utilities, courseMap],
   );
+
   const eligibleCourses = useMemo(() => {
     const eligible = new Map<string, Course>();
+
     // Include courses with positive utility
     for (const [courseId, utility] of Object.entries(scenario.utilities)) {
       if (Number(utility) > 0) {
@@ -86,27 +92,31 @@ function SimulationContent({ scenario }: SimulationProps) {
         if (typeof course !== "undefined") eligible.set(courseId, course);
       }
     }
+
     // Include fixed courses (regardless of utility)
     for (const courseId of scenario.fixed_courses) {
       const course = courseMap.get(courseId);
       if (typeof course !== "undefined") eligible.set(courseId, course);
     }
+
     return eligible;
   }, [scenario.utilities, scenario.fixed_courses, courseMap]);
+
+  const utilities = useMemo(() => {
+    return new Map(
+      Object.entries(scenario.utilities).map(([courseId, utility]) => [courseId, Number(utility)]),
+    );
+  }, [scenario.utilities]);
+
   const simulation = useSpawnOptimizerPool({
     budget: Number(scenario.token_budget),
     min_credits: scenario.min_credits,
     max_credits: scenario.max_credits,
     courses: eligibleCourses,
     fixed_courses: scenario.fixed_courses,
-    utilities: new Map(
-      Object.entries(scenario.utilities).map(([courseId, utility]) => [courseId, Number(utility)]),
-    ),
+    utilities,
   });
-  useEffect(() => {
-    if (typeof simulation.data === "undefined") return;
-    console.log(simulation.data);
-  }, [simulation.data]);
+
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
       <Accordion type="multiple" className="w-full">
@@ -149,6 +159,39 @@ function SimulationContent({ scenario }: SimulationProps) {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+      {typeof simulation.data === "undefined" ? (
+        <div className="space-y-6 opacity-60 transition-opacity duration-1000">
+          <div className="space-y-3">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-20" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-48" />
+            <div className="space-y-3">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-5/6" />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <SimulationSummary responses={simulation.data} />
+      )}
     </div>
   );
 }

@@ -42,6 +42,8 @@ export interface OptimizationPoolRequest extends Omit<OptimizationRequest, "seed
   courses: FetchedCourses;
 }
 
+export type { OptimizationResponse };
+
 // TODO: Allow the user to configure the concurrency limit.
 export async function spawnOptimizerPool({ courses, ...request }: OptimizationPoolRequest) {
   const workers = Array.from(
