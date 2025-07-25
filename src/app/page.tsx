@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-
 import Link from "next/link";
+
+import { HomeMain } from "@/features/home";
 
 export const metadata: Metadata = {
   title: "CourseCast",
@@ -8,9 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  // TODO: Call to Action
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <header
         className="bg-background sticky top-0 z-1 border-b border-gray-200 shadow-sm"
         role="banner"
@@ -24,7 +24,7 @@ export default function Page() {
           </Link>
         </nav>
       </header>
-      <main className="grow" />
+      <HomeMain />
       <footer className="mt-12 border-t border-gray-200 bg-white" role="contentinfo">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="text-center text-sm text-gray-500">
@@ -32,6 +32,6 @@ export default function Page() {
           </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

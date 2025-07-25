@@ -23,12 +23,14 @@ CourseCast is a Streamlit-based web application that uses Monte Carlo simulation
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd CourseCast
 ```
 
 2. Install required dependencies:
+
 ```bash
 pip install streamlit pandas numpy scipy matplotlib plotly
 ```
@@ -36,6 +38,7 @@ pip install streamlit pandas numpy scipy matplotlib plotly
 ### Running the Application
 
 Start the Streamlit application:
+
 ```bash
 streamlit run streamlit_app.py
 ```
@@ -66,6 +69,7 @@ See `CLAUDE.md` for detailed development guidelines, architecture overview, and 
 ## Future Enhancements
 
 The project is being redesigned for v2.0 with planned improvements:
+
 - Enhanced optimization algorithms
 - Better user interface design
 - Improved performance and scalability

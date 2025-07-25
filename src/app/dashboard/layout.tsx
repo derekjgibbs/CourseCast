@@ -8,7 +8,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 
 import { LiveAppHeader, AppSidebar } from "@/features/app-sidebar";
-import { LiveConvexProvider } from "@/features/live-convex-provider";
 
 interface LayoutProps {
   children: ReactNode;
@@ -20,25 +19,23 @@ export default function Layout({ children }: LayoutProps) {
   );
   return (
     <SidebarProvider>
-      <LiveConvexProvider>
-        <QueryClientProvider client={client}>
-          <div className="flex w-full">
-            <nav>
-              <AppSidebar />
-            </nav>
-            <main className="flex grow flex-col overflow-y-auto">
-              <header className="bg-background sticky top-0 flex h-12 shrink-0 items-center gap-2 border-b px-2">
-                <SidebarTrigger />
-                <Separator orientation="vertical" />
-                <div className="ml-2">
-                  <LiveAppHeader />
-                </div>
-              </header>
-              {children}
-            </main>
-          </div>
-        </QueryClientProvider>
-      </LiveConvexProvider>
+      <QueryClientProvider client={client}>
+        <div className="flex w-full">
+          <nav>
+            <AppSidebar />
+          </nav>
+          <main className="flex grow flex-col overflow-y-auto">
+            <header className="bg-background sticky top-0 flex h-12 shrink-0 items-center gap-2 border-b px-2">
+              <SidebarTrigger />
+              <Separator orientation="vertical" />
+              <div className="ml-2">
+                <LiveAppHeader />
+              </div>
+            </header>
+            {children}
+          </main>
+        </div>
+      </QueryClientProvider>
       <Toaster richColors closeButton position="bottom-left" theme="light" />
     </SidebarProvider>
   );
