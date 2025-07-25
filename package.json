@@ -15,6 +15,7 @@
     "ui:init": "shadcn init",
     "ui:add": "shadcn add",
     "convex:dev": "convex dev",
+    "convex:deploy": "convex deploy",
     "convert": "tsx src/data/convert.ts"
   },
   "dependencies": {
