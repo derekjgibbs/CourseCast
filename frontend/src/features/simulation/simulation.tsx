@@ -42,6 +42,7 @@ interface ScheduleCourseData {
   sectionCode: string;
   startTime: string;
   stopTime: string;
+  daysCode: string;
   credits: number;
 }
 
@@ -99,11 +100,14 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
           if (typeof course !== "undefined") acc.push(course);
           return acc;
         }, [])
-        .sort((a, b) => a.start_category.localeCompare(b.start_category));
+        .sort((a, b) => {
+          const categoryComparison = a.start_category.localeCompare(b.start_category);
+          return categoryComparison === 0 ? a.title.localeCompare(b.title) : categoryComparison;
+        });
 
-      // Create schedule hash by concatenating course IDs with start categories
+      // Create schedule hash by concatenating course IDs with start categories and days
       const scheduleHash = selectedCourseDetails
-        .map(course => `${course.forecast_id}:${course.start_category}`)
+        .map(course => `${course.forecast_id}:${course.start_category}:${course.days_code}`)
         .join("|");
 
       const existing = scheduleCounts.get(scheduleHash);
@@ -119,6 +123,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
             sectionCode: course.section_code,
             startTime: course.start_time,
             stopTime: course.stop_time,
+            daysCode: course.days_code,
             credits: course.credits,
           })),
         });
@@ -274,7 +279,8 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                                 {course.sectionCode}
                               </div>
                               <div className="text-muted-foreground text-xs">
-                                {course.startTime} &ndash; {course.stopTime}
+                                {course.daysCode} &middot; {course.startTime} &ndash;{" "}
+                                {course.stopTime}
                               </div>
                             </div>
                           </div>
