@@ -1,7 +1,7 @@
 "use client";
 
 import { Bookmark, Heart, Loader2, Settings } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "convex/react";
 
 import type { UserScenarioDoc, UserScenarioId } from "@/convex/types";
@@ -25,6 +25,7 @@ import {
 import { ConstraintsTable } from "./table/constraints";
 import { FixedCoursesTable } from "./table/fixed-courses";
 import { CourseUtilitiesTable } from "./table/course-utilities";
+import { useSpawnOptimizerPool } from "./query";
 
 interface LiveSimulationProps {
   scenarioId: UserScenarioId;
@@ -76,6 +77,36 @@ function SimulationContent({ scenario }: SimulationProps) {
       }, [] as CourseWithUtility[]),
     [scenario.utilities, courseMap],
   );
+  const eligibleCourses = useMemo(() => {
+    const eligible = new Map<string, Course>();
+    // Include courses with positive utility
+    for (const [courseId, utility] of Object.entries(scenario.utilities)) {
+      if (Number(utility) > 0) {
+        const course = courseMap.get(courseId);
+        if (typeof course !== "undefined") eligible.set(courseId, course);
+      }
+    }
+    // Include fixed courses (regardless of utility)
+    for (const courseId of scenario.fixed_courses) {
+      const course = courseMap.get(courseId);
+      if (typeof course !== "undefined") eligible.set(courseId, course);
+    }
+    return eligible;
+  }, [scenario.utilities, scenario.fixed_courses, courseMap]);
+  const simulation = useSpawnOptimizerPool({
+    budget: Number(scenario.token_budget),
+    min_credits: scenario.min_credits,
+    max_credits: scenario.max_credits,
+    courses: eligibleCourses,
+    fixed_courses: scenario.fixed_courses,
+    utilities: new Map(
+      Object.entries(scenario.utilities).map(([courseId, utility]) => [courseId, Number(utility)]),
+    ),
+  });
+  useEffect(() => {
+    if (typeof simulation.data === "undefined") return;
+    console.log(simulation.data);
+  }, [simulation.data]);
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
       <Accordion type="multiple" className="w-full">

@@ -38,7 +38,7 @@ export class MissingSimulationSeedValue extends Error {
   }
 }
 
-interface OptimizationPoolRequest extends Omit<OptimizationRequest, "seed" | "courses"> {
+export interface OptimizationPoolRequest extends Omit<OptimizationRequest, "seed" | "courses"> {
   courses: FetchedCourses;
 }
 
