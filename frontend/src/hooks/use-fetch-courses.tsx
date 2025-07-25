@@ -5,8 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Course } from "@/lib/schema/course";
 
-export async function fetchCourses() {
-  const file = await asyncBufferFromUrl({ url: "/courses.parquet" });
+interface FetchCoursesOptions {
+  signal?: AbortSignal;
+}
+
+export async function fetchCourses({ signal }: FetchCoursesOptions) {
+  const file = await asyncBufferFromUrl({ url: "/courses.parquet", requestInit: { signal } });
   const rows = await parquetReadObjects({ file });
   return new Map(
     rows.map(data => {

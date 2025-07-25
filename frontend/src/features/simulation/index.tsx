@@ -36,7 +36,7 @@ export function LiveSimulation({ scenarioId }: LiveSimulationProps) {
   return typeof data === "undefined" || typeof scenario === "undefined" ? (
     <div className="flex h-full flex-col items-center justify-center space-y-2">
       <Loader2 className="size-16 animate-spin" />
-      <span className="text-sm font-medium text-gray-600">Loading courses</span>
+      <span className="text-sm font-medium text-gray-600">Loading scenario</span>
     </div>
   ) : (
     <FetchedCoursesProvider courses={data}>
@@ -78,17 +78,7 @@ function SimulationContent({ scenario }: SimulationProps) {
   );
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900">Simulation Parameters</h1>
-        <p className="text-gray-600">
-          Review the configuration parameters for your course registration simulation
-        </p>
-      </div>
-      <Accordion
-        type="multiple"
-        defaultValue={["constraints", "fixed-courses", "utilities"]}
-        className="w-full"
-      >
+      <Accordion type="multiple" className="w-full">
         <AccordionItem value="constraints" className="border-b-0">
           <AccordionTrigger>
             <div className="inline-flex items-center gap-2">

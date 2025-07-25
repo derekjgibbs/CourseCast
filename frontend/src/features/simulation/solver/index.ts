@@ -1,7 +1,7 @@
 import { chunked, range, zip } from "itertools";
 import { parse } from "valibot";
 
-import type { FetchedCourses } from "@/features/scenario/update/query";
+import type { FetchedCourses } from "@/hooks/use-fetch-courses";
 
 import { type OptimizationRequest, OptimizationResponse } from "./schema";
 
@@ -55,12 +55,14 @@ export async function spawnOptimizerPool({ courses, ...request }: OptimizationPo
         promises.push(
           enqueueOptimizationJob(worker, {
             ...request,
-            courses: courses.map(({ truncated_price_fluctuations, ...course }) => {
-              const truncatedPrice = truncated_price_fluctuations[seed];
-              if (typeof truncatedPrice === "undefined")
-                throw new MissingSimulationSeedValue(course.forecast_id);
-              return { ...course, truncated_price: truncatedPrice };
-            }),
+            courses: Array.from(courses.values()).map(
+              ({ truncated_price_fluctuations, ...course }) => {
+                const truncatedPrice = truncated_price_fluctuations[seed];
+                if (typeof truncatedPrice === "undefined")
+                  throw new MissingSimulationSeedValue(course.forecast_id);
+                return { ...course, truncated_price: truncatedPrice };
+              },
+            ),
           }),
         );
     return await Promise.all(promises);

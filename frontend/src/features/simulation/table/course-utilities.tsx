@@ -4,6 +4,7 @@ import type { Course } from "@/lib/schema/course";
 import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
+import { RadialProgress } from "@/components/ui/radial-progress";
 import {
   Table,
   TableBody,
@@ -99,9 +100,16 @@ export function CourseUtilitiesTable({ coursesWithUtilities }: CourseUtilitiesTa
           .map(course => (
             <TableRow key={course.forecast_id}>
               <TableCell>
-                <span className="text-lg font-bold text-purple-600">
-                  {course.utility.toString()}
-                </span>
+                <div className="flex items-center justify-center">
+                  <RadialProgress
+                    size={64}
+                    strokeWidth={4}
+                    value={Number(course.utility)}
+                    labelClassName="text-purple-600 text-xs text-center"
+                    progressClassName="stroke-purple-600"
+                    showLabel
+                  />
+                </div>
               </TableCell>
               <TableCell className="font-mono text-sm font-medium text-gray-600">
                 {course.section_code}
