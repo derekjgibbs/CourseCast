@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Heart, Loader2 } from "lucide-react";
+import { Bookmark, Heart, Loader2, Settings } from "lucide-react";
 import { useMemo } from "react";
 import { useQuery } from "convex/react";
 
@@ -89,11 +89,14 @@ function SimulationContent({ scenario }: SimulationProps) {
         defaultValue={["constraints", "fixed-courses", "utilities"]}
         className="w-full"
       >
-        <AccordionItem value="constraints">
+        <AccordionItem value="constraints" className="border-b-0">
           <AccordionTrigger>
-            <span className="text-lg font-semibold">Scenario Constraints</span>
+            <div className="inline-flex items-center gap-2">
+              <Settings className="size-5 fill-gray-200 text-gray-500" />
+              <span className="text-lg font-semibold">Scenario Constraints</span>
+            </div>
           </AccordionTrigger>
-          <AccordionContent>
+          <AccordionContent className="rounded-md bg-gray-100 p-4">
             <ConstraintsTable
               name={scenario.name}
               tokenBudget={scenario.token_budget}
@@ -102,25 +105,25 @@ function SimulationContent({ scenario }: SimulationProps) {
             />
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="fixed-courses">
+        <AccordionItem value="fixed-courses" className="border-b-0">
           <AccordionTrigger>
             <div className="inline-flex items-center gap-2">
               <Bookmark className="size-5 fill-blue-800 text-blue-800" />
               <span className="text-lg font-semibold">Fixed Courses</span>
             </div>
           </AccordionTrigger>
-          <AccordionContent>
+          <AccordionContent className="rounded-md bg-blue-50 p-4">
             <FixedCoursesTable courses={fixedCourses} />
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="utilities">
+        <AccordionItem value="utilities" className="border-b-0">
           <AccordionTrigger>
             <div className="inline-flex items-center gap-2">
               <Heart className="size-5 fill-red-800 text-red-800" />
               <span className="text-lg font-semibold">Course Utilities</span>
             </div>
           </AccordionTrigger>
-          <AccordionContent>
+          <AccordionContent className="rounded-md bg-red-50 p-4">
             <CourseUtilitiesTable coursesWithUtilities={coursesWithUtilities} />
           </AccordionContent>
         </AccordionItem>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as v from "valibot";
-import { Bookmark, Heart, Loader2, Save } from "lucide-react";
+import { Bookmark, Heart, Loader2, Save, Settings } from "lucide-react";
 import { decode } from "decode-formdata";
 import { toast } from "sonner";
 import { useId, useState } from "react";
@@ -153,7 +153,10 @@ function ScenarioUpdateForm({
       <input type="hidden" name="id" value={scenarioId} />
       <Card>
         <CardHeader>
-          <CardTitle>Configure Constraints</CardTitle>
+          <CardTitle className="inline-flex items-center gap-2">
+            <Settings className="fill-gray-200 text-gray-500" />
+            <span>Configure Constraints</span>
+          </CardTitle>
           <CardDescription>Configure the simulation constraints for the scenario</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
