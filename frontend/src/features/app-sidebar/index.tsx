@@ -115,7 +115,7 @@ interface AppHeaderDynamicBreadcrumbsProps {
 
 function AppHeaderDynamicBreadcrumbs({ href, children }: AppHeaderDynamicBreadcrumbsProps) {
   const pathname = usePathname();
-  const hasSettings = useMemo(() => pathname.endsWith("/settings"), [pathname]);
+  const hasSettings = useMemo(() => pathname.endsWith("/simulate"), [pathname]);
   return (
     <>
       <BreadcrumbSeparator />
@@ -129,7 +129,7 @@ function AppHeaderDynamicBreadcrumbs({ href, children }: AppHeaderDynamicBreadcr
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href={`${href}/settings`}>Settings</Link>
+              <Link href={`${href}/settings`}>Simulate</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </>
