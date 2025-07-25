@@ -1,7 +1,7 @@
 "use client";
 
 import * as v from "valibot";
-import { Loader2, Play, Save } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { decode } from "decode-formdata";
 import { toast } from "sonner";
 import { useId, useState } from "react";
@@ -17,9 +17,6 @@ import {
 } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
 
-import type { OptimizationResponse } from "@/lib/solver/schema";
-import { spawnOptimizerPool } from "@/lib/solver";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,11 +24,11 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
 
-import { UserScenarioProvider } from "./store";
+import { FetchedCoursesProvider, useFetchCourses } from "./query";
 import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
 import { LiveCourseUtilityTable } from "./live-course-utility-table";
 import { LiveFixedCourseCatalogTable } from "./live-fixed-course-catalog-table";
-import { FetchedCoursesProvider, useFetchCourses, useFetchedCourses } from "./query";
+import { UserScenarioProvider } from "./store";
 
 function onSaveSuccess() {
   toast.success("Scenario successfully updated");
@@ -39,19 +36,6 @@ function onSaveSuccess() {
 
 function onSaveError() {
   toast.error("Failed to update scenario", {
-    description: "Please try again later.",
-    duration: Infinity,
-    dismissible: true,
-  });
-}
-
-function onSimulateSuccess(results: OptimizationResponse[]) {
-  console.log(results);
-  toast.success("Simulation completed");
-}
-
-function onSimulateError() {
-  toast.error("Failed to run simulation", {
     description: "Please try again later.",
     duration: Infinity,
     dismissible: true,
@@ -101,8 +85,6 @@ function ScenarioUpdateForm({
   max_credits: initialMaxCredits,
 }: ScenarioUpdateFormProps) {
   const id = useId();
-  const saveId = `${id}-save`;
-  const runId = `${id}-run`;
 
   const [name, setName] = useState(initialName);
   const [tokenBudget, setTokenBudget] = useState(Number(initialTokenBudget));
@@ -112,19 +94,12 @@ function ScenarioUpdateForm({
   ]);
 
   const mutationFn = useConvexMutation(api.scenarios.update);
-  const saveMutation = useTanstackMutation({
+  const mutation = useTanstackMutation({
     mutationFn,
     onSuccess: onSaveSuccess,
     onError: onSaveError,
   });
-  const simulateMutation = useTanstackMutation({
-    mutationFn: spawnOptimizerPool,
-    onSuccess: onSimulateSuccess,
-    onError: onSimulateError,
-  });
-  const isPending = saveMutation.isPending || simulateMutation.isPending;
 
-  const fetchedCourses = useFetchedCourses();
   return (
     <form
       onSubmit={event => {
@@ -137,48 +112,38 @@ function ScenarioUpdateForm({
 
           const data = new FormData(event.currentTarget);
           const parsed = parseUpdateUserScenarioFormData(data);
-          switch (button.id) {
-            case saveId: {
-              const {
-                id,
-                token_budget,
-                credit_range: [min_credits, max_credits],
-                ...rest
-              } = parsed;
-              saveMutation.mutate({
-                ...rest,
-                id: id as UserScenarioId,
-                token_budget: BigInt(token_budget),
-                min_credits,
-                max_credits,
-              });
-              break;
-            }
-            case runId: {
-              const {
-                token_budget,
-                credit_range: [min_credits, max_credits],
-                fixed_courses = [],
-                utilities = {},
-              } = parsed;
-              simulateMutation.mutate({
-                budget: token_budget,
-                min_credits,
-                max_credits,
-                utilities: new Map(
-                  Object.entries(utilities).map(([forecast_id, utility]) => [
-                    forecast_id,
-                    Number(utility),
-                  ]),
-                ),
-                fixed_courses,
-                courses: fetchedCourses,
-              });
-              break;
-            }
-            default:
-              return;
-          }
+          const {
+            id,
+            token_budget,
+            credit_range: [min_credits, max_credits],
+            ...rest
+          } = parsed;
+          mutation.mutate({
+            ...rest,
+            id: id as UserScenarioId,
+            token_budget: BigInt(token_budget),
+            min_credits,
+            max_credits,
+          });
+          // const {
+          //   token_budget,
+          //   credit_range: [min_credits, max_credits],
+          //   fixed_courses = [],
+          //   utilities = {},
+          // } = parsed;
+          // simulateMutation.mutate({
+          //   budget: token_budget,
+          //   min_credits,
+          //   max_credits,
+          //   utilities: new Map(
+          //     Object.entries(utilities).map(([forecast_id, utility]) => [
+          //       forecast_id,
+          //       Number(utility),
+          //     ]),
+          //   ),
+          //   fixed_courses,
+          //   courses: fetchedCourses,
+          // });
         }
       }}
       className="space-y-8"
@@ -281,13 +246,12 @@ function ScenarioUpdateForm({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              id={saveId}
               type="submit"
               size="icon"
               className="rounded-full p-8 shadow-2xl disabled:opacity-100"
-              disabled={isPending}
+              disabled={mutation.isPending}
             >
-              {saveMutation.isPending ? (
+              {mutation.isPending ? (
                 <Loader2 className="size-8 animate-spin" />
               ) : (
                 <Save className="size-8" />
@@ -296,7 +260,7 @@ function ScenarioUpdateForm({
           </TooltipTrigger>
           <TooltipContent collisionPadding={16}>Save Scenario</TooltipContent>
         </Tooltip>
-        <Tooltip>
+        {/* <Tooltip>
           <TooltipTrigger asChild>
             <Button
               id={runId}
@@ -313,7 +277,7 @@ function ScenarioUpdateForm({
             </Button>
           </TooltipTrigger>
           <TooltipContent collisionPadding={16}>Run Simulation</TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
       </div>
     </form>
   );

@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import { Authenticated, useQuery } from "convex/react";
 import { Home, Ellipsis } from "lucide-react";
-import type { ReactNode } from "react";
-import { useParams } from "next/navigation";
+import { type ReactNode, useMemo } from "react";
+import { useParams, usePathname } from "next/navigation";
 
 import type { UserScenarioId } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
@@ -101,16 +101,39 @@ function AppHeaderBreadcrumbs({ href, children }: AppHeaderBreadcrumbsProps) {
           </BreadcrumbLink>
         </BreadcrumbItem>
         {typeof href === "undefined" ? null : (
-          <>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href={href}>{children}</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </>
+          <AppHeaderDynamicBreadcrumbs href={href}>{children}</AppHeaderDynamicBreadcrumbs>
         )}
       </BreadcrumbList>
     </Breadcrumb>
+  );
+}
+
+interface AppHeaderDynamicBreadcrumbsProps {
+  href: string;
+  children: ReactNode;
+}
+
+function AppHeaderDynamicBreadcrumbs({ href, children }: AppHeaderDynamicBreadcrumbsProps) {
+  const pathname = usePathname();
+  const hasSettings = useMemo(() => pathname.endsWith("/settings"), [pathname]);
+  return (
+    <>
+      <BreadcrumbSeparator />
+      <BreadcrumbItem>
+        <BreadcrumbLink asChild>
+          <Link href={href}>{children}</Link>
+        </BreadcrumbLink>
+      </BreadcrumbItem>
+      {hasSettings ? (
+        <>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href={`${href}/settings`}>Settings</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+        </>
+      ) : null}
+    </>
   );
 }

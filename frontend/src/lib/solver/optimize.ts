@@ -23,13 +23,6 @@ class UnknownDaysCodeError extends Error {
   }
 }
 
-class MissingCourseVariablesError extends Error {
-  constructor(courseId: string) {
-    super(`Variables object not found for course: ${courseId}`);
-    this.name = "MissingCourseVariablesError";
-  }
-}
-
 function mapTermToQuarters(term: PartOfTerm | (string & {})): string[] {
   switch (term) {
     case "Q1":
