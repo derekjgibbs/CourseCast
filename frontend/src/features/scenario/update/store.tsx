@@ -3,7 +3,7 @@ import { create } from "zustand";
 
 import type { Course } from "@/lib/schema/course";
 
-import { useFetchedCourses } from "./query";
+import { useFetchedCourses } from "@/hooks/use-fetch-courses";
 
 interface CourseStore {
   available: Map<string, Course>;
@@ -87,11 +87,7 @@ export function UserScenarioProvider({
 }: UserScenarioProviderProps) {
   const courses = useFetchedCourses();
   const store = useMemo(() => {
-    const available: CourseMap = new Map(
-      courses.map(
-        course => [course.forecast_id, structuredClone(course)] as [string, CourseWithUtility],
-      ),
-    );
+    const available: CourseMap = structuredClone(courses);
 
     const fixed: CourseMap = new Map();
     for (const id of fixedCourses) {

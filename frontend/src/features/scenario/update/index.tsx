@@ -18,6 +18,8 @@ import {
 } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
 
+import { FetchedCoursesProvider, useFetchCourses } from "@/hooks/use-fetch-courses";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,7 +27,6 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
 
-import { FetchedCoursesProvider, useFetchCourses } from "./query";
 import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
 import { LiveCourseUtilityTable } from "./live-course-utility-table";
 import { LiveFixedCourseCatalogTable } from "./live-fixed-course-catalog-table";
@@ -219,7 +220,7 @@ function ScenarioUpdateForm({
       <Card>
         <CardHeader>
           <CardTitle className="inline-flex items-center gap-2">
-            <Bookmark className="fill-blue-800" />
+            <Bookmark className="fill-blue-800 text-blue-800" />
             <span>Fixed Courses</span>
           </CardTitle>
           <CardDescription>Set up the courses that are fixed by your curriculum</CardDescription>
@@ -231,7 +232,7 @@ function ScenarioUpdateForm({
       <Card>
         <CardHeader>
           <CardTitle className="inline-flex items-center gap-2">
-            <Heart className="fill-red-800" />
+            <Heart className="fill-red-800 text-red-800" />
             <span>Course Utility</span>
           </CardTitle>
           <CardDescription>Configure the utility for each of your courses</CardDescription>

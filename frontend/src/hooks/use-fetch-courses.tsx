@@ -7,8 +7,13 @@ import { Course } from "@/lib/schema/course";
 
 export async function fetchCourses() {
   const file = await asyncBufferFromUrl({ url: "/courses.parquet" });
-  const data = await parquetReadObjects({ file });
-  return data.map(data => parse(Course, data));
+  const rows = await parquetReadObjects({ file });
+  return new Map(
+    rows.map(data => {
+      const course = parse(Course, data);
+      return [course.forecast_id, course];
+    }),
+  );
 }
 
 export function useFetchCourses() {
@@ -16,7 +21,7 @@ export function useFetchCourses() {
 }
 
 export type FetchedCourses = Awaited<ReturnType<typeof fetchCourses>>;
-const FetchedCoursesContext = createContext<FetchedCourses>([]);
+const FetchedCoursesContext = createContext<FetchedCourses>(new Map());
 
 interface FetchedCoursesProviderProps {
   courses: FetchedCourses;
