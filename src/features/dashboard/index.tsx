@@ -6,6 +6,7 @@ import type { ChangeEvent, ReactNode } from "react";
 import {
   type Column,
   createColumnHelper,
+  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
@@ -25,8 +26,8 @@ import { CreateScenarioCard, ScenarioCard } from "./card";
 const helper = createColumnHelper<UserScenarioDoc>();
 
 const columns = [
-  helper.accessor("name", { sortingFn: "alphanumeric" }),
-  helper.accessor("created_at", { sortingFn: "basic" }),
+  helper.accessor("name", { header: "Name", sortingFn: "alphanumeric" }),
+  helper.accessor("created_at", { header: "Created", sortingFn: "basic" }),
 ];
 
 interface SortControlProps {
@@ -91,8 +92,17 @@ function DashboardContent({ scenarios }: DashboardContentProps) {
     [rows],
   );
 
-  const nameColumn = table.getColumn("name");
-  const createdAtColumn = table.getColumn("created_at");
+  const flatHeaders = table.getFlatHeaders();
+  const sortControls = useMemo(
+    () =>
+      flatHeaders.map(header => (
+        <SortControl key={header.id} column={header.column}>
+          {flexRender(header.column.columnDef.header, header.getContext())}
+        </SortControl>
+      )),
+    [flatHeaders],
+  );
+
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -105,14 +115,7 @@ function DashboardContent({ scenarios }: DashboardContentProps) {
           className="w-full pl-10"
         />
       </div>
-      <div className="flex items-center gap-2">
-        {typeof nameColumn === "undefined" ? null : (
-          <SortControl column={nameColumn}>Name</SortControl>
-        )}
-        {typeof createdAtColumn === "undefined" ? null : (
-          <SortControl column={createdAtColumn}>Created</SortControl>
-        )}
-      </div>
+      <div className="flex items-center gap-2">{sortControls}</div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <CreateScenarioCard onSuccess={handleSuccess} />
         {cards}
