@@ -6,11 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AppSidebar, LiveAppHeader } from "@/features/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
-
-import { LiveAppHeader, AppSidebar } from "@/features/app-sidebar";
 
 function RedirectToHome() {
   const router = useRouter();

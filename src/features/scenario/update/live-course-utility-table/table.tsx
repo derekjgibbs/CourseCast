@@ -15,21 +15,23 @@ import {
   Trash2,
   User,
 } from "lucide-react";
-import { type MouseEvent, useCallback } from "react";
 import {
-  type RowData,
-  type SortDirection,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  type RowData,
+  type SortDirection,
   useReactTable,
 } from "@tanstack/react-table";
-
-import { CONSTRAINTS } from "@/convex/types";
+import { type MouseEvent, useCallback } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CONSTRAINTS } from "@/convex/types";
+import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
+import type { CourseWithUtility } from "@/features/scenario/update/store";
+import { DepartmentBadge } from "@/features/department-badge";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -39,10 +41,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
-import type { CourseWithUtility } from "@/features/scenario/update/store";
-import { DepartmentBadge } from "@/features/department-badge";
 
 interface SortSymbolProps {
   direction: SortDirection | false;

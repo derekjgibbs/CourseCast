@@ -1,13 +1,10 @@
 import Link from "next/link";
-
 import { Authenticated, useQuery } from "convex/react";
-import { Home, Ellipsis } from "lucide-react";
+import { Ellipsis, Home } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { useParams, usePathname } from "next/navigation";
 
-import type { UserScenarioId } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,9 +21,10 @@ import {
   SidebarHeader,
   SidebarMenu,
 } from "@/components/ui/sidebar";
+import type { UserScenarioId } from "@/convex/types";
 
-import { ScenarioGroupAction } from "./button";
 import { MenuItem, ScenarioMenu } from "./menu";
+import { ScenarioGroupAction } from "./button";
 
 export function AppSidebar() {
   return (

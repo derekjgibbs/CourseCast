@@ -1,12 +1,10 @@
-import type { OptimizationResponse } from "./solver";
-
 import { useMemo } from "react";
 
-import type { Course } from "@/lib/schema/course";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-import { useFetchedCourses } from "@/hooks/use-fetch-courses";
-
+import type { Course } from "@/lib/schema/course";
+import { DepartmentBadge } from "@/features/department-badge";
+import { RadialProgress } from "@/components/ui/radial-progress";
 import {
   Table,
   TableBody,
@@ -15,10 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { RadialProgress } from "@/components/ui/radial-progress";
+import { useFetchedCourses } from "@/hooks/use-fetch-courses";
 
-import { DepartmentBadge } from "@/features/department-badge";
+import type { OptimizationResponse } from "./solver";
 
 interface SimulationSummaryProps {
   responses: OptimizationResponse[];

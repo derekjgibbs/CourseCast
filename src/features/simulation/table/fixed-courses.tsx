@@ -1,8 +1,8 @@
 import { BookOpen } from "lucide-react";
 
-import type { Course } from "@/lib/schema/course";
-
 import { Badge } from "@/components/ui/badge";
+import type { Course } from "@/lib/schema/course";
+import { DepartmentBadge } from "@/features/department-badge";
 import {
   Table,
   TableBody,
@@ -11,8 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { DepartmentBadge } from "@/features/department-badge";
 
 const formatter = new Intl.NumberFormat("en-US", {
   style: "currency",

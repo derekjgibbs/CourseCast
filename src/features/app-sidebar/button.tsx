@@ -1,10 +1,8 @@
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { Plus } from "lucide-react";
-
-import { SidebarGroupAction } from "@/components/ui/sidebar";
-
 import { ScenarioDialog } from "@/features/scenario/create";
+import { SidebarGroupAction } from "@/components/ui/sidebar";
 
 export function ScenarioGroupAction() {
   const router = useRouter();

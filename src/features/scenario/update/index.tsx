@@ -1,31 +1,29 @@
 "use client";
 
 import * as v from "valibot";
+import Link from "next/link";
 import { Bookmark, Heart, Loader2, Save, Settings } from "lucide-react";
 import { decode } from "decode-formdata";
 import { toast } from "sonner";
 import { useId, useState } from "react";
-import { useMutation as useConvexMutation, useQuery } from "convex/react";
 import { useMutation as useTanstackMutation } from "@tanstack/react-query";
-import Link from "next/link";
+import { useMutation as useConvexMutation, useQuery } from "convex/react";
 
-import {
-  CONSTRAINTS,
-  type UserScenarioDoc,
-  type UserScenarioId,
-  isValidCreditsRange,
-  isValidScenarioName,
-} from "@/convex/types";
 import { api } from "@/convex/_generated/api";
-
-import { FetchedCoursesProvider, useFetchCourses } from "@/hooks/use-fetch-courses";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  CONSTRAINTS,
+  isValidCreditsRange,
+  isValidScenarioName,
+  type UserScenarioDoc,
+  type UserScenarioId,
+} from "@/convex/types";
+import { FetchedCoursesProvider, useFetchCourses } from "@/hooks/use-fetch-courses";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
 import { LiveCourseUtilityTable } from "./live-course-utility-table";

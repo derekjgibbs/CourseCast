@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { Loader2 } from "lucide-react";
 
 import { AuthenticationForm } from "./form";

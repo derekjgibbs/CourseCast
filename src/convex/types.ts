@@ -1,4 +1,5 @@
-import { v, Infer } from "convex/values";
+import { Infer, v } from "convex/values";
+
 import { Doc, Id } from "./_generated/dataModel";
 
 // Validator definitions for type inference

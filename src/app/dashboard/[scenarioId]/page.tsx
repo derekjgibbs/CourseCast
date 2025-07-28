@@ -1,6 +1,5 @@
-import type { UserScenarioId } from "@/convex/types";
-
 import { LiveScenarioUpdate } from "@/features/scenario/update";
+import type { UserScenarioId } from "@/convex/types";
 
 interface Params {
   scenarioId: UserScenarioId;

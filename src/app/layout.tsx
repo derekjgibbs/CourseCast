@@ -1,13 +1,11 @@
-import "./globals.css";
-
+import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import type { Viewport } from "next";
 
-import { Inter } from "next/font/google";
-
 import { cn } from "@/lib/utils";
-
 import { LiveConvexProvider } from "@/features/live-convex-provider";
+
+import "./globals.css";
 
 export const viewport: Viewport = {
   width: "device-width",

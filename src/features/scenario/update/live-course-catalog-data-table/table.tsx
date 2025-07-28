@@ -7,8 +7,8 @@ import {
   ArrowDownWideNarrow,
   ArrowUpDown,
   ArrowUpNarrowWide,
-  BookOpen,
   BookmarkPlus,
+  BookOpen,
   Building,
   ClipboardList,
   Clock,
@@ -22,22 +22,23 @@ import {
 import { type ChangeEvent, type MouseEvent, useCallback, useState } from "react";
 import {
   type Column,
-  type RowData,
-  type SortDirection,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type RowData,
+  type SortDirection,
   useReactTable,
 } from "@tanstack/react-table";
 import { unparse } from "papaparse";
 
-import type { Course } from "@/lib/schema/course";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
+import type { Course } from "@/lib/schema/course";
+import { DepartmentBadge } from "@/features/department-badge";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -55,9 +56,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-
-import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
-import { DepartmentBadge } from "@/features/department-badge";
 
 interface SortSymbolProps {
   direction: SortDirection | false;

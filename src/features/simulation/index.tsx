@@ -4,30 +4,28 @@ import { Bookmark, Heart, Loader2, Settings } from "lucide-react";
 import { useMemo } from "react";
 import { useQuery } from "convex/react";
 
-import type { UserScenarioDoc, UserScenarioId } from "@/convex/types";
-import { api } from "@/convex/_generated/api";
-
-import type { Course } from "@/lib/schema/course";
-
-import {
-  FetchedCoursesProvider,
-  useFetchCourses,
-  useFetchedCourses,
-} from "@/hooks/use-fetch-courses";
-
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { api } from "@/convex/_generated/api";
+import type { Course } from "@/lib/schema/course";
+import {
+  FetchedCoursesProvider,
+  useFetchCourses,
+  useFetchedCourses,
+} from "@/hooks/use-fetch-courses";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { UserScenarioDoc, UserScenarioId } from "@/convex/types";
+
+import { SimulationSummary } from "./simulation";
+import { useSpawnOptimizerPool } from "./query";
 
 import { ConstraintsTable } from "./table/constraints";
 import { CourseUtilitiesTable } from "./table/course-utilities";
 import { FixedCoursesTable } from "./table/fixed-courses";
-import { SimulationSummary } from "./simulation";
-import { useSpawnOptimizerPool } from "./query";
 
 interface LiveSimulationProps {
   scenarioId: UserScenarioId;

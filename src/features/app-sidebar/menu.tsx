@@ -5,11 +5,10 @@ import type { ReactNode } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { useQuery } from "convex/react";
 
-import type { UserScenarioDoc } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
-
-import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { UserScenarioDoc } from "@/convex/types";
 
 interface MenuItemProps {
   href: string;

@@ -1,16 +1,17 @@
 import { ConvexError, v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
-import { mutation, query } from "./_generated/server";
 import {
   CONSTRAINTS,
   createUserScenarioValidator,
   isValidCreditsRange,
   isValidScenarioName,
   updateUserScenarioValidator,
-  validateUtilities,
   validateFixedCourses,
+  validateUtilities,
 } from "./types";
-import { getAuthUserId } from "@convex-dev/auth/server";
+
+import { mutation, query } from "./_generated/server";
 
 // Mutations
 

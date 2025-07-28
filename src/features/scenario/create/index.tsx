@@ -1,27 +1,26 @@
 "use client";
 
 import * as v from "valibot";
+import { decode } from "decode-formdata";
 import { Loader2, Plus } from "lucide-react";
 import { type ReactNode, useId, useState } from "react";
-import { decode } from "decode-formdata";
-import { useMutation as useConvexMutation } from "convex/react";
 import { useMutation as useTanstackMutation } from "@tanstack/react-query";
+import { useMutation as useConvexMutation } from "convex/react";
 
-import type { UserScenarioId } from "@/convex/types";
 import { api } from "@/convex/_generated/api";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { UserScenarioId } from "@/convex/types";
 
 interface ScenarioDialogProps {
   onSuccess: (id: UserScenarioId) => void;

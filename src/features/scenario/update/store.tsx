@@ -1,8 +1,7 @@
-import { type ReactNode, createContext, useContext, useMemo } from "react";
 import { create } from "zustand";
+import { createContext, type ReactNode, useContext, useMemo } from "react";
 
 import type { Course } from "@/lib/schema/course";
-
 import { useFetchedCourses } from "@/hooks/use-fetch-courses";
 
 interface CourseStore {

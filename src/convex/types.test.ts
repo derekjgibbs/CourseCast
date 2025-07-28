@@ -1,8 +1,9 @@
 import { describe, expect, test } from "vitest";
+
 import {
   isValidCreditsRange,
-  isValidUtilityValue,
   isValidScenarioName,
+  isValidUtilityValue,
   validateFixedCourses,
   validateUtilities,
 } from "@/convex/types";

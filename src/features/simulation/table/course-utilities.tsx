@@ -1,8 +1,8 @@
 import { Heart } from "lucide-react";
 
-import type { Course } from "@/lib/schema/course";
-
 import { Badge } from "@/components/ui/badge";
+import type { Course } from "@/lib/schema/course";
+import { DepartmentBadge } from "@/features/department-badge";
 import { RadialProgress } from "@/components/ui/radial-progress";
 import {
   Table,
@@ -12,8 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { DepartmentBadge } from "@/features/department-badge";
 
 const formatter = new Intl.NumberFormat("en-US", {
   style: "currency",
