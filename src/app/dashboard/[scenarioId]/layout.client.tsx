@@ -183,9 +183,14 @@ interface FetchedCoursesProviderWrapperProps {
 }
 
 function FetchedCoursesProviderWrapper({ children }: FetchedCoursesProviderWrapperProps) {
-  const { data } = useFetchCourses();
-  return typeof data === "undefined" ? (
+  const { isPending, isError, data, error } = useFetchCourses();
+  return isPending ? (
     <LoadingSpinner>Fetching courses</LoadingSpinner>
+  ) : isError ? (
+    <div className="flex h-full flex-col items-center justify-center space-y-2">
+      <p className="text-sm font-medium text-red-600">Error fetching courses</p>
+      <p className="text-sm text-red-500">{error.message}</p>
+    </div>
   ) : (
     <FetchedCoursesProvider courses={data}>{children}</FetchedCoursesProvider>
   );

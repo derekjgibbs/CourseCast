@@ -10,7 +10,13 @@ interface FetchCoursesOptions {
 }
 
 export async function fetchCourses({ signal }: FetchCoursesOptions) {
-  const file = await asyncBufferFromUrl({ url: "/courses.parquet", requestInit: { signal } });
+  const file = await asyncBufferFromUrl({
+    url: "/courses.parquet",
+    requestInit: {
+      signal,
+      headers: { "Content-Type": "application/octet-stream" },
+    },
+  });
   const rows = await parquetReadObjects({ file });
   return new Map(
     rows.map(data => {
