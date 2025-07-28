@@ -15,16 +15,18 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import type { UserScenarioId } from "@/convex/types";
 
+import { LogoutButton, ScenarioGroupAction } from "./button";
 import { MenuItem, ScenarioMenu } from "./menu";
-import { ScenarioGroupAction } from "./button";
 
 export function AppSidebar() {
   return (
@@ -56,6 +58,15 @@ export function AppSidebar() {
           </SidebarGroup>
         </Authenticated>
       </SidebarContent>
+      <Authenticated>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <LogoutButton />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Authenticated>
     </Sidebar>
   );
 }

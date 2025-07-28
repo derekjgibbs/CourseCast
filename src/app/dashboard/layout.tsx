@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import { AppSidebar, LiveAppHeader } from "@/features/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/sonner";
 
 function RedirectToHome() {
   const router = useRouter();
@@ -54,7 +53,6 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </Authenticated>
       </QueryClientProvider>
-      <Toaster richColors closeButton position="bottom-left" theme="light" />
     </SidebarProvider>
   );
 }

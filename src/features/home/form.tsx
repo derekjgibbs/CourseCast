@@ -2,6 +2,7 @@
 
 import Form from "next/form";
 import { Loader2, LogIn, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 import { useActionState, useCallback } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
@@ -14,7 +15,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export function AuthenticationForm() {
   const { signIn } = useAuthActions();
   const signInAction = useCallback(
-    async (_: unknown, data: FormData) => await signIn("password", data),
+    async (_: unknown, data: FormData) => {
+      try {
+        await toast
+          .promise(signIn("password", data), {
+            loading: "Signing in...",
+            success: "Successfully signed in",
+            error: {
+              message: "Invalid email and password combination",
+              description:
+                "Check if you're using the correct email and password. If you're a new user, check if the password is at least 8 characters long.",
+              dismissible: true,
+              duration: Infinity,
+            },
+          })
+          .unwrap();
+      } catch (error) {
+        console.error(error);
+      }
+    },
     [signIn],
   );
   const [_, action, isPending] = useActionState(signInAction, null);
