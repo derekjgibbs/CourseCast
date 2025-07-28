@@ -1,44 +1,62 @@
 "use client";
+"use no memo"; // https://github.com/TanStack/table/issues/5567
 
-import Link from "next/link";
-import { Loader2, Plus } from "lucide-react";
+import { ArrowDownWideNarrow, ArrowUpDown, ArrowUpNarrowWide, Loader2, Search } from "lucide-react";
+import type { ChangeEvent, ReactNode } from "react";
+import {
+  type Column,
+  createColumnHelper,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 
 import { api } from "@/convex/_generated/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScenarioDialog } from "@/features/scenario/create";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import type { UserScenarioDoc } from "@/convex/types";
 
-function formatDate(timestamp: bigint): string {
-  return new Date(Number(timestamp)).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+import { CreateScenarioCard, ScenarioCard } from "./card";
+
+const helper = createColumnHelper<UserScenarioDoc>();
+
+const columns = [
+  helper.accessor("name", { sortingFn: "alphanumeric" }),
+  helper.accessor("created_at", { sortingFn: "basic" }),
+];
+
+interface SortControlProps {
+  column: Column<UserScenarioDoc>;
+  children: React.ReactNode;
 }
 
-interface CreateScenarioCardProps {
-  onSuccess: (id: string) => void;
-}
+function SortControl({ column, children }: SortControlProps) {
+  const handleClick = useCallback(() => column.toggleSorting(), [column]);
 
-function CreateScenarioCard({ onSuccess }: CreateScenarioCardProps) {
+  let icon: ReactNode;
+  switch (column.getIsSorted()) {
+    case "asc":
+      icon = <ArrowUpNarrowWide className="size-3" />;
+      break;
+    case "desc":
+      icon = <ArrowDownWideNarrow className="size-3" />;
+      break;
+    default:
+      icon = <ArrowUpDown className="size-3" />;
+      break;
+  }
+
   return (
-    <ScenarioDialog onSuccess={onSuccess}>
-      <Card className="cursor-pointer border-2 border-dashed border-gray-300 bg-gray-50 transition-all hover:scale-[1.02] hover:border-gray-400 hover:bg-gray-100 hover:shadow-md">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-gray-600">
-            <Plus className="h-5 w-5" />
-            Create New Scenario
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600">
-            Start by creating a new scenario to define your course preferences and constraints.
-          </p>
-        </CardContent>
-      </Card>
-    </ScenarioDialog>
+    <Badge variant="outline" className="cursor-pointer hover:bg-gray-100" asChild>
+      <button type="button" className="flex items-center gap-1" onClick={handleClick}>
+        {children}
+        {icon}
+      </button>
+    </Badge>
   );
 }
 
@@ -48,44 +66,57 @@ interface DashboardContentProps {
 
 function DashboardContent({ scenarios }: DashboardContentProps) {
   const router = useRouter();
+  const handleSuccess = useCallback((id: string) => router.push(`/dashboard/${id}`), [router]);
+
+  const [globalFilter, setGlobalFilter] = useState("");
+  const handleFilterChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => setGlobalFilter(event.target.value),
+    [],
+  );
+
+  const table = useReactTable({
+    data: scenarios,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    globalFilterFn: "includesString",
+    state: { globalFilter },
+    onGlobalFilterChange: setGlobalFilter,
+  });
+
+  const { rows } = table.getRowModel();
+  const cards = useMemo(
+    () => rows.map(row => <ScenarioCard key={row.original._id} scenario={row.original} />),
+    [rows],
+  );
+
+  const nameColumn = table.getColumn("name");
+  const createdAtColumn = table.getColumn("created_at");
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <CreateScenarioCard onSuccess={id => router.push(`/dashboard/${id}`)} />
-      {scenarios.map(scenario => (
-        <Link key={scenario._id} href={`/dashboard/${scenario._id}`}>
-          <Card className="cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md">
-            <CardHeader>
-              <CardTitle>
-                <span className="truncate">{scenario.name}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>Token Budget</span>
-                <span className="font-medium">{scenario.token_budget.toString()}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>Credit Range</span>
-                <span className="font-medium">
-                  {scenario.min_credits.toFixed(1)} - {scenario.max_credits.toFixed(1)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>Fixed Courses</span>
-                <span className="font-medium">{scenario.fixed_courses.length}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>Course Utilities</span>
-                <span className="font-medium">{Object.keys(scenario.utilities).length}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>Created</span>
-                <span>{formatDate(scenario.created_at)}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
+    <div className="space-y-6">
+      <div className="relative">
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Input
+          id="scenario-search"
+          placeholder="Search scenarios..."
+          value={globalFilter}
+          onChange={handleFilterChange}
+          className="w-full pl-10"
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        {typeof nameColumn === "undefined" ? null : (
+          <SortControl column={nameColumn}>Name</SortControl>
+        )}
+        {typeof createdAtColumn === "undefined" ? null : (
+          <SortControl column={createdAtColumn}>Created</SortControl>
+        )}
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <CreateScenarioCard onSuccess={handleSuccess} />
+        {cards}
+      </div>
     </div>
   );
 }
