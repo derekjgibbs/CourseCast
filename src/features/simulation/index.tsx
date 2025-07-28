@@ -1,8 +1,7 @@
 "use client";
 
-import { Bookmark, Heart, Loader2, Settings } from "lucide-react";
+import { Bookmark, Heart, Settings } from "lucide-react";
 import { useMemo } from "react";
-import { useQuery } from "convex/react";
 
 import {
   Accordion,
@@ -10,15 +9,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { api } from "@/convex/_generated/api";
 import type { Course } from "@/lib/schema/course";
-import {
-  FetchedCoursesProvider,
-  useFetchCourses,
-  useFetchedCourses,
-} from "@/hooks/use-fetch-courses";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { UserScenarioDoc, UserScenarioId } from "@/convex/types";
+import { useFetchedCourses } from "@/hooks/use-fetch-courses";
+import type { UserScenarioDoc } from "@/convex/types";
 
 import { SimulationSummary } from "./simulation";
 import { useSpawnOptimizerPool } from "./query";
@@ -26,25 +20,6 @@ import { useSpawnOptimizerPool } from "./query";
 import { ConstraintsTable } from "./table/constraints";
 import { CourseUtilitiesTable } from "./table/course-utilities";
 import { FixedCoursesTable } from "./table/fixed-courses";
-
-interface LiveSimulationProps {
-  scenarioId: UserScenarioId;
-}
-
-export function LiveSimulation({ scenarioId }: LiveSimulationProps) {
-  const { data } = useFetchCourses();
-  const scenario = useQuery(api.scenarios.get, { id: scenarioId });
-  return typeof data === "undefined" || typeof scenario === "undefined" ? (
-    <div className="flex h-full flex-col items-center justify-center space-y-2">
-      <Loader2 className="size-16 animate-spin" />
-      <span className="text-sm font-medium text-gray-600">Loading scenario</span>
-    </div>
-  ) : (
-    <FetchedCoursesProvider courses={data}>
-      <SimulationContent scenario={scenario} />
-    </FetchedCoursesProvider>
-  );
-}
 
 interface CourseWithUtility extends Course {
   utility: bigint;
@@ -57,7 +32,7 @@ interface SimulationProps {
   >;
 }
 
-function SimulationContent({ scenario }: SimulationProps) {
+export function LiveSimulation({ scenario }: SimulationProps) {
   const courseMap = useFetchedCourses();
 
   const fixedCourses = useMemo(

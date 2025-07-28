@@ -7,7 +7,7 @@ import { decode } from "decode-formdata";
 import { toast } from "sonner";
 import { useId, useState } from "react";
 import { useMutation as useTanstackMutation } from "@tanstack/react-query";
-import { useMutation as useConvexMutation, useQuery } from "convex/react";
+import { useMutation as useConvexMutation } from "convex/react";
 
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -19,9 +19,10 @@ import {
   type UserScenarioDoc,
   type UserScenarioId,
 } from "@/convex/types";
-import { FetchedCoursesProvider, useFetchCourses } from "@/hooks/use-fetch-courses";
+import { FetchedCoursesProvider, useFetchedCourses } from "@/hooks/use-fetch-courses";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScenarioData } from "@/features/scenario/get";
 import { ScenarioDeleteAlert } from "@/features/scenario/delete";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -256,19 +257,13 @@ function ScenarioUpdateForm({
   );
 }
 
-interface ScenarioUpdateProps {
-  id: UserScenarioId;
+interface LiveScenarioUpdateProps {
+  scenario: ScenarioData;
 }
 
-export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
-  const { data } = useFetchCourses();
-  const scenario = useQuery(api.scenarios.get, { id });
-  return typeof data === "undefined" || typeof scenario === "undefined" ? (
-    <div className="flex h-full flex-col items-center justify-center space-y-2">
-      <Loader2 className="size-16 animate-spin text-gray-400" />
-      <span className="text-sm font-medium text-gray-600">Fetching scenario</span>
-    </div>
-  ) : (
+export function LiveScenarioUpdate({ scenario }: LiveScenarioUpdateProps) {
+  const data = useFetchedCourses();
+  return (
     <div className="relative mx-auto w-full max-w-7xl grow justify-center space-y-8 px-6 py-8">
       <div className="flex items-center justify-between gap-6 rounded-lg border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-4 text-white shadow-lg">
         <div className="grow">
@@ -284,13 +279,13 @@ export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
           size="lg"
           className="shrink-0 bg-white font-medium text-blue-600 hover:bg-blue-50"
         >
-          <Link href={`/dashboard/${id}/simulate`}>Let&apos;s go!</Link>
+          <Link href={`/dashboard/${scenario._id}/simulate`}>Let&apos;s go!</Link>
         </Button>
       </div>
       <FetchedCoursesProvider courses={data}>
         <UserScenarioProvider fixedCourses={scenario.fixed_courses} utilities={scenario.utilities}>
           <ScenarioUpdateForm
-            id={id}
+            id={scenario._id}
             name={scenario.name}
             token_budget={scenario.token_budget}
             min_credits={scenario.min_credits}
@@ -298,7 +293,7 @@ export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
           />
         </UserScenarioProvider>
       </FetchedCoursesProvider>
-      <ScenarioDeleteAlert scenarioId={id} />
+      <ScenarioDeleteAlert scenarioId={scenario._id} />
     </div>
   );
 }
