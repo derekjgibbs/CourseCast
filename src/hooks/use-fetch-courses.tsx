@@ -12,6 +12,10 @@ interface FetchCoursesOptions {
 export async function fetchCourses({ signal }: FetchCoursesOptions) {
   const file = await asyncBufferFromUrl({
     url: "/courses.parquet",
+    // HACK: Hard-coded byte length because the library needs to know this ahead of time.
+    // But, if we let it do so automatically via HEAD requests, the Vercel CDN doesn't provide
+    // the Content-Length header and thus fails.
+    byteLength: 72297,
     requestInit: {
       signal,
       headers: { "Content-Type": "application/octet-stream" },
