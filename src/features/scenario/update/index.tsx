@@ -125,25 +125,6 @@ function ScenarioUpdateForm({
             min_credits,
             max_credits,
           });
-          // const {
-          //   token_budget,
-          //   credit_range: [min_credits, max_credits],
-          //   fixed_courses = [],
-          //   utilities = {},
-          // } = parsed;
-          // simulateMutation.mutate({
-          //   budget: token_budget,
-          //   min_credits,
-          //   max_credits,
-          //   utilities: new Map(
-          //     Object.entries(utilities).map(([forecast_id, utility]) => [
-          //       forecast_id,
-          //       Number(utility),
-          //     ]),
-          //   ),
-          //   fixed_courses,
-          //   courses: fetchedCourses,
-          // });
         }
       }}
       className="space-y-8"
