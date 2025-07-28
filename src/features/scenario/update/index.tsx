@@ -44,7 +44,7 @@ function onSaveError() {
   });
 }
 
-type UserScenario = Pick<UserScenarioDoc, "name" | "token_budget" | "min_credits" | "max_credits">;
+type UserScenario = Pick<UserScenarioDoc, "name" | "token_budget" | "max_credits">;
 interface ScenarioUpdateFormProps extends UserScenario {
   id: string;
 }
@@ -57,7 +57,7 @@ const updateUserScenarioSchema = v.object({
   id: v.string(),
   name: v.string(),
   token_budget: v.pipe(v.number(), v.integer()),
-  credit_range: v.tuple([stringAsNumberSchema, stringAsNumberSchema]),
+  credit_range: v.tuple([stringAsNumberSchema]),
   fixed_courses: v.optional(v.array(v.string())),
   utilities: v.optional(
     v.record(
@@ -83,17 +83,13 @@ function ScenarioUpdateForm({
   id: scenarioId,
   name: initialName,
   token_budget: initialTokenBudget,
-  min_credits: initialMinCredits,
   max_credits: initialMaxCredits,
 }: ScenarioUpdateFormProps) {
   const id = useId();
 
   const [name, setName] = useState(initialName);
   const [tokenBudget, setTokenBudget] = useState(Number(initialTokenBudget));
-  const [creditRange, setCreditRange] = useState<[number, number]>([
-    initialMinCredits,
-    initialMaxCredits,
-  ]);
+  const [creditRange, setCreditRange] = useState<[number]>([initialMaxCredits]);
 
   const mutationFn = useConvexMutation(api.scenarios.update);
   const mutation = useTanstackMutation({
@@ -117,14 +113,13 @@ function ScenarioUpdateForm({
           const {
             id,
             token_budget,
-            credit_range: [min_credits, max_credits],
+            credit_range: [max_credits],
             ...rest
           } = parsed;
           mutation.mutate({
             ...rest,
             id: id as UserScenarioId,
             token_budget: BigInt(token_budget),
-            min_credits,
             max_credits,
           });
         }
@@ -178,19 +173,16 @@ function ScenarioUpdateForm({
           <div className="space-y-2">
             <Label htmlFor={`${id}-credit-range`}>Credit Range</Label>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">
-                {CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_LIMIT.toFixed(2)}
-              </span>
+              <span className="text-sm text-gray-500">0.00</span>
               <SliderWithArrowStickyLabel
                 id={`${id}-credit-range`}
-                min={CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_LIMIT}
                 max={CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_LIMIT}
                 step={0.25}
                 name="credit_range"
                 value={creditRange}
-                onValueChange={([min, max]) => {
-                  if (typeof min === "undefined" || typeof max === "undefined") return;
-                  if (isValidCreditsRange(min, max)) setCreditRange([min, max]);
+                onValueChange={([max]) => {
+                  if (typeof max === "undefined") return;
+                  if (isValidCreditsRange(0, max)) setCreditRange([max]);
                 }}
                 formatValue={value => <span>{value.toFixed(2)} Credits</span>}
               />
@@ -288,7 +280,6 @@ export function LiveScenarioUpdate({ scenario }: LiveScenarioUpdateProps) {
             id={scenario._id}
             name={scenario.name}
             token_budget={scenario.token_budget}
-            min_credits={scenario.min_credits}
             max_credits={scenario.max_credits}
           />
         </UserScenarioProvider>

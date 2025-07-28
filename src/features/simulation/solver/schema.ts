@@ -12,7 +12,6 @@ export type CourseInput = v.InferOutput<typeof CourseInput>;
 export const OptimizationRequest = v.object({
   budget: v.number(),
   max_credits: v.number(),
-  min_credits: v.number(),
   utilities: v.map(v.string(), v.number()),
   fixed_courses: v.array(v.string()),
   courses: v.array(CourseInput),

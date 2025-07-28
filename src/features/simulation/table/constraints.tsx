@@ -10,16 +10,10 @@ import {
 interface ConstraintsTableProps {
   name: string;
   tokenBudget: bigint;
-  minCredits: number;
   maxCredits: number;
 }
 
-export function ConstraintsTable({
-  name,
-  tokenBudget,
-  minCredits,
-  maxCredits,
-}: ConstraintsTableProps) {
+export function ConstraintsTable({ name, tokenBudget, maxCredits }: ConstraintsTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -40,9 +34,7 @@ export function ConstraintsTable({
         <TableRow>
           <TableCell className="font-medium">Credit Range</TableCell>
           <TableCell>
-            <span className="font-mono">
-              {minCredits.toFixed(1)} - {maxCredits.toFixed(1)} credits
-            </span>
+            <span className="font-mono">{maxCredits.toFixed(2)} credits</span>
           </TableCell>
         </TableRow>
       </TableBody>

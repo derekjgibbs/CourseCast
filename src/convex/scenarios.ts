@@ -29,7 +29,6 @@ export const create = mutation({
       user_id: userId,
       name: args.name,
       token_budget: CONSTRAINTS.USER_SCENARIO.TOKEN_BUDGET_DEFAULT,
-      min_credits: CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_DEFAULT,
       max_credits: CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_DEFAULT,
       utilities: {},
       fixed_courses: [],
@@ -64,12 +63,9 @@ export const update = mutation({
       scenario.token_budget = updates.token_budget;
     }
 
-    const newMinCredits = updates.min_credits ?? scenario.min_credits;
     const newMaxCredits = updates.max_credits ?? scenario.max_credits;
-    if (!isValidCreditsRange(newMinCredits, newMaxCredits))
-      throw new ConvexError("invalid credit range");
+    if (!isValidCreditsRange(0, newMaxCredits)) throw new ConvexError("invalid credit range");
 
-    scenario.min_credits = newMinCredits;
     scenario.max_credits = newMaxCredits;
 
     if (typeof updates.utilities !== "undefined") {

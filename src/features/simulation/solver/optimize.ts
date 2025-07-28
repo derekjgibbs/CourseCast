@@ -101,7 +101,6 @@ export function optimize(request: OptimizationRequest) {
   const constraints = new Map<string, Constraint>([
     ["budget", { max: request.budget }],
     ["max_credits", { max: request.max_credits }],
-    ["min_credits", { min: request.min_credits }],
   ]);
 
   // Variables map
@@ -111,7 +110,6 @@ export function optimize(request: OptimizationRequest) {
       // Objective Function
       ["weighted_credit_utility", course.utility * course.credits],
       ["budget", course.truncated_price],
-      ["min_credits", course.credits],
       ["max_credits", course.credits],
     ]);
     variables.set(course.forecast_id, courseVariables);

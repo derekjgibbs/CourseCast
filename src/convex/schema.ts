@@ -9,7 +9,6 @@ export default defineSchema({
     name: v.string(),
     token_budget: v.int64(),
     max_credits: v.number(),
-    min_credits: v.number(),
     utilities: v.record(v.string(), v.int64()),
     fixed_courses: v.array(v.string()),
     created_at: v.int64(),

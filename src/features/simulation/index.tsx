@@ -28,7 +28,7 @@ interface CourseWithUtility extends Course {
 interface SimulationProps {
   scenario: Pick<
     UserScenarioDoc,
-    "name" | "token_budget" | "min_credits" | "max_credits" | "fixed_courses" | "utilities"
+    "name" | "token_budget" | "max_credits" | "fixed_courses" | "utilities"
   >;
 }
 
@@ -83,7 +83,6 @@ export function LiveSimulation({ scenario }: SimulationProps) {
 
   const simulation = useSpawnOptimizerPool({
     budget: Number(scenario.token_budget),
-    min_credits: scenario.min_credits,
     max_credits: scenario.max_credits,
     courses: eligibleCourses,
     fixed_courses: scenario.fixed_courses,
@@ -104,7 +103,6 @@ export function LiveSimulation({ scenario }: SimulationProps) {
             <ConstraintsTable
               name={scenario.name}
               tokenBudget={scenario.token_budget}
-              minCredits={scenario.min_credits}
               maxCredits={scenario.max_credits}
             />
           </AccordionContent>

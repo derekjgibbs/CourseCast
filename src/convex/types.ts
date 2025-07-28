@@ -15,7 +15,6 @@ export const userScenarioValidator = v.object({
   name: v.string(),
   token_budget: v.int64(),
   max_credits: v.number(),
-  min_credits: v.number(),
   utilities: v.record(v.string(), v.number()),
   fixed_courses: v.array(v.string()),
   is_active: v.boolean(),
@@ -62,7 +61,6 @@ export const updateUserScenarioValidator = v.object({
   id: v.id("user_scenarios"),
   name: v.optional(v.string()),
   token_budget: v.optional(v.int64()),
-  min_credits: v.optional(v.number()),
   max_credits: v.optional(v.number()),
   utilities: v.optional(v.record(v.string(), v.int64())),
   fixed_courses: v.optional(v.array(v.string())),
@@ -95,9 +93,7 @@ export const CONSTRAINTS = {
     NAME_MAX_LENGTH: 200,
     TOKEN_BUDGET_DEFAULT: 4500n,
     MAX_CREDITS_DEFAULT: 7.5,
-    MIN_CREDITS_DEFAULT: 0.0,
     MAX_CREDITS_LIMIT: 10.0,
-    MIN_CREDITS_LIMIT: 0.0,
   },
   COURSE_UTILITY: {
     MIN_VALUE: 0n,
@@ -113,11 +109,7 @@ export const isValidUtilityValue = (value: bigint): boolean => {
 };
 
 export const isValidCreditsRange = (min: number, max: number): boolean => {
-  return (
-    min >= CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_LIMIT &&
-    max <= CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_LIMIT &&
-    min <= max
-  );
+  return min >= 0 && max <= CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_LIMIT && min <= max;
 };
 
 export const isValidScenarioName = (name: string): boolean => {
