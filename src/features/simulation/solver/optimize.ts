@@ -56,8 +56,7 @@ function mapDaysToArray(daysCode: DaysCode | (string & {})) {
     case "FS":
       return ["F", "S"];
     case "TBA":
-      // TODO: Should we add a TBA constraint?
-      return [];
+      return ["TBA"];
     default:
       throw new UnknownDaysCodeError(daysCode);
   }
