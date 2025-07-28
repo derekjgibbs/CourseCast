@@ -1,15 +1,9 @@
+"use client";
+
 import { LiveSimulation } from "@/features/simulation";
-import type { UserScenarioId } from "@/convex/types";
+import { useCurrentUserScenario } from "@/features/scenario/get";
 
-interface Params {
-  scenarioId: string;
-}
-
-interface SimulatePageProps {
-  params: Promise<Params>;
-}
-
-export default async function SimulatePage({ params }: SimulatePageProps) {
-  const { scenarioId } = await params;
-  return <LiveSimulation scenarioId={scenarioId as UserScenarioId} />;
+export default function Page() {
+  const scenario = useCurrentUserScenario();
+  return scenario === null ? null : <LiveSimulation scenario={scenario} />;
 }

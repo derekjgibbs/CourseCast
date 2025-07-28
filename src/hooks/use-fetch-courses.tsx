@@ -21,7 +21,12 @@ export async function fetchCourses({ signal }: FetchCoursesOptions) {
 }
 
 export function useFetchCourses() {
-  return useQuery({ queryFn: fetchCourses, queryKey: ["courses"] });
+  return useQuery({
+    queryFn: fetchCourses,
+    queryKey: ["courses"],
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
 }
 
 export type FetchedCourses = Awaited<ReturnType<typeof fetchCourses>>;

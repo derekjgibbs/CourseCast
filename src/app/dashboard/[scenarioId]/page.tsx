@@ -1,15 +1,9 @@
+"use client";
+
 import { LiveScenarioUpdate } from "@/features/scenario/update";
-import type { UserScenarioId } from "@/convex/types";
+import { useCurrentUserScenario } from "@/features/scenario/get";
 
-interface Params {
-  scenarioId: UserScenarioId;
-}
-
-interface PageProps {
-  params: Promise<Params>;
-}
-
-export default async function Page({ params }: PageProps) {
-  const { scenarioId } = await params;
-  return <LiveScenarioUpdate id={scenarioId} />;
+export default function Page() {
+  const scenario = useCurrentUserScenario();
+  return scenario === null ? null : <LiveScenarioUpdate scenario={scenario} />;
 }
