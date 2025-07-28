@@ -23,7 +23,13 @@ export default function Layout({ children }: LayoutProps) {
     <html lang="en">
       <body className={cn(inter.className, "min-h-dvh max-w-dvw antialiased")}>
         <LiveConvexProvider>{children}</LiveConvexProvider>
-        <Toaster richColors closeButton position="bottom-left" theme="light" />
+        <Toaster
+          richColors
+          closeButton
+          position="bottom-left"
+          theme="light"
+          toastOptions={{ classNames: { title: "!font-semibold" } }}
+        />
       </body>
     </html>
   );
