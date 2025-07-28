@@ -100,7 +100,11 @@ export const remove = mutation({
       .query("user_scenarios")
       .withIndex("by_id", q => q.eq("_id", id))
       .unique();
-    if (scenario === null) throw new ConvexError("scenario not found");
+    if (scenario === null) {
+      // Nothing to do because it doesn't exist anyway
+      return;
+    }
+
     if (scenario.user_id !== userId)
       throw new ConvexError("scenario must belong to the authenticated user");
 

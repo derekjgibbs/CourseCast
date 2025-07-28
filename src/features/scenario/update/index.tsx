@@ -22,6 +22,7 @@ import {
 import { FetchedCoursesProvider, useFetchCourses } from "@/hooks/use-fetch-courses";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScenarioDeleteAlert } from "@/features/scenario/delete";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -297,6 +298,7 @@ export function LiveScenarioUpdate({ id }: ScenarioUpdateProps) {
           />
         </UserScenarioProvider>
       </FetchedCoursesProvider>
+      <ScenarioDeleteAlert scenarioId={id} />
     </div>
   );
 }
