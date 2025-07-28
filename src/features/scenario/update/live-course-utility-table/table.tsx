@@ -57,13 +57,6 @@ function SortSymbol({ direction }: SortSymbolProps) {
   }
 }
 
-const formatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
 const helper = createColumnHelper<CourseWithUtility>();
 const columns = [
   helper.display({
@@ -283,11 +276,7 @@ const columns = [
         </Button>
       );
     },
-    cell: info => {
-      const value = info.getValue();
-      const formattedPrice = formatter.format(value);
-      return <span className="text-lg font-bold text-red-500">{formattedPrice}</span>;
-    },
+    cell: info => <span className="text-lg font-bold text-red-500">{info.getValue()}</span>,
   }),
 ];
 
