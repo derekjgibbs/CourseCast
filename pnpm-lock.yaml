@@ -114,6 +114,9 @@ importers:
         specifier: ^5.0.6
         version: 5.0.6(@types/react@19.1.8)(react@19.1.0)
     devDependencies:
+      '@bastidood/eslint-plugin-imsort':
+        specifier: ^0.9.1
+        version: 0.9.1
       '@eslint/eslintrc':
         specifier: ^3.3.1
         version: 3.3.1
@@ -344,6 +347,9 @@ packages:
   '@babel/types@7.28.1':
     resolution: {integrity: sha512-x0LvFTekgSX+83TI28Y9wYPUfzrnl2aT5+5QLnO6v7mSJYtEEevuDRN0F0uSHRk1G1IWZC43o00Y0xDDrpBGPQ==}
     engines: {node: '>=6.9.0'}
+
+  '@bastidood/eslint-plugin-imsort@0.9.1':
+    resolution: {integrity: sha512-ZuP5NVvv1YYW/OJQifbzfTRRyyny1rU0fQvOfwwy8XUgXjFgj9fAHiRhxRBd6pfSbtUIgS3AYnXLGxR39T2hZg==}
 
   '@bundled-es-modules/cookie@2.0.1':
     resolution: {integrity: sha512-8o+5fRPLNbjbdGRRmJj3h6Hh1AQJf2dk3qQ/5ZFb+PXkRNiSoMGGUKlsgLfrxneb72axVJyIYji64E2+nNfYyw==}
@@ -4958,6 +4964,10 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
+
+  '@bastidood/eslint-plugin-imsort@0.9.1':
+    dependencies:
+      itertools: 2.4.1
 
   '@bundled-es-modules/cookie@2.0.1':
     dependencies:

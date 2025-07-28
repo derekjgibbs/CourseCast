@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "fmt": "prettier --experimental-cli --cache-location=.prettiercache --check .",
     "fmt:fix": "prettier --experimental-cli --cache-location=.prettiercache --write .",
     "test": "vitest run",
@@ -56,6 +57,7 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@bastidood/eslint-plugin-imsort": "^0.9.1",
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@testing-library/jest-dom": "^6.6.3",
