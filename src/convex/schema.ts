@@ -8,6 +8,8 @@ export default defineSchema({
     user_id: v.id("users"),
     name: v.string(),
     token_budget: v.int64(),
+    /** @deprecated */
+    min_credits: v.number(),
     max_credits: v.number(),
     utilities: v.record(v.string(), v.int64()),
     fixed_courses: v.array(v.string()),
