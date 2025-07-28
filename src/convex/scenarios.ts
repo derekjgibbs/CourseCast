@@ -29,6 +29,7 @@ export const create = mutation({
       user_id: userId,
       name: args.name,
       token_budget: CONSTRAINTS.USER_SCENARIO.TOKEN_BUDGET_DEFAULT,
+      min_credits: 0,
       max_credits: CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_DEFAULT,
       utilities: {},
       fixed_courses: [],
