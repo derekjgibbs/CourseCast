@@ -179,23 +179,23 @@ function ScenarioUpdateForm({
             <Label htmlFor={`${id}-credit-range`}>Credit Range</Label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">
-                {CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_LIMIT.toFixed(1)}
+                {CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_LIMIT.toFixed(2)}
               </span>
               <SliderWithArrowStickyLabel
                 id={`${id}-credit-range`}
                 min={CONSTRAINTS.USER_SCENARIO.MIN_CREDITS_LIMIT}
                 max={CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_LIMIT}
-                step={0.5}
+                step={0.25}
                 name="credit_range"
                 value={creditRange}
                 onValueChange={([min, max]) => {
                   if (typeof min === "undefined" || typeof max === "undefined") return;
                   if (isValidCreditsRange(min, max)) setCreditRange([min, max]);
                 }}
-                formatValue={value => <span>{value.toFixed(1)} Credits</span>}
+                formatValue={value => <span>{value.toFixed(2)} Credits</span>}
               />
               <span className="text-sm text-gray-500">
-                {CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_LIMIT.toFixed(1)}
+                {CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_LIMIT.toFixed(2)}
               </span>
             </div>
           </div>
