@@ -25,7 +25,7 @@ interface CreateScenarioCardProps {
 function CreateScenarioCard({ onSuccess }: CreateScenarioCardProps) {
   return (
     <ScenarioDialog onSuccess={onSuccess}>
-      <Card className="cursor-pointer border-2 border-dashed border-gray-300 bg-gray-50 transition-all hover:border-gray-400 hover:bg-gray-100 hover:scale-[1.02] hover:shadow-md">
+      <Card className="cursor-pointer border-2 border-dashed border-gray-300 bg-gray-50 transition-all hover:scale-[1.02] hover:border-gray-400 hover:bg-gray-100 hover:shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-gray-600">
             <Plus className="h-5 w-5" />
@@ -94,12 +94,14 @@ export function Dashboard() {
   const scenarios = useQuery(api.scenarios.list);
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">
-          Manage your course scenarios and run Monte Carlo simulations to optimize your course
-          selection.
-        </p>
+      <div className="flex items-center justify-between gap-6 rounded-lg border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-4 text-white shadow-lg">
+        <div className="grow">
+          <h1 className="text-2xl font-bold text-white">CourseCast Dashboard</h1>
+          <p className="mt-1 text-sm text-blue-50">
+            Manage your course scenarios and run Monte Carlo simulations to optimize your course
+            selection.
+          </p>
+        </div>
       </div>
       {typeof scenarios === "undefined" ? (
         <div className="flex h-64 flex-col items-center justify-center space-y-4">
