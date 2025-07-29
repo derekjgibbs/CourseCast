@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/lib/schema/course";
 import { DepartmentBadge } from "@/features/department-badge";
+import { formatTimeRange } from "@/lib/date";
 import { RadialProgress } from "@/components/ui/radial-progress";
 import {
   Table,
@@ -37,8 +38,8 @@ interface ScheduleCourseData {
   title: string;
   department: string;
   sectionCode: string;
-  startTime: string;
-  stopTime: string;
+  startTime: number;
+  stopTime: number;
   daysCode: string;
   credits: number;
 }
@@ -136,7 +137,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Course Selection Probabilities</h3>
+        <h3 className="text-lg font-semibold">Simulation Results by Course</h3>
         {courseProbabilities.length === 0 ? (
           <p className="text-muted-foreground py-8 text-center">
             No courses were selected in any simulation runs
@@ -145,7 +146,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-center">Probability</TableHead>
+                <TableHead className="text-center">Frequency</TableHead>
                 <TableHead>Course</TableHead>
                 <TableHead>Department</TableHead>
                 <TableHead>Instructors</TableHead>
@@ -187,7 +188,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                     <TableCell className="font-medium">
                       <div className="space-y-1">
                         <div className="font-semibold">{course.title}</div>
-                        <div className="text-muted-foreground text-sm">{course.sectionCode}</div>
+                        <div className="text-muted-foreground text-sm">{course.courseId}</div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -215,7 +216,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
         )}
       </div>
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Schedule Probabilities</h3>
+        <h3 className="text-lg font-semibold">Simulation Results by Schedule</h3>
         {scheduleProbabilities.length === 0 ? (
           <p className="text-muted-foreground py-8 text-center">
             No schedules were generated in simulation runs
@@ -224,7 +225,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-center">Probability</TableHead>
+                <TableHead className="text-center">Frequency</TableHead>
                 <TableHead className="text-center">Total Credits</TableHead>
                 <TableHead>Schedule</TableHead>
               </TableRow>
@@ -274,12 +275,10 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                           <div key={course.courseId} className="flex items-center space-x-3">
                             <div className="flex-1">
                               <div className="text-sm font-medium">{course.title}</div>
+                              <div className="text-muted-foreground text-xs">{course.courseId}</div>
                               <div className="text-muted-foreground text-xs">
-                                {course.sectionCode}
-                              </div>
-                              <div className="text-muted-foreground text-xs">
-                                {course.daysCode} &middot; {course.startTime} &ndash;{" "}
-                                {course.stopTime}
+                                {course.daysCode} &middot;{" "}
+                                {formatTimeRange(course.startTime, course.stopTime)}
                               </div>
                             </div>
                           </div>

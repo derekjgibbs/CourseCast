@@ -56,8 +56,8 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
             <span className="font-medium">{scenario.token_budget.toString()}</span>
           </div>
           <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>Credit Range</span>
-            <span className="font-medium">{scenario.max_credits.toFixed(2)} credits</span>
+            <span>Maximum Credits</span>
+            <span className="font-medium">{scenario.max_credits.toFixed(2)} Credits</span>
           </div>
           <div className="flex items-center justify-between text-sm text-gray-600">
             <span>Fixed Courses</span>

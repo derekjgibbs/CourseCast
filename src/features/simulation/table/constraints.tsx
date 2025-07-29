@@ -32,9 +32,9 @@ export function ConstraintsTable({ name, tokenBudget, maxCredits }: ConstraintsT
           <TableCell className="font-mono">{tokenBudget.toString()}</TableCell>
         </TableRow>
         <TableRow>
-          <TableCell className="font-medium">Credit Range</TableCell>
+          <TableCell className="font-medium">Maximum Credits</TableCell>
           <TableCell>
-            <span className="font-mono">{maxCredits.toFixed(2)} credits</span>
+            <span className="font-mono">{maxCredits.toFixed(2)} Credits</span>
           </TableCell>
         </TableRow>
       </TableBody>
