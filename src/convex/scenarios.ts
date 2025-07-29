@@ -39,6 +39,33 @@ export const create = mutation({
   },
 });
 
+export const duplicate = mutation({
+  args: { id: v.id("user_scenarios") },
+  handler: async (ctx, { id }) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new ConvexError("user not authenticated");
+
+    const scenario = await ctx.db
+      .query("user_scenarios")
+      .withIndex("by_id", q => q.eq("_id", id))
+      .unique();
+    if (scenario === null) throw new ConvexError("scenario not found");
+
+    const now = BigInt(Date.now());
+    return await ctx.db.insert("user_scenarios", {
+      user_id: userId,
+      name: scenario.name,
+      token_budget: scenario.token_budget,
+      min_credits: scenario.min_credits,
+      max_credits: scenario.max_credits,
+      utilities: scenario.utilities,
+      fixed_courses: scenario.fixed_courses,
+      created_at: now,
+      updated_at: now,
+    });
+  },
+});
+
 export const update = mutation({
   args: updateUserScenarioValidator,
   handler: async (ctx, updates) => {

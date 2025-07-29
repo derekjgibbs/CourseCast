@@ -27,6 +27,8 @@ import { ScenarioDeleteAlert } from "@/features/scenario/delete";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
+import { ScenarioDuplicateAlert } from "../duplicate";
+
 import { LiveCourseCatalogDataTable } from "./live-course-catalog-data-table";
 import { LiveCourseUtilityTable } from "./live-course-utility-table";
 import { LiveFixedCourseCatalogTable } from "./live-fixed-course-catalog-table";
@@ -284,7 +286,10 @@ export function LiveScenarioUpdate({ scenario }: LiveScenarioUpdateProps) {
           />
         </UserScenarioProvider>
       </FetchedCoursesProvider>
-      <ScenarioDeleteAlert scenarioId={scenario._id} />
+      <div className="space-y-2">
+        <ScenarioDuplicateAlert scenarioId={scenario._id} />
+        <ScenarioDeleteAlert scenarioId={scenario._id} />
+      </div>
     </div>
   );
 }
