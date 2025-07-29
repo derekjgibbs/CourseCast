@@ -171,7 +171,7 @@ function ScenarioUpdateForm({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor={`${id}-credit-range`}>Credit Range</Label>
+            <Label htmlFor={`${id}-credit-range`}>Maximum Credits</Label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">0.00</span>
               <SliderWithArrowStickyLabel
