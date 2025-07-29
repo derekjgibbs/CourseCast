@@ -146,7 +146,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-center">Probability</TableHead>
+                <TableHead className="text-center">Frequency</TableHead>
                 <TableHead>Course</TableHead>
                 <TableHead>Department</TableHead>
                 <TableHead>Instructors</TableHead>
@@ -225,7 +225,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-center">Probability</TableHead>
+                <TableHead className="text-center">Frequency</TableHead>
                 <TableHead className="text-center">Total Credits</TableHead>
                 <TableHead>Schedule</TableHead>
               </TableRow>
