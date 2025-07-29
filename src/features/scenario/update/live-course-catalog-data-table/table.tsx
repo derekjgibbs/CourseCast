@@ -34,6 +34,7 @@ import { unparse } from "papaparse";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
 import type { Course } from "@/lib/schema/course";
 import { DepartmentBadge } from "@/features/department-badge";
 import { formatTimeRange } from "@/lib/date";
@@ -157,7 +158,9 @@ const columns = [
       );
     },
     cell: info => (
-      <span className="font-mono text-sm font-medium text-gray-600">{info.getValue()}</span>
+      <CopyToClipboardButton value={info.getValue()} variant="ghost" size="sm">
+        <span className="text-sm font-medium text-gray-600">{info.getValue()}</span>
+      </CopyToClipboardButton>
     ),
   }),
   helper.accessor("title", {
