@@ -2,6 +2,13 @@ import { type Constraint, solve } from "yalps";
 
 import type { OptimizationRequest, OptimizationResponse } from "./schema";
 
+class OptimizationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OptimizationError";
+  }
+}
+
 export function optimize(request: OptimizationRequest) {
   // Calculate prices for all courses
   const coursesWithPrices = request.courses.map(course => ({
@@ -15,6 +22,36 @@ export function optimize(request: OptimizationRequest) {
     ["max_credits", { max: request.max_credits }],
   ]);
 
+  // Build conflict group mappings for efficient constraint generation
+  const conflictGroups = new Map<string, Set<string>>();
+  const courseToGroups = new Map<string, Set<string>>();
+
+  // Process conflict groups and build mappings
+  for (const course of coursesWithPrices) {
+    courseToGroups.set(course.forecast_id, new Set());
+
+    for (const groupId of course.conflict_groups) {
+      // Add course to group
+      let group = conflictGroups.get(groupId);
+      if (typeof group === "undefined") {
+        group = new Set();
+        conflictGroups.set(groupId, group);
+      }
+      group.add(course.forecast_id);
+
+      // Add group to course's groups
+      const courseGroups = courseToGroups.get(course.forecast_id);
+      if (typeof courseGroups === "undefined")
+        throw new OptimizationError(`Course groups not found for ${course.forecast_id}`);
+      courseGroups.add(groupId);
+    }
+  }
+
+  // Pre-create all conflict group constraints
+  // Only create constraints for groups with multiple courses
+  for (const [groupId, courses] of conflictGroups.entries())
+    if (courses.size > 1) constraints.set(groupId, { max: 1 });
+
   // Variables map
   const variables = new Map<string, Map<string, number>>();
   for (const course of coursesWithPrices) {
@@ -26,12 +63,11 @@ export function optimize(request: OptimizationRequest) {
     ]);
     variables.set(course.forecast_id, courseVariables);
 
-    // Add conflict group constraints using precomputed data
-    for (const groupId of course.conflict_groups) {
-      courseVariables.set(groupId, 1);
-      // Ensure constraint exists (only add once per group)
-      if (!constraints.has(groupId)) constraints.set(groupId, { max: 1 });
-    }
+    // Only add each constraint once per group
+    const courseGroups = courseToGroups.get(course.forecast_id);
+    if (typeof courseGroups === "undefined")
+      throw new OptimizationError(`Course groups not found for ${course.forecast_id}`);
+    for (const groupId of courseGroups) courseVariables.set(groupId, 1);
   }
 
   // Add fixed course constraints

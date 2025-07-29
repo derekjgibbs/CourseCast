@@ -89,6 +89,58 @@ for (const course of data) {
   course.truncated_price_fluctuations = randoms;
 }
 
+function getTermCodes(partOfTerm: string) {
+  switch (partOfTerm) {
+    case "Q1":
+      return ["Q1"];
+    case "Q2":
+      return ["Q2"];
+    case "Q3":
+      return ["Q3"];
+    case "Q4":
+      return ["Q4"];
+    case "F":
+      return ["Q1", "Q2"];
+    case "S":
+      return ["Q3", "Q4"];
+    case "Full":
+      return ["Q1", "Q2", "Q3", "Q4"];
+    case "Modular":
+      return ["Modular"];
+    default:
+      throw new Error(`unknown part of term: ${partOfTerm}`);
+  }
+}
+
+function getDayCodes(daysCode: string) {
+  switch (daysCode) {
+    case "M":
+      return ["M"];
+    case "T":
+      return ["T"];
+    case "W":
+      return ["W"];
+    case "R":
+      return ["R"];
+    case "F":
+      return ["F"];
+    case "S":
+      return ["S"];
+    case "U":
+      return ["U"];
+    case "MW":
+      return ["M", "W"];
+    case "TR":
+      return ["T", "R"];
+    case "FS":
+      return ["F", "S"];
+    case "TBA":
+      return ["TBA"];
+    default:
+      throw new Error(`unknown days code: ${daysCode}`);
+  }
+}
+
 // Step 1: Find all direct time conflicts
 const directConflicts = new Map<string, string>();
 data.sort((a, b) => a.start_time - b.start_time);
@@ -111,63 +163,79 @@ for (let i = 0; i < data.length; ++i) {
     // Early termination: if courseB starts after courseA ends, no more conflicts possible
     if (courseB.start_time >= courseA.stop_time) break;
 
-    // Check if courses have overlapping days
-    const daysA = courseA.days_code;
-    const daysB = courseB.days_code;
+    // Check if courses have overlapping terms (part_of_term)
+    const termsA = getTermCodes(courseA.part_of_term);
+    const termsB = getTermCodes(courseB.part_of_term);
 
-    // Check for day overlap (any common day)
-    const hasDayOverlap = Array.from(daysA).some(day => daysB.includes(day));
-    if (hasDayOverlap) {
-      // Check for time overlap using half-open range logic
-      // Two ranges [a, b) and [c, d) overlap if a < d && c < b
-      // Since we already know courseB.start_time < courseA.stop_time (from the break condition above),
-      // we only need to check if courseA.start_time < courseB.stop_time
-      if (courseA.start_time < courseB.stop_time) {
-        // Create alphabetically sorted key for consistent ordering
-        const [a, b] = [courseA.forecast_id, courseB.forecast_id].sort();
-        assert(typeof a !== "undefined");
-        assert(typeof b !== "undefined");
-        directConflicts.set(a, b);
-      }
+    // Check for term overlap (any common term)
+    const hasTermOverlap = termsA.some(term => termsB.includes(term));
+    if (!hasTermOverlap) continue; // No term overlap, no conflict
+
+    // Check if courses have overlapping days
+    const daysA = getDayCodes(courseA.days_code);
+    const daysB = getDayCodes(courseB.days_code);
+
+    // Check for day overlap (any common day, excluding TBA)
+    const hasDayOverlap = daysA.some(day =>
+      day !== "TBA" && daysB.includes(day)
+    );
+    if (!hasDayOverlap) continue; // No day overlap, no conflict
+
+    // Check for time overlap using half-open range logic
+    // Two ranges [a, b) and [c, d) overlap if a < d && c < b
+    // Since we already know courseB.start_time < courseA.stop_time (from the break condition above),
+    // we only need to check if courseA.start_time < courseB.stop_time
+    if (courseA.start_time < courseB.stop_time) {
+      // Create alphabetically sorted key for consistent ordering
+      const [a, b] = [courseA.forecast_id, courseB.forecast_id].sort();
+      assert(typeof a !== "undefined");
+      assert(typeof b !== "undefined");
+      directConflicts.set(a, b);
     }
   }
 }
 
-// Step 2: Create time conflict groups using union-find algorithm
-type TimeConflictGroupId = string;
-const courseToTimeGroup = new Map<string, TimeConflictGroupId>();
-function findTimeGroup(courseId: string): TimeConflictGroupId {
-  let group = courseToTimeGroup.get(courseId);
-  if (typeof group === "undefined") {
-    courseToTimeGroup.set(courseId, courseId);
-    return courseId;
-  }
-  while (true) {
-    const parent = courseToTimeGroup.get(group);
-    if (typeof parent === "undefined" || group === parent) break;
-    group = parent;
-  }
-  return group;
-}
+// Step 2: Create time conflict groups directly from direct conflicts
+const timeConflictGroups = new Map<string, Set<string>>();
 
-// Merge all time-conflicting courses into groups
+// Process each direct conflict to create conflict groups
 for (const [courseA, courseB] of directConflicts.entries()) {
-  const groupA = findTimeGroup(courseA);
-  const groupB = findTimeGroup(courseB);
-  if (groupA !== groupB)
-    courseToTimeGroup.set(groupB, groupA);
-}
+  // Get the actual course objects
+  const courseAObj = data.find(c => c.forecast_id === courseA);
+  const courseBObj = data.find(c => c.forecast_id === courseB);
 
-// Build final time conflict groups
-const timeConflictGroups = new Map<TimeConflictGroupId, Set<string>>();
-for (const course of data) {
-  const groupId = findTimeGroup(course.forecast_id);
-  let timeGroup = timeConflictGroups.get(groupId);
-  if (typeof timeGroup === "undefined") {
-    timeGroup = new Set();
-    timeConflictGroups.set(groupId, timeGroup);
+  if (typeof courseAObj === "undefined" || typeof courseBObj === "undefined") {
+    console.warn(`Course not found for conflict: ${courseA} vs ${courseB}`);
+    continue;
   }
-  timeGroup.add(course.forecast_id);
+
+  // Create conflict group name: term codes + days code + sorted forecast IDs
+  const termsA = getTermCodes(courseAObj.part_of_term);
+  const termsB = getTermCodes(courseBObj.part_of_term);
+  const daysA = getDayCodes(courseAObj.days_code);
+  const daysB = getDayCodes(courseBObj.days_code);
+
+  // Find common terms and days
+  const commonTerms = termsA.filter(term => termsB.includes(term));
+  const commonDays = daysA.filter(day => day !== "TBA" && daysB.includes(day));
+
+  if (commonTerms.length === 0 || commonDays.length === 0)
+    continue;
+
+  // Create group name: term codes + days code + sorted IDs
+  const termCode = commonTerms.join("");
+  const dayCode = commonDays.join("");
+  const sortedIds = [courseA, courseB].sort();
+  const groupName = `time_${termCode}_${dayCode}_${sortedIds[0]}_${sortedIds[1]}`;
+
+  // Add courses to the conflict group
+  let group = timeConflictGroups.get(groupName);
+  if (typeof group === "undefined") {
+    group = new Set();
+    timeConflictGroups.set(groupName, group);
+  }
+  group.add(courseA);
+  group.add(courseB);
 }
 
 // Step 3: Create course section groups
@@ -187,12 +255,10 @@ for (const course of data) {
   course.conflict_groups = [];
 
   // Add time conflict groups
-  const timeGroupId = findTimeGroup(course.forecast_id);
-  const timeGroup = timeConflictGroups.get(timeGroupId);
-  assert(typeof timeGroup !== "undefined");
-
-  // Only add time conflict group if there are actually conflicts
-  if (timeGroup.size > 1) course.conflict_groups.push(`time_${timeGroupId}`);
+  const timeGroups = Array.from(timeConflictGroups.entries()).filter(([_, group]) => group.has(course.forecast_id));
+  for (const [groupName, group] of timeGroups)
+    if (group.size > 1)
+      course.conflict_groups.push(groupName);
 
   // Add course section groups
   const courseId = course.forecast_id.substring(0, 8);
