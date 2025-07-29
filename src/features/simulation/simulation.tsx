@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Course } from "@/lib/schema/course";
 import { DepartmentBadge } from "@/features/department-badge";
+import { formatTimeRange } from "@/lib/date";
 import { RadialProgress } from "@/components/ui/radial-progress";
 import {
   Table,
@@ -37,8 +38,8 @@ interface ScheduleCourseData {
   title: string;
   department: string;
   sectionCode: string;
-  startTime: string;
-  stopTime: string;
+  startTime: number;
+  stopTime: number;
   daysCode: string;
   credits: number;
 }
@@ -278,8 +279,8 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                                 {course.sectionCode}
                               </div>
                               <div className="text-muted-foreground text-xs">
-                                {course.daysCode} &middot; {course.startTime} &ndash;{" "}
-                                {course.stopTime}
+                                {course.daysCode} &middot;{" "}
+                                {formatTimeRange(course.startTime, course.stopTime)}
                               </div>
                             </div>
                           </div>

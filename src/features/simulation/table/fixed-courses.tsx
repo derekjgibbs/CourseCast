@@ -1,8 +1,6 @@
-import { BookOpen } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
-import type { Course } from "@/lib/schema/course";
 import { DepartmentBadge } from "@/features/department-badge";
+import { formatTimeRange } from "@/lib/date";
 import {
   Table,
   TableBody,
@@ -12,6 +10,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+interface Course {
+  forecast_id: string;
+  section_code: string;
+  title: string;
+  department: string;
+  instructors: string[];
+  days_code: string;
+  start_time: number;
+  stop_time: number;
+  credits: number;
+  truncated_price_prediction: number;
+}
+
+interface FixedCoursesTableProps {
+  courses: Course[];
+}
+
 const formatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -19,27 +34,18 @@ const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-interface FixedCoursesTableProps {
-  courses: Course[];
-}
-
 export function FixedCoursesTable({ courses }: FixedCoursesTableProps) {
-  return courses.length === 0 ? (
-    <div className="flex flex-col items-center space-y-2 p-8">
-      <BookOpen className="size-8 text-gray-400" />
-      <span className="text-sm font-medium text-gray-600">No fixed courses configured</span>
-    </div>
-  ) : (
+  return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="text-center">Section Code</TableHead>
-          <TableHead className="text-center">Title</TableHead>
+          <TableHead className="text-center">Section</TableHead>
+          <TableHead className="text-left">Title</TableHead>
           <TableHead className="text-center">Department</TableHead>
           <TableHead className="text-center">Instructor</TableHead>
           <TableHead className="text-center">Schedule</TableHead>
           <TableHead className="text-center">Credits</TableHead>
-          <TableHead className="text-center">Price Forecast</TableHead>
+          <TableHead className="text-center">Price</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className="text-center">
@@ -67,7 +73,7 @@ export function FixedCoursesTable({ courses }: FixedCoursesTableProps) {
               <div className="text-sm">
                 <div className="font-semibold text-gray-900">{course.days_code}</div>
                 <div className="text-gray-500">
-                  {course.start_time} - {course.stop_time}
+                  {formatTimeRange(course.start_time, course.stop_time)}
                 </div>
               </div>
             </TableCell>

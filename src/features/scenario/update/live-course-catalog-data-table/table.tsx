@@ -9,13 +9,11 @@ import {
   ArrowUpNarrowWide,
   BookmarkPlus,
   BookOpen,
-  Building,
   ClipboardList,
   Clock,
   DollarSign,
   Download,
   HeartPlus,
-  Pencil,
   Search,
   User,
 } from "lucide-react";
@@ -36,9 +34,9 @@ import { unparse } from "papaparse";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
 import type { Course } from "@/lib/schema/course";
 import { DepartmentBadge } from "@/features/department-badge";
+import { formatTimeRange } from "@/lib/date";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -139,7 +137,7 @@ const columns = [
     },
   }),
   helper.accessor("section_code", {
-    sortingFn: "alphanumeric",
+    sortingFn: "basic",
     filterFn: "includesString",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -151,24 +149,19 @@ const columns = [
           className="w-full justify-between"
         >
           <div className="flex items-center space-x-2">
-            <BookOpen className="size-4" />
-            <span>Section Code</span>
+            <ClipboardList className="size-4" />
+            <span>Section</span>
           </div>
           <SortSymbol direction={column.getIsSorted()} />
         </Button>
       );
     },
-    cell: info => {
-      const value = info.getValue();
-      return (
-        <CopyToClipboardButton value={value} variant="ghost" size="sm">
-          <span className="text-sm font-medium text-gray-600">{value}</span>
-        </CopyToClipboardButton>
-      );
-    },
+    cell: info => (
+      <span className="font-mono text-sm font-medium text-gray-600">{info.getValue()}</span>
+    ),
   }),
   helper.accessor("title", {
-    sortingFn: "alphanumeric",
+    sortingFn: "basic",
     filterFn: "includesString",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -179,10 +172,7 @@ const columns = [
           onClick={handleClick}
           className="w-full justify-between"
         >
-          <div className="flex items-center space-x-2">
-            <Pencil className="size-4" />
-            <span>Title</span>
-          </div>
+          <span>Title</span>
           <SortSymbol direction={column.getIsSorted()} />
         </Button>
       );
@@ -202,10 +192,7 @@ const columns = [
           onClick={handleClick}
           className="w-full justify-between"
         >
-          <div className="flex items-center space-x-2">
-            <Building className="size-4" />
-            <span>Department</span>
-          </div>
+          <span>Department</span>
           <SortSymbol direction={column.getIsSorted()} />
         </Button>
       );
@@ -241,7 +228,7 @@ const columns = [
   helper.accessor(
     ({ days_code, start_time, stop_time }) => ({
       days: days_code,
-      time: `${start_time} - ${stop_time}`,
+      time: formatTimeRange(start_time, stop_time),
     }),
     {
       // TODO: sortingFn

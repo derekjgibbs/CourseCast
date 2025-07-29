@@ -1,8 +1,8 @@
 import { Heart } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import type { Course } from "@/lib/schema/course";
 import { DepartmentBadge } from "@/features/department-badge";
+import { formatTimeRange } from "@/lib/date";
 import { RadialProgress } from "@/components/ui/radial-progress";
 import {
   Table,
@@ -13,15 +13,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const formatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
-export interface CourseWithUtility extends Course {
-  utility: bigint;
+interface CourseWithUtility {
+  forecast_id: string;
+  section_code: string;
+  title: string;
+  department: string;
+  instructors: string[];
+  days_code: string;
+  start_time: number;
+  stop_time: number;
+  credits: number;
+  utility: number;
 }
 
 interface CourseUtilitiesTableProps {
@@ -39,13 +41,12 @@ export function CourseUtilitiesTable({ coursesWithUtilities }: CourseUtilitiesTa
       <TableHeader>
         <TableRow>
           <TableHead className="text-center">Utility</TableHead>
-          <TableHead className="text-center">Section Code</TableHead>
-          <TableHead className="text-center">Title</TableHead>
+          <TableHead className="text-center">Section</TableHead>
+          <TableHead className="text-left">Title</TableHead>
           <TableHead className="text-center">Department</TableHead>
           <TableHead className="text-center">Instructor</TableHead>
           <TableHead className="text-center">Schedule</TableHead>
           <TableHead className="text-center">Credits</TableHead>
-          <TableHead className="text-center">Price Forecast</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className="text-center">
@@ -89,17 +90,12 @@ export function CourseUtilitiesTable({ coursesWithUtilities }: CourseUtilitiesTa
                 <div className="text-sm">
                   <div className="font-semibold text-gray-900">{course.days_code}</div>
                   <div className="text-gray-500">
-                    {course.start_time} - {course.stop_time}
+                    {formatTimeRange(course.start_time, course.stop_time)}
                   </div>
                 </div>
               </TableCell>
               <TableCell>
                 <span className="text-lg font-bold text-green-600">{course.credits}</span>
-              </TableCell>
-              <TableCell>
-                <span className="text-lg font-bold text-red-500">
-                  {formatter.format(course.truncated_price_prediction)}
-                </span>
               </TableCell>
             </TableRow>
           ))}

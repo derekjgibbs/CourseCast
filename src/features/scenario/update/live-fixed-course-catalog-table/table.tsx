@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { CopyToClipboardButton } from "@/features/copy-to-clipboard-button";
 import type { Course } from "@/lib/schema/course";
 import { DepartmentBadge } from "@/features/department-badge";
+import { formatTimeRange } from "@/lib/date";
 import {
   Table,
   TableBody,
@@ -183,7 +184,7 @@ const columns = [
   helper.accessor(
     ({ days_code, start_time, stop_time }) => ({
       days: days_code,
-      time: `${start_time} - ${stop_time}`,
+      time: formatTimeRange(start_time, stop_time),
     }),
     {
       // TODO: sortingFn
@@ -248,7 +249,6 @@ const columns = [
     cell: info => <span className="text-lg font-bold text-red-500">{info.getValue()}</span>,
   }),
 ];
-
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
