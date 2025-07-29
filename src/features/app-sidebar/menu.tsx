@@ -34,7 +34,9 @@ function ScenarioMenuItem({ _id: id, name }: ScenarioMenuItemProps) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
-        <Link href={`/dashboard/${id}`}>{name}</Link>
+        <Link href={`/dashboard/${id}`} title={name}>
+          <span className="truncate">{name}</span>
+        </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
