@@ -3,9 +3,17 @@ import * as v from "valibot";
 import { Course } from "@/lib/schema/course";
 
 export const CourseInput = v.object({
-  ...v.pick(Course, ["forecast_id", "credits", "part_of_term", "days_code", "start_category"])
-    .entries,
+  ...v.pick(Course, [
+    "forecast_id",
+    "credits",
+    "part_of_term",
+    "days_code",
+    "start_time",
+    "stop_time",
+    "start_category",
+  ]).entries,
   truncated_price: v.number(),
+  conflict_groups: v.array(v.string()),
 });
 export type CourseInput = v.InferOutput<typeof CourseInput>;
 
