@@ -22,7 +22,7 @@ import { CourseUtilitiesTable } from "./table/course-utilities";
 import { FixedCoursesTable } from "./table/fixed-courses";
 
 interface CourseWithUtility extends Course {
-  utility: bigint;
+  utility: number;
 }
 
 interface SimulationProps {
@@ -49,7 +49,7 @@ export function LiveSimulation({ scenario }: SimulationProps) {
     () =>
       Object.entries(scenario.utilities).reduce((acc, [courseId, utility]) => {
         const course = courseMap.get(courseId);
-        if (typeof course !== "undefined") acc.push({ ...course, utility });
+        if (typeof course !== "undefined") acc.push({ ...course, utility: Number(utility) });
         return acc;
       }, [] as CourseWithUtility[]),
     [scenario.utilities, courseMap],

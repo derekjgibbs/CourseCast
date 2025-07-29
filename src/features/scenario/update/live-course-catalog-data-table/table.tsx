@@ -136,7 +136,7 @@ const columns = [
       );
     },
   }),
-  helper.accessor("section_code", {
+  helper.accessor("forecast_id", {
     sortingFn: "basic",
     filterFn: "includesString",
     header: function Header({ column }) {
@@ -348,7 +348,7 @@ export function CourseCatalogDataTable({
   const previousPage = useCallback(() => table.previousPage(), [table]);
   const nextPage = useCallback(() => table.nextPage(), [table]);
 
-  const [selectedFilter, setSelectedFilter] = useState("section_code");
+  const [selectedFilter, setSelectedFilter] = useState("title");
   const handleValueChange = useCallback(
     (value: string) => {
       setSelectedFilter(value);
@@ -363,17 +363,7 @@ export function CourseCatalogDataTable({
       rows.map(({ original }) => original),
       {
         header: true,
-        columns: [
-          "forecast_id",
-          "title",
-          "department",
-          "instructor",
-          "days",
-          "start_time",
-          "end_time",
-          "credits",
-          "price_forecast",
-        ],
+        columns: ["forecast_id", "title", "department", "days", "credits", "price_forecast"],
       },
     );
 
@@ -403,8 +393,8 @@ export function CourseCatalogDataTable({
             <SelectValue placeholder="Filter by..." />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="section_code">Section Code</SelectItem>
             <SelectItem value="title">Course Title</SelectItem>
+            <SelectItem value="forecast_id">Section Code</SelectItem>
           </SelectContent>
         </Select>
         {typeof filterColumn === "undefined" ? (

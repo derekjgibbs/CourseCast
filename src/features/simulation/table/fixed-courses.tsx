@@ -1,3 +1,5 @@
+import { Bookmark } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { DepartmentBadge } from "@/features/department-badge";
 import { formatTimeRange } from "@/lib/date";
@@ -35,7 +37,12 @@ const formatter = new Intl.NumberFormat("en-US", {
 });
 
 export function FixedCoursesTable({ courses }: FixedCoursesTableProps) {
-  return (
+  return courses.length === 0 ? (
+    <div className="flex flex-col items-center space-y-2 p-8">
+      <Bookmark className="size-8 text-gray-400" />
+      <span className="text-sm font-medium text-gray-600">No fixed courses configured</span>
+    </div>
+  ) : (
     <Table>
       <TableHeader>
         <TableRow>
@@ -52,7 +59,7 @@ export function FixedCoursesTable({ courses }: FixedCoursesTableProps) {
         {courses.map(course => (
           <TableRow key={course.forecast_id}>
             <TableCell className="font-mono text-sm font-medium text-gray-600">
-              {course.section_code}
+              {course.forecast_id}
             </TableCell>
             <TableCell>
               <div className="size-full text-left font-semibold text-gray-900">{course.title}</div>

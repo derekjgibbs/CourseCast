@@ -83,7 +83,7 @@ const columns = [
       );
     },
   }),
-  helper.accessor("section_code", {
+  helper.accessor("forecast_id", {
     sortingFn: "alphanumeric",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -96,7 +96,7 @@ const columns = [
         >
           <div className="flex items-center space-x-2">
             <BookOpen className="size-4" />
-            <span>Section Code</span>
+            <span>Section</span>
           </div>
           <SortSymbol direction={column.getIsSorted()} />
         </Button>

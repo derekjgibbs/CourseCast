@@ -67,7 +67,7 @@ export function CourseUtilitiesTable({ coursesWithUtilities }: CourseUtilitiesTa
                 </div>
               </TableCell>
               <TableCell className="font-mono text-sm font-medium text-gray-600">
-                {course.section_code}
+                {course.forecast_id}
               </TableCell>
               <TableCell>
                 <div className="size-full text-left font-semibold text-gray-900">
