@@ -176,9 +176,7 @@ for (let i = 0; i < data.length; ++i) {
     const daysB = getDayCodes(courseB.days_code);
 
     // Check for day overlap (any common day, excluding TBA)
-    const hasDayOverlap = daysA.some(day =>
-      day !== "TBA" && daysB.includes(day)
-    );
+    const hasDayOverlap = daysA.some(day => day !== "TBA" && daysB.includes(day));
     if (!hasDayOverlap) continue; // No day overlap, no conflict
 
     // Check for time overlap using half-open range logic
@@ -219,8 +217,7 @@ for (const [courseA, courseB] of directConflicts.entries()) {
   const commonTerms = termsA.filter(term => termsB.includes(term));
   const commonDays = daysA.filter(day => day !== "TBA" && daysB.includes(day));
 
-  if (commonTerms.length === 0 || commonDays.length === 0)
-    continue;
+  if (commonTerms.length === 0 || commonDays.length === 0) continue;
 
   // Create group name: term codes + days code + sorted IDs
   const termCode = commonTerms.join("");
@@ -255,10 +252,11 @@ for (const course of data) {
   course.conflict_groups = [];
 
   // Add time conflict groups
-  const timeGroups = Array.from(timeConflictGroups.entries()).filter(([_, group]) => group.has(course.forecast_id));
+  const timeGroups = Array.from(timeConflictGroups.entries()).filter(([_, group]) =>
+    group.has(course.forecast_id),
+  );
   for (const [groupName, group] of timeGroups)
-    if (group.size > 1)
-      course.conflict_groups.push(groupName);
+    if (group.size > 1) course.conflict_groups.push(groupName);
 
   // Add course section groups
   const courseId = course.forecast_id.substring(0, 8);
@@ -291,10 +289,26 @@ parquetWriteFile({
     { name: "credits", data: data.map(c => c.credits), type: "DOUBLE" },
     { name: "capacity", data: data.map(c => c.capacity), type: "INT32" },
     { name: "aggregated_capacity", data: data.map(c => c.aggregated_capacity), type: "INT32" },
-    { name: "truncated_price_prediction", data: data.map(c => c.truncated_price_prediction), type: "INT32" },
-    { name: "price_prediction_residual_mean", data: data.map(c => c.price_prediction_residual_mean), type: "INT32" },
-    { name: "price_prediction_residual_std_dev", data: data.map(c => c.price_prediction_residual_std_dev), type: "INT32" },
-    { name: "truncated_price_fluctuations", data: data.map(c => c.truncated_price_fluctuations), type: "JSON" },
+    {
+      name: "truncated_price_prediction",
+      data: data.map(c => c.truncated_price_prediction),
+      type: "INT32",
+    },
+    {
+      name: "price_prediction_residual_mean",
+      data: data.map(c => c.price_prediction_residual_mean),
+      type: "INT32",
+    },
+    {
+      name: "price_prediction_residual_std_dev",
+      data: data.map(c => c.price_prediction_residual_std_dev),
+      type: "INT32",
+    },
+    {
+      name: "truncated_price_fluctuations",
+      data: data.map(c => c.truncated_price_fluctuations),
+      type: "JSON",
+    },
     { name: "conflict_groups", data: data.map(c => c.conflict_groups ?? []), type: "JSON" },
   ],
 });
