@@ -8,6 +8,59 @@ import papa from "papaparse";
 
 import { FixedCoreAssignment } from "./schema.ts";
 
+// HACK: Hard-coded from the latest `schedule.xlsx` file.
+function getTermCode(forecastId: string) {
+  switch (forecastId) {
+    case "BEPP6110001":
+    case "BEPP6110002":
+    case "BEPP6110003":
+    case "BEPP6110004":
+    case "BEPP6110005":
+    case "BEPP6110006":
+    case "BEPP6110007":
+    case "BEPP6110008":
+    case "BEPP6110009":
+    case "BEPP6110010":
+    case "BEPP6110011":
+    case "BEPP6110012":
+    case "MKTG6110001":
+    case "MKTG6110003":
+    case "MKTG6110005":
+    case "MKTG6110007":
+    case "MKTG6110009":
+    case "MKTG6110011":
+    case "MKTG6110013":
+    case "MKTG6110015":
+    case "MKTG6110017":
+    case "MKTG6110019":
+    case "MKTG6110021":
+    case "MKTG6110023":
+      return "Q1";
+    case "BEPP6120001":
+    case "BEPP6120002":
+    case "BEPP6120003":
+    case "BEPP6120004":
+    case "BEPP6120005":
+    case "BEPP6120006":
+    case "BEPP6120007":
+    case "BEPP6120008":
+    case "BEPP6120009":
+    case "BEPP6120010":
+    case "BEPP6120011":
+    case "BEPP6120012":
+      return "Q2";
+    case "STAT6130001":
+    case "STAT6130002":
+    case "STAT6130003":
+    case "STAT6130004":
+    case "STAT6130005":
+    case "STAT6130006":
+      return "F";
+    default:
+      return "TBA";
+  }
+}
+
 export async function readFixedCoreAssignments(now: Date) {
   const { promise, resolve, reject } = Promise.withResolvers<papa.ParseResult<unknown>>();
   papa.parse(createReadStream(join(import.meta.dirname, "assignment.csv")), {
@@ -83,7 +136,7 @@ export async function readFixedCoreAssignments(now: Date) {
       title: LongTitle,
       // TODO: Handle case of multiple instructors.
       instructors: [instructor],
-      partOfTerm: "Full",
+      partOfTerm: getTermCode(forecastId),
       // TODO: startDate
       // TODO: endDate
       daysCode,
@@ -101,56 +154,3 @@ export async function readFixedCoreAssignments(now: Date) {
     };
   });
 }
-
-// TODO: Compute time conflict groups.
-
-/*
-assignments.sort((a, b) => a.title.localeCompare(b.title));
-parquetWriteFile({
-  filename: "public/fixed.parquet",
-  columnData: [
-    { name: "forecast_id", data: assignments.map(c => c.forecastId), type: "STRING" },
-    { name: "term", data: assignments.map(c => c.term), type: "INT32" },
-    { name: "semester", data: assignments.map(c => c.semester), type: "STRING" },
-    { name: "department", data: assignments.map(c => c.department), type: "STRING" },
-    { name: "section_code", data: assignments.map(c => c.sectionCode), type: "STRING" },
-    { name: "title", data: assignments.map(c => c.title), type: "STRING" },
-    { name: "instructors", data: assignments.map(c => c.instructors), type: "JSON" },
-    // { name: "part_of_term", data: assignments.map(c => c.partOfTime), type: "STRING" },
-    // { name: "start_date", data: assignments.map(c => c.start_date), type: "STRING" },
-    // { name: "end_date", data: assignments.map(c => c.end_date), type: "STRING" },
-    { name: "days_code", data: assignments.map(c => c.daysCode), type: "STRING" },
-    { name: "start_time", data: assignments.map(c => c.startTime), type: "STRING" },
-    { name: "stop_time", data: assignments.map(c => c.stopTime), type: "STRING" },
-    // { name: "start_category", data: assignments.map(c => c.start_category), type: "STRING" },
-    { name: "credits", data: assignments.map(c => c.credits), type: "DOUBLE" },
-    // { name: "capacity", data: assignments.map(c => c.capacity), type: "INT32" },
-    {
-      name: "aggregated_capacity",
-      data: assignments.map(c => c.aggregatedCapacity),
-      type: "INT32",
-    },
-    // {
-    //   name: "truncated_price_prediction",
-    //   data: assignments.map(c => c.truncated_price_prediction),
-    //   type: "INT32",
-    // },
-    // {
-    //   name: "price_prediction_residual_mean",
-    //   data: assignments.map(c => c.price_prediction_residual_mean),
-    //   type: "INT32",
-    // },
-    // {
-    //   name: "price_prediction_residual_std_dev",
-    //   data: assignments.map(c => c.price_prediction_residual_std_dev),
-    //   type: "INT32",
-    // },
-    // {
-    //   name: "truncated_price_fluctuations",
-    //   data: assignments.map(c => c.truncated_price_fluctuations),
-    //   type: "JSON",
-    // },
-    { name: "conflict_groups", data: assignments.map(c => c.conflictGroups), type: "JSON" },
-  ],
-});
-*/
