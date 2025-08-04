@@ -1,93 +1,17 @@
-import assert, { strictEqual } from "node:assert";
-import { stdin } from "node:process";
+import assert from "node:assert/strict";
 
-import papa from "papaparse";
 import { parquetWriteFile } from "hyparquet-writer";
-import { parse } from "date-fns";
 
-const NOW = new Date();
+import { readFixedCoreAssignments } from "./fixed-core/index.ts";
+import { readRegularCourses } from "./regular-courses/index.ts";
 
-/**
- * Converts time from "HH:mm a" format to minutes since midnight using date-fns
- * @param timeStr - Time string in format "HH:mm a" (e.g., "5:30 PM")
- * @returns {number} Minutes since midnight
- */
-function convertTimeToMinutes(timeStr: string) {
-  const trimmedTime = timeStr.trim();
+const now = new Date();
+const [fixedCore, regularCourses] = await Promise.all([
+  readFixedCoreAssignments(now),
+  readRegularCourses(now),
+]);
 
-  // Parse the time using date-fns with a reference date
-  // We use a reference date to ensure consistent parsing
-  const parsedDate = parse(trimmedTime, "h:mm a", NOW);
-
-  // Extract hours and minutes from the parsed date
-  const hours = parsedDate.getHours();
-  const minutes = parsedDate.getMinutes();
-
-  // Convert to minutes since midnight
-  return hours * 60 + minutes;
-}
-
-interface Course {
-  forecast_id: string;
-  term: number;
-  semester: string;
-  department: string;
-  section_code: string;
-  title: string;
-  instructors: string[];
-  part_of_term: string;
-  start_date: string;
-  end_date: string;
-  days_code: string;
-  start_time: number;
-  stop_time: number;
-  start_category: string;
-  credits: number;
-  capacity: number;
-  aggregated_capacity: number;
-  truncated_price_prediction: number;
-  price_prediction_residual_mean: number;
-  price_prediction_residual_std_dev: number;
-  truncated_price_fluctuations: number[];
-  conflict_groups?: string[];
-}
-
-type CsvResult = papa.ParseResult<Course>;
-const { promise, resolve, reject } = Promise.withResolvers<CsvResult>();
-papa.parse(stdin, {
-  header: true,
-  skipEmptyLines: true,
-  dynamicTyping: true,
-  transform: (value, field) => {
-    switch (field) {
-      case "start_time":
-      case "stop_time":
-        return convertTimeToMinutes(value);
-      case "instructors":
-        return value.trim().split(",");
-      default:
-        return value;
-    }
-  },
-  error: e => reject(e),
-  complete: results => resolve(results as CsvResult),
-});
-
-const { errors, data } = await promise;
-for (const error of errors) console.error(error);
-strictEqual(errors.length, 0);
-
-// Compiles all of the random numbers into one JSON array.
-for (const course of data) {
-  const randoms: number[] = [];
-  for (const [key, value] of Object.entries(course)) {
-    const num = Number.parseInt(key, 10);
-    if (Number.isNaN(num)) continue;
-    if (typeof value !== "number") continue;
-    randoms.push(value);
-  }
-  course.truncated_price_fluctuations = randoms;
-}
+const data = [...fixedCore, ...regularCourses];
 
 function getTermCodes(partOfTerm: string) {
   switch (partOfTerm) {
@@ -143,13 +67,13 @@ function getDayCodes(daysCode: string) {
 
 // Step 1: Find all direct time conflicts
 const directConflicts = new Map<string, string>();
-data.sort((a, b) => a.start_time - b.start_time);
+data.sort((a, b) => a.startTime - b.startTime);
 for (let i = 0; i < data.length; ++i) {
   const courseA = data[i];
   assert(typeof courseA !== "undefined");
 
   // Skip courses with unknown time slots with sentinel value [0, 0)
-  if (courseA.start_time === 0 && courseA.stop_time === 0) continue;
+  if (courseA.startTime === 0 && courseA.stopTime === 0) continue;
 
   // Only check courses that start before this course ends
   // Since data is sorted by start_time, we can optimize by only looking ahead
@@ -158,22 +82,22 @@ for (let i = 0; i < data.length; ++i) {
     assert(typeof courseB !== "undefined");
 
     // Skip courses with unknown time slots with sentinel value [0, 0)
-    if (courseB.start_time === 0 && courseB.stop_time === 0) continue;
+    if (courseB.startTime === 0 && courseB.stopTime === 0) continue;
 
     // Early termination: if courseB starts after courseA ends, no more conflicts possible
-    if (courseB.start_time >= courseA.stop_time) break;
+    if (courseB.startTime >= courseA.stopTime) break;
 
     // Check if courses have overlapping terms (part_of_term)
-    const termsA = getTermCodes(courseA.part_of_term);
-    const termsB = getTermCodes(courseB.part_of_term);
+    const termsA = getTermCodes(courseA.partOfTerm);
+    const termsB = getTermCodes(courseB.partOfTerm);
 
     // Check for term overlap (any common term)
     const hasTermOverlap = termsA.some(term => termsB.includes(term));
     if (!hasTermOverlap) continue; // No term overlap, no conflict
 
     // Check if courses have overlapping days
-    const daysA = getDayCodes(courseA.days_code);
-    const daysB = getDayCodes(courseB.days_code);
+    const daysA = getDayCodes(courseA.daysCode);
+    const daysB = getDayCodes(courseB.daysCode);
 
     // Check for day overlap (any common day, excluding TBA)
     const hasDayOverlap = daysA.some(day => day !== "TBA" && daysB.includes(day));
@@ -183,9 +107,9 @@ for (let i = 0; i < data.length; ++i) {
     // Two ranges [a, b) and [c, d) overlap if a < d && c < b
     // Since we already know courseB.start_time < courseA.stop_time (from the break condition above),
     // we only need to check if courseA.start_time < courseB.stop_time
-    if (courseA.start_time < courseB.stop_time) {
+    if (courseA.startTime < courseB.stopTime) {
       // Create alphabetically sorted key for consistent ordering
-      const [a, b] = [courseA.forecast_id, courseB.forecast_id].sort();
+      const [a, b] = [courseA.forecastId, courseB.forecastId].sort();
       assert(typeof a !== "undefined");
       assert(typeof b !== "undefined");
       directConflicts.set(a, b);
@@ -199,8 +123,8 @@ const timeConflictGroups = new Map<string, Set<string>>();
 // Process each direct conflict to create conflict groups
 for (const [courseA, courseB] of directConflicts.entries()) {
   // Get the actual course objects
-  const courseAObj = data.find(c => c.forecast_id === courseA);
-  const courseBObj = data.find(c => c.forecast_id === courseB);
+  const courseAObj = data.find(c => c.forecastId === courseA);
+  const courseBObj = data.find(c => c.forecastId === courseB);
 
   if (typeof courseAObj === "undefined" || typeof courseBObj === "undefined") {
     console.warn(`Course not found for conflict: ${courseA} vs ${courseB}`);
@@ -208,10 +132,10 @@ for (const [courseA, courseB] of directConflicts.entries()) {
   }
 
   // Create conflict group name: term codes + days code + sorted forecast IDs
-  const termsA = getTermCodes(courseAObj.part_of_term);
-  const termsB = getTermCodes(courseBObj.part_of_term);
-  const daysA = getDayCodes(courseAObj.days_code);
-  const daysB = getDayCodes(courseBObj.days_code);
+  const termsA = getTermCodes(courseAObj.partOfTerm);
+  const termsB = getTermCodes(courseBObj.partOfTerm);
+  const daysA = getDayCodes(courseAObj.daysCode);
+  const daysB = getDayCodes(courseBObj.daysCode);
 
   // Find common terms and days
   const commonTerms = termsA.filter(term => termsB.includes(term));
@@ -238,33 +162,31 @@ for (const [courseA, courseB] of directConflicts.entries()) {
 // Step 3: Create course section groups
 const courseSectionGroups = new Map<string, string[]>();
 for (const course of data) {
-  const courseId = course.forecast_id.substring(0, 8);
+  const courseId = course.forecastId.substring(0, 8);
   let sections = courseSectionGroups.get(courseId);
   if (typeof sections === "undefined") {
     sections = [];
     courseSectionGroups.set(courseId, sections);
   }
-  sections.push(course.forecast_id);
+  sections.push(course.forecastId);
 }
 
 // Step 4: Add conflict groups to each course
 for (const course of data) {
-  course.conflict_groups = [];
-
   // Add time conflict groups
   const timeGroups = Array.from(timeConflictGroups.entries()).filter(([_, group]) =>
-    group.has(course.forecast_id),
+    group.has(course.forecastId),
   );
   for (const [groupName, group] of timeGroups)
-    if (group.size > 1) course.conflict_groups.push(groupName);
+    if (group.size > 1) course.conflictGroups.push(groupName);
 
   // Add course section groups
-  const courseId = course.forecast_id.substring(0, 8);
+  const courseId = course.forecastId.substring(0, 8);
   const sections = courseSectionGroups.get(courseId);
   assert(typeof sections !== "undefined");
 
   // Only add section group if there are multiple sections
-  if (sections.length > 1) course.conflict_groups.push(`section_${courseId}`);
+  if (sections.length > 1) course.conflictGroups.push(`section_${courseId}`);
 }
 
 // Sort the courses by title in alphabetical order initially.
@@ -272,43 +194,44 @@ data.sort((a, b) => a.title.localeCompare(b.title));
 parquetWriteFile({
   filename: "public/courses.parquet",
   columnData: [
-    { name: "forecast_id", data: data.map(c => c.forecast_id), type: "STRING" },
+    { name: "type", data: data.map(c => c.type), type: "STRING" },
+    { name: "forecast_id", data: data.map(c => c.forecastId), type: "STRING" },
     { name: "term", data: data.map(c => c.term), type: "INT32" },
     { name: "semester", data: data.map(c => c.semester), type: "STRING" },
     { name: "department", data: data.map(c => c.department), type: "STRING" },
-    { name: "section_code", data: data.map(c => c.section_code), type: "STRING" },
+    { name: "section_code", data: data.map(c => c.sectionCode), type: "STRING" },
     { name: "title", data: data.map(c => c.title), type: "STRING" },
     { name: "instructors", data: data.map(c => c.instructors), type: "JSON" },
-    { name: "part_of_term", data: data.map(c => c.part_of_term), type: "STRING" },
-    { name: "start_date", data: data.map(c => c.start_date), type: "STRING" },
-    { name: "end_date", data: data.map(c => c.end_date), type: "STRING" },
-    { name: "days_code", data: data.map(c => c.days_code), type: "STRING" },
-    { name: "start_time", data: data.map(c => c.start_time), type: "INT32" },
-    { name: "stop_time", data: data.map(c => c.stop_time), type: "INT32" },
-    { name: "start_category", data: data.map(c => c.start_category), type: "STRING" },
+    // { name: "part_of_term", data: data.map(c => c.partOfTerm), type: "STRING" },
+    // { name: "start_date", data: data.map(c => c.startDate), type: "STRING" },
+    // { name: "end_date", data: data.map(c => c.endDate), type: "STRING" },
+    { name: "days_code", data: data.map(c => c.daysCode), type: "STRING" },
+    { name: "start_time", data: data.map(c => c.startTime), type: "INT32" },
+    { name: "stop_time", data: data.map(c => c.stopTime), type: "INT32" },
+    // { name: "start_category", data: data.map(c => c.startCategory), type: "STRING" },
     { name: "credits", data: data.map(c => c.credits), type: "DOUBLE" },
     { name: "capacity", data: data.map(c => c.capacity), type: "INT32" },
-    { name: "aggregated_capacity", data: data.map(c => c.aggregated_capacity), type: "INT32" },
+    { name: "aggregated_capacity", data: data.map(c => c.aggregatedCapacity), type: "INT32" },
     {
       name: "truncated_price_prediction",
-      data: data.map(c => c.truncated_price_prediction),
+      data: data.map(c => c.truncatedPricePrediction),
       type: "INT32",
     },
     {
       name: "price_prediction_residual_mean",
-      data: data.map(c => c.price_prediction_residual_mean),
+      data: data.map(c => c.pricePredictionResidualMean),
       type: "INT32",
     },
     {
       name: "price_prediction_residual_std_dev",
-      data: data.map(c => c.price_prediction_residual_std_dev),
+      data: data.map(c => c.pricePredictionResidualStdDev),
       type: "INT32",
     },
     {
       name: "truncated_price_fluctuations",
-      data: data.map(c => c.truncated_price_fluctuations),
+      data: data.map(c => c.truncatedPriceFluctuations),
       type: "JSON",
     },
-    { name: "conflict_groups", data: data.map(c => c.conflict_groups ?? []), type: "JSON" },
+    { name: "conflict_groups", data: data.map(c => c.conflictGroups), type: "JSON" },
   ],
 });
