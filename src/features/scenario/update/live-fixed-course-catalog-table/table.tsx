@@ -289,7 +289,7 @@ export function FixedCourseCatalogTable({ name, courses, onRemove }: FixedCourse
           value={row.original.forecast_id}
         />
       )),
-    [rows],
+    [rows, name],
   );
 
   // Apply special deduction rules based on how many fixed courses were selected

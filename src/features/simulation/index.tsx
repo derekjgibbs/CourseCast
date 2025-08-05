@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { Course } from "@/lib/schema/course";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFetchedCourses } from "@/hooks/use-fetch-courses";
@@ -55,25 +56,15 @@ export function LiveSimulation({ scenario }: SimulationProps) {
     [scenario.utilities, courseMap],
   );
 
-  const eligibleCourses = useMemo(() => {
-    const eligible = new Map<string, Course>();
-
-    // Include courses with positive utility
-    for (const [courseId, utility] of Object.entries(scenario.utilities)) {
-      if (Number(utility) > 0) {
-        const course = courseMap.get(courseId);
-        if (typeof course !== "undefined") eligible.set(courseId, course);
-      }
-    }
-
-    // Include fixed courses (regardless of utility)
-    for (const courseId of scenario.fixed_courses) {
-      const course = courseMap.get(courseId);
-      if (typeof course !== "undefined") eligible.set(courseId, course);
-    }
-
-    return eligible;
-  }, [scenario.utilities, scenario.fixed_courses, courseMap]);
+  const eligibleCourses = useMemo(
+    () =>
+      [...Object.keys(scenario.utilities), ...scenario.fixed_courses].reduce((eligible, curr) => {
+        const course = courseMap.get(curr);
+        if (typeof course !== "undefined") eligible.set(curr, course);
+        return eligible;
+      }, new Map<string, Course>()),
+    [scenario.utilities, scenario.fixed_courses, courseMap],
+  );
 
   const utilities = useMemo(() => {
     return new Map(
@@ -130,7 +121,7 @@ export function LiveSimulation({ scenario }: SimulationProps) {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-      {typeof simulation.data === "undefined" ? (
+      {simulation.isPending ? (
         <div className="space-y-6 opacity-60 transition-opacity duration-1000">
           <div className="space-y-3">
             <Skeleton className="h-8 w-64" />
@@ -160,6 +151,11 @@ export function LiveSimulation({ scenario }: SimulationProps) {
             </div>
           </div>
         </div>
+      ) : simulation.isError ? (
+        <Alert variant="destructive">
+          <AlertTitle>Unexpected error encountered</AlertTitle>
+          <AlertDescription>{simulation.error.message}</AlertDescription>
+        </Alert>
       ) : (
         <SimulationSummary responses={simulation.data} />
       )}

@@ -59,9 +59,8 @@ export async function spawnOptimizerPool({ courses, ...request }: OptimizationPo
             ...request,
             courses: Array.from(courses.values()).map(
               ({ truncated_price_fluctuations, ...course }) => {
-                const truncatedPrice = truncated_price_fluctuations[seed];
-                if (typeof truncatedPrice === "undefined")
-                  throw new MissingSimulationSeedValue(course.forecast_id);
+                // Fixed courses should not have a price
+                const truncatedPrice = truncated_price_fluctuations[seed] ?? 0;
                 return { ...course, truncated_price: truncatedPrice };
               },
             ),
