@@ -5,65 +5,17 @@ import { parquetWriteFile } from "hyparquet-writer";
 import { readFixedCoreAssignments } from "./fixed-core/index.ts";
 import { readRegularCourses } from "./regular-courses/index.ts";
 
+import { getTermCodes, getDayCodes } from "./util.ts";
+
 const now = new Date();
+
 const [fixedCore, regularCourses] = await Promise.all([
   readFixedCoreAssignments(now),
   readRegularCourses(now),
 ]);
 
+// Step 0: Combine fixed core and regular courses
 const data = [...fixedCore, ...regularCourses];
-
-function getTermCodes(partOfTerm: string) {
-  switch (partOfTerm) {
-    case "Q1":
-      return ["Q1"];
-    case "Q2":
-      return ["Q2"];
-    case "Q3":
-      return ["Q3"];
-    case "Q4":
-      return ["Q4"];
-    case "F":
-      return ["Q1", "Q2"];
-    case "S":
-      return ["Q3", "Q4"];
-    case "Full":
-      return ["Q1", "Q2", "Q3", "Q4"];
-    case "Modular":
-      return ["Modular"];
-    default:
-      throw new Error(`unknown part of term: ${partOfTerm}`);
-  }
-}
-
-function getDayCodes(daysCode: string) {
-  switch (daysCode) {
-    case "M":
-      return ["M"];
-    case "T":
-      return ["T"];
-    case "W":
-      return ["W"];
-    case "R":
-      return ["R"];
-    case "F":
-      return ["F"];
-    case "S":
-      return ["S"];
-    case "U":
-      return ["U"];
-    case "MW":
-      return ["M", "W"];
-    case "TR":
-      return ["T", "R"];
-    case "FS":
-      return ["F", "S"];
-    case "TBA":
-      return ["TBA"];
-    default:
-      throw new Error(`unknown days code: ${daysCode}`);
-  }
-}
 
 // Step 1: Find all direct time conflicts
 const directConflicts = new Map<string, string>();
@@ -202,7 +154,7 @@ parquetWriteFile({
     { name: "section_code", data: data.map(c => c.sectionCode), type: "STRING" },
     { name: "title", data: data.map(c => c.title), type: "STRING" },
     { name: "instructors", data: data.map(c => c.instructors), type: "JSON" },
-    // { name: "part_of_term", data: data.map(c => c.partOfTerm), type: "STRING" },
+    { name: "part_of_term", data: data.map(c => getTermCodes(c.partOfTerm)), type: "JSON" },
     // { name: "start_date", data: data.map(c => c.startDate), type: "STRING" },
     // { name: "end_date", data: data.map(c => c.endDate), type: "STRING" },
     { name: "days_code", data: data.map(c => c.daysCode), type: "STRING" },

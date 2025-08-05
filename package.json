@@ -17,7 +17,7 @@
     "ui:add": "shadcn add",
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy",
-    "convert": "tsx src/data/convert.ts"
+    "precompute": "node src/data/index.ts"
   },
   "dependencies": {
     "@auth/core": "~0.37.4",
@@ -81,7 +81,6 @@
     "prettier-plugin-tailwindcss": "^0.6.14",
     "shadcn": "^2.10.0",
     "tailwindcss": "^4.1.11",
-    "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.6",
     "typescript": "^5.9.2",
     "vite-tsconfig-paths": "^5.1.4",

@@ -1,4 +1,5 @@
-import { stdin } from "node:process";
+import { createReadStream } from "node:fs";
+import { join } from "node:path";
 import { strictEqual } from "node:assert";
 
 import * as v from "valibot";
@@ -29,7 +30,7 @@ function convertTimeToMinutes(now: Date, timeStr: string) {
 
 export async function readRegularCourses(now: Date) {
   const { promise, resolve, reject } = Promise.withResolvers<papa.ParseResult<unknown>>();
-  papa.parse(stdin, {
+  papa.parse(createReadStream(join(import.meta.dirname, "courses.csv")), {
     header: true,
     skipEmptyLines: true,
     error: e => reject(e),
