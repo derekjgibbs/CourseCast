@@ -18,12 +18,12 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
+  getSortedRowModel,
   type RowData,
   type SortDirection,
   useReactTable,
 } from "@tanstack/react-table";
-import { type MouseEvent, useCallback } from "react";
+import { type MouseEvent, useCallback, useMemo } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SortSymbolProps {
   direction: SortDirection | false;
@@ -63,23 +64,28 @@ const columns = [
       const onRemove = table.options.meta?.onRemove;
       const handleClick = useCallback(
         (event: MouseEvent<HTMLButtonElement>) => {
-          if (typeof onRemove === "undefined") return;
+          if (!window.confirm("Are you sure you want to waive this course?")) return;
           const id = event.currentTarget.dataset["id"];
           if (typeof id === "undefined") return;
-          onRemove(id);
+          onRemove?.(id);
         },
         [onRemove],
       );
       return (
-        <Button
-          type="button"
-          variant="destructive"
-          size="icon"
-          data-id={row.original.forecast_id}
-          onClick={handleClick}
-        >
-          <Trash2 />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              data-id={row.original.forecast_id}
+              onClick={handleClick}
+            >
+              <Trash2 />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Waive Course</TooltipContent>
+        </Tooltip>
       );
     },
   }),
@@ -268,22 +274,39 @@ export function FixedCourseCatalogTable({ name, courses, onRemove }: FixedCourse
     columns,
     data: courses,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     meta: { name, onRemove },
   });
+
   const { rows } = table.getRowModel();
+  const inputs = useMemo(
+    () =>
+      rows.map(row => (
+        <input
+          key={row.original.forecast_id}
+          type="hidden"
+          name={name}
+          value={row.original.forecast_id}
+        />
+      )),
+    [rows, name],
+  );
+
+  // Apply special deduction rules based on how many fixed courses were selected
+  const tokenBudget = useMemo(() => {
+    const totalCredits = rows.reduce((credits, curr) => credits + curr.original.credits, 0);
+    if (totalCredits >= 3) return 2300;
+    if (totalCredits >= 2.5) return 2700;
+    if (totalCredits >= 2) return 3050;
+    if (totalCredits >= 1.5) return 3400;
+    if (totalCredits >= 1) return 3700;
+    return 4000;
+  }, [rows]);
+
   return (
     <>
-      {typeof name === "undefined"
-        ? null
-        : rows.map(row => (
-            <input
-              key={row.original.forecast_id}
-              type="hidden"
-              name={name}
-              value={row.original.forecast_id}
-            />
-          ))}
+      {inputs}
+      <input type="hidden" name="token_budget" value={tokenBudget} />
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map(group => (
@@ -299,28 +322,15 @@ export function FixedCourseCatalogTable({ name, courses, onRemove }: FixedCourse
           ))}
         </TableHeader>
         <TableBody className="text-center">
-          {rows.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={columns.length}>
-                <div className="flex flex-col items-center space-y-2 p-4">
-                  <BookOpen className="size-8 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-600">
-                    No fixed courses selected
-                  </span>
-                </div>
-              </TableCell>
+          {rows.map(row => (
+            <TableRow key={row.id}>
+              {row.getVisibleCells().map(cell => (
+                <TableCell key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
             </TableRow>
-          ) : (
-            rows.map(row => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          )}
+          ))}
         </TableBody>
       </Table>
     </>

@@ -1,7 +1,7 @@
 .next
 .prettiercache
 
-data
+data/**/*.csv
 node_modules
 
 next-env.d.ts

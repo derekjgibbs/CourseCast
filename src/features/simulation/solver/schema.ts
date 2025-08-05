@@ -4,16 +4,16 @@ import { Course } from "@/lib/schema/course";
 
 export const CourseInput = v.object({
   ...v.pick(Course, [
+    "type",
     "forecast_id",
     "credits",
     "part_of_term",
     "days_code",
     "start_time",
     "stop_time",
-    "start_category",
+    "conflict_groups",
   ]).entries,
   truncated_price: v.number(),
-  conflict_groups: v.array(v.string()),
 });
 export type CourseInput = v.InferOutput<typeof CourseInput>;
 

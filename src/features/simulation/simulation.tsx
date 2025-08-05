@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { useFetchedCourses } from "@/hooks/use-fetch-courses";
 
+import { getDayCodeSortIndex } from "./util";
 import type { OptimizationResponse } from "./solver";
 
 interface SimulationSummaryProps {
@@ -98,14 +99,12 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
           if (typeof course !== "undefined") acc.push(course);
           return acc;
         }, [])
-        .sort((a, b) => {
-          const categoryComparison = a.start_category.localeCompare(b.start_category);
-          return categoryComparison === 0 ? a.title.localeCompare(b.title) : categoryComparison;
-        });
+        .sort((a, b) => a.start_time - b.start_time);
 
-      // Create schedule hash by concatenating course IDs with start categories and days
+      // Create schedule hash by concatenating course IDs in alphabetical order
       const scheduleHash = selectedCourseDetails
-        .map(course => `${course.forecast_id}:${course.start_category}:${course.days_code}`)
+        .map(({ forecast_id }) => forecast_id)
+        .sort()
         .join("|");
 
       const existing = scheduleCounts.get(scheduleHash);
@@ -114,16 +113,21 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
           scheduleHash,
           probability: 1 / responses.length,
           occurrences: 1,
-          courses: selectedCourseDetails.map(course => ({
-            courseId: course.forecast_id,
-            title: course.title,
-            department: course.department,
-            sectionCode: course.section_code,
-            startTime: course.start_time,
-            stopTime: course.stop_time,
-            daysCode: course.days_code,
-            credits: course.credits,
-          })),
+          courses: selectedCourseDetails
+            .map(course => ({
+              courseId: course.forecast_id,
+              title: course.title,
+              department: course.department,
+              sectionCode: course.section_code,
+              startTime: course.start_time,
+              stopTime: course.stop_time,
+              daysCode: course.days_code,
+              credits: course.credits,
+            }))
+            .sort((a, b) => {
+              const dayDiff = getDayCodeSortIndex(a.daysCode) - getDayCodeSortIndex(b.daysCode);
+              return dayDiff === 0 ? a.startTime - b.startTime : dayDiff;
+            }),
         });
       else {
         existing.occurrences += 1;
