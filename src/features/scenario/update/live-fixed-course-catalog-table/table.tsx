@@ -39,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SortSymbolProps {
   direction: SortDirection | false;
@@ -63,23 +64,28 @@ const columns = [
       const onRemove = table.options.meta?.onRemove;
       const handleClick = useCallback(
         (event: MouseEvent<HTMLButtonElement>) => {
-          if (typeof onRemove === "undefined") return;
+          if (!window.confirm("Are you sure you want to waive this course?")) return;
           const id = event.currentTarget.dataset["id"];
           if (typeof id === "undefined") return;
-          onRemove(id);
+          onRemove?.(id);
         },
         [onRemove],
       );
       return (
-        <Button
-          type="button"
-          variant="destructive"
-          size="icon"
-          data-id={row.original.forecast_id}
-          onClick={handleClick}
-        >
-          <Trash2 />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              data-id={row.original.forecast_id}
+              onClick={handleClick}
+            >
+              <Trash2 />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Waive Course</TooltipContent>
+        </Tooltip>
       );
     },
   }),

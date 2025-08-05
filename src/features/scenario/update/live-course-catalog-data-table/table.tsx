@@ -7,7 +7,6 @@ import {
   ArrowDownWideNarrow,
   ArrowUpDown,
   ArrowUpNarrowWide,
-  BookmarkPlus,
   BookOpen,
   ClipboardList,
   Clock,
@@ -73,38 +72,6 @@ function SortSymbol({ direction }: SortSymbolProps) {
 
 const helper = createColumnHelper<Course>();
 const columns = [
-  helper.display({
-    id: "fixed",
-    cell: function Cell({ table, row }) {
-      const onFixedCourseAdd = table.options.meta?.onFixedCourseAdd;
-      const handleClick = useCallback(
-        (event: MouseEvent<HTMLButtonElement>) => {
-          if (typeof onFixedCourseAdd === "undefined") return;
-          const id = event.currentTarget.dataset["id"];
-          if (typeof id === "undefined") return;
-          onFixedCourseAdd(id);
-        },
-        [onFixedCourseAdd],
-      );
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              data-id={row.original.forecast_id}
-              onClick={handleClick}
-              className="border-0 bg-blue-800 text-blue-100 hover:bg-blue-900 hover:text-blue-50"
-            >
-              <BookmarkPlus />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Add to Fixed Courses</TooltipContent>
-        </Tooltip>
-      );
-    },
-  }),
   helper.display({
     id: "selected",
     cell: function Cell({ table, row }) {
@@ -316,7 +283,6 @@ function FilterInput({ column }: FilterInputProps) {
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
-    onFixedCourseAdd?: (id: string) => void;
     onCourseSelected?: (id: string) => void;
   }
 }
@@ -324,14 +290,12 @@ declare module "@tanstack/table-core" {
 interface CourseCatalogTableProps {
   initialPageSize?: number;
   courses: Course[];
-  onFixedCourseAdd: (course: string) => void;
   onCourseSelected: (course: string) => void;
 }
 
 export function CourseCatalogDataTable({
   courses,
   initialPageSize = 20,
-  onFixedCourseAdd,
   onCourseSelected,
 }: CourseCatalogTableProps) {
   const table = useReactTable({
@@ -345,7 +309,7 @@ export function CourseCatalogDataTable({
       pagination: { pageSize: initialPageSize },
       sorting: [{ id: "title", desc: false }],
     },
-    meta: { onFixedCourseAdd, onCourseSelected },
+    meta: { onCourseSelected },
   });
 
   const previousPage = useCallback(() => table.previousPage(), [table]);

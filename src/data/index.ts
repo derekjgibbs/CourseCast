@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 
 import { parquetWriteFile } from "hyparquet-writer";
 
+import { getDayCodes, getTermCodes } from "./util.ts";
+
 import { readFixedCoreAssignments } from "./fixed-core/index.ts";
 import { readRegularCourses } from "./regular-courses/index.ts";
-
-import { getTermCodes, getDayCodes } from "./util.ts";
 
 const now = new Date();
 

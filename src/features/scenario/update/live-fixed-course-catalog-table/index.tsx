@@ -14,7 +14,7 @@ interface LiveFixedCourseCatalogTableProps {
 export function LiveFixedCourseCatalogTable({ name }: LiveFixedCourseCatalogTableProps) {
   const courseStore = useCourseStore();
   const handleRemove = useStore(courseStore, state => state.removeFixedCourse);
-  const fixed = useStore(courseStore, state => state.fixed);
+  const fixed = useStore(courseStore, state => state.selectedFixedCourses);
   const fixedCourses = useMemo(() => Array.from(fixed.values()), [fixed]);
   return <FixedCourseCatalogTable name={name} courses={fixedCourses} onRemove={handleRemove} />;
 }

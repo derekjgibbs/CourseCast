@@ -5,9 +5,10 @@ import type { Course } from "@/lib/schema/course";
 import { useFetchedCourses } from "@/hooks/use-fetch-courses";
 
 interface CourseStore {
-  available: Map<string, Course>;
-  selected: Map<string, CourseWithUtility>;
-  fixed: Map<string, Course>;
+  availableRegularCourses: Map<string, Course>;
+  selectedRegularCourses: Map<string, CourseWithUtility>;
+  availableFixedCourses: Map<string, Course>;
+  selectedFixedCourses: Map<string, Course>;
   selectCourse: (course: string) => void;
   deselectCourse: (course: string) => void;
   addFixedCourse: (course: string) => void;
@@ -15,59 +16,63 @@ interface CourseStore {
 }
 
 export interface CourseWithUtility extends Course {
-  utility?: bigint;
+  utility: bigint;
 }
 
-type CourseMap = Map<string, CourseWithUtility>;
-
-function createCourseStore(available: CourseMap, selected: CourseMap, fixed: CourseMap) {
+function createCourseStore(
+  availableRegularCourses: Map<string, Course>,
+  selectedRegularCourses: Map<string, CourseWithUtility>,
+  availableFixedCourses: Map<string, Course>,
+  selectedFixedCourses: Map<string, Course>,
+) {
   return create<CourseStore>(set => ({
-    available,
-    selected,
-    fixed,
+    availableRegularCourses,
+    availableFixedCourses,
+    selectedRegularCourses,
+    selectedFixedCourses,
     selectCourse: id =>
       set(state => {
-        const course = state.available.get(id);
+        const course = state.availableRegularCourses.get(id);
         if (typeof course === "undefined") return {};
 
-        const selected = new Map(state.selected).set(id, course);
-        const available = new Map(state.available);
+        const selected = new Map(state.selectedRegularCourses).set(id, { ...course, utility: 0n });
+        const available = new Map(state.availableRegularCourses);
         available.delete(id);
 
-        return { available, selected };
+        return { availableRegularCourses: available, selectedRegularCourses: selected };
       }),
     deselectCourse: id =>
       set(state => {
-        const course = state.selected.get(id);
+        const course = state.selectedRegularCourses.get(id);
         if (typeof course === "undefined") return {};
 
-        const available = new Map(state.available).set(id, course);
-        const selected = new Map(state.selected);
+        const available = new Map(state.availableRegularCourses).set(id, course);
+        const selected = new Map(state.selectedRegularCourses);
         selected.delete(id);
 
-        return { available, selected };
+        return { availableRegularCourses: available, selectedRegularCourses: selected };
       }),
     addFixedCourse: id =>
       set(state => {
-        const course = state.available.get(id);
+        const course = state.availableFixedCourses.get(id);
         if (typeof course === "undefined") return {};
 
-        const fixed = new Map(state.fixed).set(id, course);
-        const available = new Map(state.available);
+        const fixed = new Map(state.selectedFixedCourses).set(id, course);
+        const available = new Map(state.availableFixedCourses);
         available.delete(id);
 
-        return { available, fixed };
+        return { availableFixedCourses: available, selectedFixedCourses: fixed };
       }),
     removeFixedCourse: id =>
       set(state => {
-        const course = state.fixed.get(id);
+        const course = state.selectedFixedCourses.get(id);
         if (typeof course === "undefined") return {};
 
-        const available = new Map(state.available).set(id, course);
-        const fixed = new Map(state.fixed);
+        const available = new Map(state.availableFixedCourses).set(id, course);
+        const fixed = new Map(state.selectedFixedCourses);
         fixed.delete(id);
 
-        return { available, fixed };
+        return { availableFixedCourses: available, selectedFixedCourses: fixed };
       }),
   }));
 }
@@ -78,7 +83,7 @@ interface UserScenarioProviderProps {
   children: ReactNode;
 }
 
-const CourseContext = createContext(createCourseStore(new Map(), new Map(), new Map()));
+const CourseContext = createContext(createCourseStore(new Map(), new Map(), new Map(), new Map()));
 export function UserScenarioProvider({
   fixedCourses,
   utilities,
@@ -86,26 +91,43 @@ export function UserScenarioProvider({
 }: UserScenarioProviderProps) {
   const courses = useFetchedCourses();
   const store = useMemo(() => {
-    const available: CourseMap = structuredClone(courses);
-
-    const fixed: CourseMap = new Map();
-    for (const id of fixedCourses) {
-      const course = available.get(id);
-      if (typeof course === "undefined") continue;
-      fixed.set(id, course);
-      available.delete(id);
+    const availableRegularCourses = new Map<string, Course>();
+    const availableFixedCourses = new Map<string, Course>();
+    for (const [id, course] of courses) {
+      switch (course.type) {
+        case "fixed":
+          availableFixedCourses.set(id, course);
+          break;
+        case "regular":
+          availableRegularCourses.set(id, course);
+          break;
+        default:
+          break;
+      }
     }
 
-    const selected: CourseMap = new Map();
+    const selectedRegularCourses: Map<string, CourseWithUtility> = new Map();
     for (const [id, utility] of Object.entries(utilities)) {
-      const course = available.get(id);
+      const course = availableRegularCourses.get(id);
       if (typeof course === "undefined") continue;
-      course.utility = utility;
-      selected.set(id, course);
-      available.delete(id);
+      selectedRegularCourses.set(id, { ...course, utility });
+      availableRegularCourses.delete(id);
     }
 
-    return createCourseStore(available, selected, fixed);
+    const selectedFixedCourses: Map<string, Course> = new Map();
+    for (const id of fixedCourses) {
+      const course = availableFixedCourses.get(id);
+      if (typeof course === "undefined") continue;
+      selectedFixedCourses.set(id, course);
+      availableFixedCourses.delete(id);
+    }
+
+    return createCourseStore(
+      availableRegularCourses,
+      selectedRegularCourses,
+      availableFixedCourses,
+      selectedFixedCourses,
+    );
   }, [fixedCourses, utilities, courses]);
   return <CourseContext.Provider value={store}>{children}</CourseContext.Provider>;
 }

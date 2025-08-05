@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/table";
 import { useFetchedCourses } from "@/hooks/use-fetch-courses";
 
-import type { OptimizationResponse } from "./solver";
 import { getDayCodeSortIndex } from "./util";
+import type { OptimizationResponse } from "./solver";
 
 interface SimulationSummaryProps {
   responses: OptimizationResponse[];

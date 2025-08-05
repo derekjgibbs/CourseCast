@@ -2,13 +2,14 @@
 
 import * as v from "valibot";
 import Link from "next/link";
-import { Bookmark, Heart, Loader2, Save, Settings } from "lucide-react";
+import { CircleAlert, Heart, Loader2, Save, Settings } from "lucide-react";
 import { decode } from "decode-formdata";
 import { toast } from "sonner";
 import { useId, useState } from "react";
 import { useMutation as useTanstackMutation } from "@tanstack/react-query";
 import { useMutation as useConvexMutation } from "convex/react";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { ScenarioData } from "@/features/scenario/get";
 import { ScenarioDeleteAlert } from "@/features/scenario/delete";
 import { SliderWithArrowStickyLabel } from "@/components/ui/slider-with-arrow-sticky-label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { ScenarioDuplicateAlert } from "../duplicate";
@@ -49,6 +51,7 @@ function onSaveError() {
 type UserScenario = Pick<UserScenarioDoc, "name" | "token_budget" | "max_credits">;
 interface ScenarioUpdateFormProps extends UserScenario {
   id: string;
+  defaultTabValue: "pre-term" | "regular";
 }
 
 const stringAsNumberSchema = v.pipe(
@@ -86,6 +89,7 @@ function ScenarioUpdateForm({
   name: initialName,
   token_budget: initialTokenBudget,
   max_credits: initialMaxCredits,
+  defaultTabValue,
 }: ScenarioUpdateFormProps) {
   const id = useId();
 
@@ -138,39 +142,20 @@ function ScenarioUpdateForm({
           <CardDescription>Configure the simulation constraints for the scenario</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <div className="space-y-2">
-              <Label htmlFor={`${id}-token-budget`}>Token Budget</Label>
-              <Input
-                id={`${id}-token-budget`}
-                type="number"
-                required
-                placeholder={CONSTRAINTS.USER_SCENARIO.TOKEN_BUDGET_DEFAULT.toString()}
-                min={1}
-                step={1}
-                name="token_budget"
-                value={tokenBudget}
-                onChange={event => {
-                  const value = event.target.valueAsNumber;
-                  if (value > 0) setTokenBudget(value);
-                }}
-              />
-            </div>
-            <div className="grow space-y-2">
-              <Label htmlFor={`${id}-name`}>Scenario Name</Label>
-              <Input
-                id={`${id}-name`}
-                type="text"
-                required
-                placeholder={name}
-                name="name"
-                value={name}
-                onChange={event => {
-                  const value = event.target.value;
-                  if (isValidScenarioName(value)) setName(value);
-                }}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor={`${id}-name`}>Scenario Name</Label>
+            <Input
+              id={`${id}-name`}
+              type="text"
+              required
+              placeholder={name}
+              name="name"
+              value={name}
+              onChange={event => {
+                const value = event.target.value;
+                if (isValidScenarioName(value)) setName(value);
+              }}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor={`${id}-credit-range`}>Maximum Credits</Label>
@@ -198,13 +183,65 @@ function ScenarioUpdateForm({
       <Card>
         <CardHeader>
           <CardTitle className="inline-flex items-center gap-2">
-            <Bookmark className="fill-blue-800 text-blue-800" />
-            <span>Fixed Courses</span>
+            <Settings className="fill-gray-200 text-gray-500" />
+            <span>Are you a pre-term student?</span>
           </CardTitle>
-          <CardDescription>Set up the courses that are fixed by your curriculum</CardDescription>
+          <CardDescription>
+            Pre-term students are subject to additional constraints on their token budget and the
+            courses they can take (i.e., the fixed core).
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <LiveFixedCourseCatalogTable name="fixed_courses" />
+          <Tabs defaultValue={defaultTabValue}>
+            <TabsList>
+              <TabsTrigger value="pre-term">For Pre-term Students</TabsTrigger>
+              <TabsTrigger value="regular">For Everyone Else</TabsTrigger>
+            </TabsList>
+            <div className="p-2">
+              <TabsContent value="regular" className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`${id}-token-budget`}>Token Budget</Label>
+                  <Input
+                    id={`${id}-token-budget`}
+                    type="number"
+                    required
+                    placeholder={CONSTRAINTS.USER_SCENARIO.TOKEN_BUDGET_DEFAULT.toString()}
+                    min={1}
+                    step={1}
+                    name="token_budget"
+                    value={tokenBudget}
+                    onChange={event => {
+                      const value = event.target.valueAsNumber;
+                      if (value > 0) setTokenBudget(value);
+                    }}
+                  />
+                </div>
+                <Alert variant="destructive">
+                  <CircleAlert />
+                  <AlertTitle>Only for Regular Students</AlertTitle>
+                  <AlertDescription>
+                    <span>
+                      This module is intended to be only for <strong>regular students</strong>. If
+                      you are a pre-term student, please use the other module.
+                    </span>
+                  </AlertDescription>
+                </Alert>
+              </TabsContent>
+              <TabsContent value="pre-term" className="space-y-4">
+                <LiveFixedCourseCatalogTable name="fixed_courses" />
+                <Alert variant="destructive">
+                  <CircleAlert />
+                  <AlertTitle>Only for Pre-term Students</AlertTitle>
+                  <AlertDescription>
+                    <span>
+                      This module is intended to be only for <strong>pre-term students</strong>. If
+                      you are a regular student, please use the other module.
+                    </span>
+                  </AlertDescription>
+                </Alert>
+              </TabsContent>
+            </div>
+          </Tabs>
         </CardContent>
       </Card>
       <Card>
@@ -283,6 +320,7 @@ export function LiveScenarioUpdate({ scenario }: LiveScenarioUpdateProps) {
             name={scenario.name}
             token_budget={scenario.token_budget}
             max_credits={scenario.max_credits}
+            defaultTabValue={scenario.fixed_courses.length === 0 ? "regular" : "pre-term"}
           />
         </UserScenarioProvider>
       </FetchedCoursesProvider>
