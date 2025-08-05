@@ -31,7 +31,7 @@ function PresetSelectionButton({ courseIds, children }: PresetSelectionButtonPro
 
 function PresetSelection() {
   // HACK: We hard-code the cohort constraints for now.
-  // TODO: Adjust the max budget based on the fixed courses.
+  // TODO: Handle the STAT edge cases for mutually exclusive classes.
   return (
     <div className="space-y-2">
       <Label>Which cohort are you in?</Label>
