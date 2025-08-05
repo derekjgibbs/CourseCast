@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { useFetchedCourses } from "@/hooks/use-fetch-courses";
 
-import { getDayCodeSortIndex } from "./util";
+import { getDayCodeSortIndex, getQuarterSortIndex } from "./util";
 import type { OptimizationResponse } from "./solver";
 
 interface SimulationSummaryProps {
@@ -32,6 +32,7 @@ interface CourseProbabilityData {
   credits: number;
   instructors: string[];
   sectionCode: string;
+  partOfTerm: string[];
 }
 
 interface ScheduleCourseData {
@@ -43,6 +44,7 @@ interface ScheduleCourseData {
   stopTime: number;
   daysCode: string;
   credits: number;
+  partOfTerm: string[];
 }
 
 interface ScheduleProbabilityData {
@@ -78,6 +80,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
         credits: course.credits,
         instructors: course.instructors,
         sectionCode: course.section_code,
+        partOfTerm: course.part_of_term,
       });
     }
 
@@ -123,10 +126,21 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
               stopTime: course.stop_time,
               daysCode: course.days_code,
               credits: course.credits,
+              partOfTerm: course.part_of_term,
             }))
             .sort((a, b) => {
+              // Sort by quarter first (using the first part of term for each course)
+              const aQuarter = a.partOfTerm[0] ?? "TBA";
+              const bQuarter = b.partOfTerm[0] ?? "TBA";
+              const quarterDiff = getQuarterSortIndex(aQuarter) - getQuarterSortIndex(bQuarter);
+              if (quarterDiff !== 0) return quarterDiff;
+
+              // Then sort by days
               const dayDiff = getDayCodeSortIndex(a.daysCode) - getDayCodeSortIndex(b.daysCode);
-              return dayDiff === 0 ? a.startTime - b.startTime : dayDiff;
+              if (dayDiff !== 0) return dayDiff;
+
+              // Finally sort by time
+              return a.startTime - b.startTime;
             }),
         });
       else {
@@ -153,6 +167,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                 <TableHead className="text-center">Frequency</TableHead>
                 <TableHead>Course</TableHead>
                 <TableHead>Department</TableHead>
+                <TableHead>Part of Term</TableHead>
                 <TableHead>Instructors</TableHead>
                 <TableHead>Credits</TableHead>
               </TableRow>
@@ -197,6 +212,19 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                     </TableCell>
                     <TableCell>
                       <DepartmentBadge department={course.department} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {course.partOfTerm.length > 0 ? (
+                          course.partOfTerm.map(term => (
+                            <Badge key={term} variant="secondary">
+                              {term}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Badge variant="secondary">TBA</Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="max-w-48">
                       <div className="flex flex-wrap gap-1">
@@ -281,7 +309,10 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                               <div className="text-sm font-medium">{course.title}</div>
                               <div className="text-muted-foreground text-xs">{course.courseId}</div>
                               <div className="text-muted-foreground text-xs">
-                                {course.daysCode} &middot;{" "}
+                                {course.partOfTerm.length > 0
+                                  ? course.partOfTerm.join(", ")
+                                  : "TBA"}{" "}
+                                &middot; {course.daysCode} &middot;{" "}
                                 {formatTimeRange(course.startTime, course.stopTime)}
                               </div>
                             </div>

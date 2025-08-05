@@ -33,3 +33,35 @@ export function getDayCodeSortIndex(daysCode: string) {
       throw new UnknownDayCodeError(daysCode);
   }
 }
+
+export class UnknownQuarterError extends Error {
+  constructor(public quarter: string) {
+    super(`unknown quarter: ${quarter}`);
+    this.name = "UnknownQuarterError";
+  }
+}
+
+export function getQuarterSortIndex(quarter: string) {
+  switch (quarter) {
+    case "Q1":
+      return 0;
+    case "Q2":
+      return 1;
+    case "Q3":
+      return 2;
+    case "Q4":
+      return 3;
+    case "F":
+      return 4;
+    case "S":
+      return 5;
+    case "Full":
+      return 6;
+    case "Modular":
+      return 7;
+    case "TBA":
+      return 8;
+    default:
+      throw new UnknownQuarterError(quarter);
+  }
+}

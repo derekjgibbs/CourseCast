@@ -218,9 +218,10 @@ const columns = [
       )),
   }),
   helper.accessor(
-    ({ days_code, start_time, stop_time }) => ({
+    ({ days_code, start_time, stop_time, part_of_term }) => ({
       days: days_code,
       time: formatTimeRange(start_time, stop_time),
+      partOfTerm: part_of_term,
     }),
     {
       // TODO: sortingFn
@@ -232,11 +233,24 @@ const columns = [
         </div>
       ),
       cell: info => {
-        const { days, time } = info.getValue();
+        const { days, time, partOfTerm } = info.getValue();
         return (
           <div className="text-sm">
             <div className="font-semibold text-gray-900">{days}</div>
             <div className="text-gray-500">{time}</div>
+            <div className="mt-1 flex flex-wrap justify-center gap-1">
+              {partOfTerm.length > 0 ? (
+                partOfTerm.map(term => (
+                  <Badge key={term} variant="secondary" className="text-xs">
+                    {term}
+                  </Badge>
+                ))
+              ) : (
+                <Badge variant="secondary" className="text-xs">
+                  TBA
+                </Badge>
+              )}
+            </div>
           </div>
         );
       },

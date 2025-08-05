@@ -24,6 +24,7 @@ interface CourseWithUtility {
   stop_time: number;
   credits: number;
   utility: number;
+  part_of_term: string[];
 }
 
 interface CourseUtilitiesTableProps {
@@ -91,6 +92,19 @@ export function CourseUtilitiesTable({ coursesWithUtilities }: CourseUtilitiesTa
                   <div className="font-semibold text-gray-900">{course.days_code}</div>
                   <div className="text-gray-500">
                     {formatTimeRange(course.start_time, course.stop_time)}
+                  </div>
+                  <div className="mt-1 flex flex-wrap justify-center gap-1">
+                    {course.part_of_term.length > 0 ? (
+                      course.part_of_term.map(term => (
+                        <Badge key={term} variant="secondary" className="text-xs">
+                          {term}
+                        </Badge>
+                      ))
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        TBA
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </TableCell>
