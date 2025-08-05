@@ -19,7 +19,7 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
+  getSortedRowModel,
   type RowData,
   type SortDirection,
   useReactTable,
@@ -303,7 +303,7 @@ export function CourseUtilityTable({ name, courses, onRemove }: CourseUtilityTab
     columns,
     data: courses,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     meta: { name, onRemove },
   });
   const { rows } = table.getRowModel();

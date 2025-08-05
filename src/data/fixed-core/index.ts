@@ -35,6 +35,9 @@ function getTermCode(forecastId: string) {
     case "MKTG6110019":
     case "MKTG6110021":
     case "MKTG6110023":
+    case "STAT6210001":
+    case "STAT6210003":
+    case "STAT6210005":
       return "Q1";
     case "BEPP6120001":
     case "BEPP6120002":

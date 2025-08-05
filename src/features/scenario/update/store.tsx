@@ -13,6 +13,7 @@ interface CourseStore {
   deselectCourse: (course: string) => void;
   addFixedCourse: (course: string) => void;
   removeFixedCourse: (course: string) => void;
+  swapFixedCourses: (newFixedCourseIds: string[]) => void;
 }
 
 export interface CourseWithUtility extends Course {
@@ -73,6 +74,23 @@ function createCourseStore(
         fixed.delete(id);
 
         return { availableFixedCourses: available, selectedFixedCourses: fixed };
+      }),
+    swapFixedCourses: newFixedCourseIds =>
+      set(state => {
+        // Move all currently selected fixed courses back to available
+        const available = new Map(state.availableFixedCourses);
+        for (const [id, course] of state.selectedFixedCourses) available.set(id, course);
+
+        // Select the new fixed courses
+        const selected = new Map<string, Course>();
+        for (const id of newFixedCourseIds) {
+          const course = available.get(id);
+          if (typeof course === "undefined") continue;
+          selected.set(id, course);
+          available.delete(id);
+        }
+
+        return { availableFixedCourses: available, selectedFixedCourses: selected };
       }),
   }));
 }

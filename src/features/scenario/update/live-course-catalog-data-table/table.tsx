@@ -13,12 +13,10 @@ import {
   DollarSign,
   Download,
   HeartPlus,
-  Search,
   User,
 } from "lucide-react";
 import { type ChangeEvent, type MouseEvent, useCallback, useState } from "react";
 import {
-  type Column,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -38,13 +36,6 @@ import type { Course } from "@/lib/schema/course";
 import { DepartmentBadge } from "@/features/department-badge";
 import { formatTimeRange } from "@/lib/date";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -106,6 +97,7 @@ const columns = [
   }),
   helper.accessor("forecast_id", {
     sortingFn: "basic",
+    enableGlobalFilter: true,
     filterFn: "includesString",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -132,6 +124,7 @@ const columns = [
   }),
   helper.accessor("title", {
     sortingFn: "basic",
+    enableGlobalFilter: true,
     filterFn: "includesString",
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
@@ -171,6 +164,7 @@ const columns = [
   }),
   helper.accessor("instructors", {
     sortingFn: "basic",
+    enableGlobalFilter: false,
     header: function Header({ column }) {
       const handleClick = useCallback(() => column.toggleSorting(), [column]);
       return (
@@ -264,22 +258,6 @@ const columns = [
   }),
 ];
 
-interface FilterInputProps {
-  column: Column<Course, unknown>;
-}
-
-function FilterInput({ column }: FilterInputProps) {
-  const value = column.getFilterValue() ?? "";
-  if (typeof value !== "string") throw new Error("unexpected filter value type");
-
-  const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => column.setFilterValue(event.target.value),
-    [column],
-  );
-
-  return <Input placeholder="Search..." value={value} onChange={handleChange} />;
-}
-
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
@@ -298,6 +276,12 @@ export function CourseCatalogDataTable({
   initialPageSize = 20,
   onCourseSelected,
 }: CourseCatalogTableProps) {
+  const [globalFilter, setGlobalFilter] = useState("");
+  const handleGlobalFilterChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => setGlobalFilter(event.target.value),
+    [],
+  );
+
   const table = useReactTable({
     columns,
     data: courses,
@@ -305,24 +289,17 @@ export function CourseCatalogDataTable({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    enableGlobalFilter: true,
     initialState: {
       pagination: { pageSize: initialPageSize },
       sorting: [{ id: "title", desc: false }],
     },
+    state: { globalFilter },
     meta: { onCourseSelected },
   });
 
   const previousPage = useCallback(() => table.previousPage(), [table]);
   const nextPage = useCallback(() => table.nextPage(), [table]);
-
-  const [selectedFilter, setSelectedFilter] = useState("title");
-  const handleValueChange = useCallback(
-    (value: string) => {
-      setSelectedFilter(value);
-      table.resetColumnFilters();
-    },
-    [table],
-  );
 
   const downloadCsv = useCallback(() => {
     const { rows } = table.getFilteredRowModel();
@@ -346,29 +323,13 @@ export function CourseCatalogDataTable({
     }
   }, [table]);
 
-  let filterColumn: Column<Course, unknown> | undefined;
-  if (typeof selectedFilter !== "undefined") filterColumn = table.getColumn(selectedFilter);
-
   const rowModel = table.getRowModel();
   const pageCount = table.getPageCount();
+
   return (
     <div className="space-y-4">
       <div className="flex gap-1">
-        <Select value={selectedFilter} onValueChange={handleValueChange}>
-          <SelectTrigger>
-            <Search />
-            <SelectValue placeholder="Filter by..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="title">Course Title</SelectItem>
-            <SelectItem value="forecast_id">Section Code</SelectItem>
-          </SelectContent>
-        </Select>
-        {typeof filterColumn === "undefined" ? (
-          <Input disabled placeholder="Search..." />
-        ) : (
-          <FilterInput column={filterColumn} />
-        )}
+        <Input placeholder="Search..." value={globalFilter} onChange={handleGlobalFilterChange} />
         <Button type="button" size="icon" onClick={downloadCsv}>
           <Download className="size-4" />
           <span className="sr-only">Download CSV</span>
