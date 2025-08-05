@@ -51,3 +51,12 @@ export function getDayCodes(daysCode: string) {
       throw new Error(`unknown days code: ${daysCode}`);
   }
 }
+
+export function getOrInitValues<K, V>(map: Map<K, V[]>, key: K) {
+  let value = map.get(key);
+  if (typeof value === "undefined") {
+    value = [];
+    map.set(key, value);
+  }
+  return value;
+}

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import { parquetWriteFile } from "hyparquet-writer";
 
-import { getDayCodes, getTermCodes } from "./util.ts";
+import { getDayCodes, getOrInitValues, getTermCodes } from "./util.ts";
 
 import { readFixedCoreAssignments } from "./fixed-core/index.ts";
 import { readRegularCourses } from "./regular-courses/index.ts";
@@ -122,6 +122,16 @@ for (const course of data) {
   }
   sections.push(course.forecastId);
 }
+
+// HACK: Hard-code conflicts on cross-listed courses
+getOrInitValues(courseSectionGroups, "ACCT6110").push("ACCT6130");
+getOrInitValues(courseSectionGroups, "FNCE6130").push("FNCE6230");
+getOrInitValues(courseSectionGroups, "LGST6110").push("LGST6120", "LGST6130");
+getOrInitValues(courseSectionGroups, "LGST6120").push("LGST6130");
+getOrInitValues(courseSectionGroups, "LGST8060").push("MGMT6910", "OIDD6910");
+getOrInitValues(courseSectionGroups, "MGMT6910").push("OIDD6910");
+getOrInitValues(courseSectionGroups, "MGMT6110").push("MGMT6120");
+getOrInitValues(courseSectionGroups, "WHCP6160").push("WHCP6180");
 
 // Step 4: Add conflict groups to each course
 for (const course of data) {
