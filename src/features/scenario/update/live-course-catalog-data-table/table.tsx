@@ -303,6 +303,7 @@ export function CourseCatalogDataTable({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    autoResetPageIndex: false,
     enableGlobalFilter: true,
     initialState: {
       pagination: { pageSize: initialPageSize },
