@@ -307,7 +307,7 @@ export function CourseCatalogDataTable({
     enableGlobalFilter: true,
     initialState: {
       pagination: { pageSize: initialPageSize },
-      sorting: [{ id: "title", desc: false }],
+      sorting: [{ id: "forecast_id", desc: false }],
     },
     state: { globalFilter },
     meta: { onCourseSelected },
