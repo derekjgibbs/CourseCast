@@ -147,7 +147,7 @@ export async function readFixedCoreAssignments(now: Date) {
       stopTime,
       // TODO: startCategory
       credits: Credit,
-      capacity: 0, // TODO
+      capacity: MaxEnrollment, // TODO
       aggregatedCapacity: MaxEnrollment,
       truncatedPricePrediction: 0, // TODO
       pricePredictionResidualMean: 0, // TODO

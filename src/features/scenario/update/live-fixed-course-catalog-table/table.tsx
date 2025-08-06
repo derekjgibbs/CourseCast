@@ -9,7 +9,6 @@ import {
   Building,
   ClipboardList,
   Clock,
-  DollarSign,
   Pencil,
   Trash2,
   User,
@@ -270,27 +269,6 @@ const columns = [
       );
     },
     cell: info => <span className="text-lg font-bold text-green-600">{info.getValue()}</span>,
-  }),
-  helper.accessor("truncated_price_prediction", {
-    sortingFn: "basic",
-    header: function Header({ column }) {
-      const handleClick = useCallback(() => column.toggleSorting(), [column]);
-      return (
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={handleClick}
-          className="w-full justify-between"
-        >
-          <div className="flex items-center space-x-2">
-            <DollarSign className="size-4" />
-            <span>Price Forecast</span>
-          </div>
-          <SortSymbol direction={column.getIsSorted()} />
-        </Button>
-      );
-    },
-    cell: info => <span className="text-lg font-bold text-red-500">{info.getValue()}</span>,
   }),
 ];
 declare module "@tanstack/table-core" {

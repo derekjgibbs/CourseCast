@@ -15,7 +15,6 @@ export const Course = v.object({
   stop_time: v.number(),
   credits: v.number(),
   capacity: v.number(),
-  aggregated_capacity: v.number(),
   truncated_price_prediction: v.number(),
   price_prediction_residual_mean: v.number(),
   price_prediction_residual_std_dev: v.number(),

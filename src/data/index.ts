@@ -173,7 +173,7 @@ parquetWriteFile({
     // { name: "start_category", data: data.map(c => c.startCategory), type: "STRING" },
     { name: "credits", data: data.map(c => c.credits), type: "DOUBLE" },
     { name: "capacity", data: data.map(c => c.capacity), type: "INT32" },
-    { name: "aggregated_capacity", data: data.map(c => c.aggregatedCapacity), type: "INT32" },
+    // { name: "aggregated_capacity", data: data.map(c => c.aggregatedCapacity), type: "INT32" },
     {
       name: "truncated_price_prediction",
       data: data.map(c => c.truncatedPricePrediction),

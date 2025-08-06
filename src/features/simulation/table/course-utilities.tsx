@@ -23,6 +23,7 @@ interface CourseWithUtility {
   start_time: number;
   stop_time: number;
   credits: number;
+  truncated_price_prediction: number;
   utility: number;
   part_of_term: string[];
 }
@@ -48,6 +49,7 @@ export function CourseUtilitiesTable({ coursesWithUtilities }: CourseUtilitiesTa
           <TableHead className="text-center">Instructor</TableHead>
           <TableHead className="text-center">Schedule</TableHead>
           <TableHead className="text-center">Credits</TableHead>
+          <TableHead className="text-center">Price Forecast</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className="text-center">
@@ -110,6 +112,11 @@ export function CourseUtilitiesTable({ coursesWithUtilities }: CourseUtilitiesTa
               </TableCell>
               <TableCell>
                 <span className="text-lg font-bold text-green-600">{course.credits}</span>
+              </TableCell>
+              <TableCell>
+                <span className="text-lg font-bold text-red-600">
+                  {course.truncated_price_prediction}
+                </span>
               </TableCell>
             </TableRow>
           ))}
