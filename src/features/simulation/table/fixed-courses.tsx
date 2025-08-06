@@ -30,13 +30,6 @@ interface FixedCoursesTableProps {
   courses: Course[];
 }
 
-const formatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
 export function FixedCoursesTable({ courses }: FixedCoursesTableProps) {
   return courses.length === 0 ? (
     <div className="flex flex-col items-center space-y-2 p-8">
@@ -103,7 +96,7 @@ export function FixedCoursesTable({ courses }: FixedCoursesTableProps) {
             </TableCell>
             <TableCell>
               <span className="text-lg font-bold text-red-600">
-                {formatter.format(course.truncated_price_prediction)}
+                {course.truncated_price_prediction}
               </span>
             </TableCell>
           </TableRow>
