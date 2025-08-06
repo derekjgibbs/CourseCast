@@ -46,7 +46,6 @@ export function FixedCoursesTable({ courses }: FixedCoursesTableProps) {
           <TableHead className="text-center">Instructor</TableHead>
           <TableHead className="text-center">Schedule</TableHead>
           <TableHead className="text-center">Credits</TableHead>
-          <TableHead className="text-center">Price Forecast</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className="text-center">
@@ -93,11 +92,6 @@ export function FixedCoursesTable({ courses }: FixedCoursesTableProps) {
             </TableCell>
             <TableCell>
               <span className="text-lg font-bold text-green-600">{course.credits}</span>
-            </TableCell>
-            <TableCell>
-              <span className="text-lg font-bold text-red-600">
-                {course.truncated_price_prediction}
-              </span>
             </TableCell>
           </TableRow>
         ))}
