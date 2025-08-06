@@ -95,7 +95,7 @@ export function CourseUtilitiesTable({ coursesWithUtilities }: CourseUtilitiesTa
                   <div className="text-gray-500">
                     {formatTimeRange(course.start_time, course.stop_time)}
                   </div>
-                  <div className="mt-1 flex flex-wrap justify-center gap-1">
+                  <div className="mt-1 flex justify-center gap-1">
                     {course.part_of_term.length > 0 ? (
                       course.part_of_term.map(term => (
                         <Badge key={term} variant="secondary" className="text-xs">

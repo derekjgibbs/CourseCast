@@ -231,7 +231,7 @@ const columns = [
           <div className="text-sm">
             <div className="font-semibold text-gray-900">{days}</div>
             <div className="text-gray-500">{time}</div>
-            <div className="mt-1 flex flex-wrap justify-center gap-1">
+            <div className="mt-1 flex justify-center gap-1">
               {partOfTerm.length > 0 ? (
                 partOfTerm.map(term => (
                   <Badge key={term} variant="secondary" className="text-xs">
