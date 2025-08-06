@@ -16,7 +16,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   CONSTRAINTS,
   isValidCreditsRange,
-  isValidScenarioName,
   type UserScenarioDoc,
   type UserScenarioId,
 } from "@/convex/types";
@@ -152,8 +151,8 @@ function ScenarioUpdateForm({
               name="name"
               value={name}
               onChange={event => {
-                const value = event.target.value;
-                if (isValidScenarioName(value)) setName(value);
+                const name = event.target.value;
+                if (name.length <= CONSTRAINTS.USER_SCENARIO.NAME_MAX_LENGTH) setName(name);
               }}
             />
           </div>
