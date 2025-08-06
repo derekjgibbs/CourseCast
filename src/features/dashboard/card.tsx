@@ -60,7 +60,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
             <span className="font-medium">{scenario.max_credits.toFixed(2)} Credits</span>
           </div>
           <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>Fixed Courses</span>
+            <span>Fixed Core</span>
             <span className="font-medium">{scenario.fixed_courses.length}</span>
           </div>
           <div className="flex items-center justify-between text-sm text-gray-600">

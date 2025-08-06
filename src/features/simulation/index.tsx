@@ -102,7 +102,7 @@ export function LiveSimulation({ scenario }: SimulationProps) {
           <AccordionTrigger>
             <div className="inline-flex items-center gap-2">
               <Bookmark className="size-5 fill-blue-800 text-blue-800" />
-              <span className="text-lg font-semibold">Fixed Courses</span>
+              <span className="text-lg font-semibold">Fixed Core</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="rounded-md bg-blue-50 p-4">
