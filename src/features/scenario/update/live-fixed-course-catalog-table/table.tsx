@@ -56,20 +56,44 @@ function SortSymbol({ direction }: SortSymbolProps) {
   }
 }
 
+// HACK: We hard-code the STAT substitutions for now.
+const STAT_SUBSTITUTIONS = new Map([
+  ["STAT6130001", "STAT6210001"],
+  ["STAT6130002", "STAT6210003"],
+  ["STAT6130003", "STAT6210005"],
+  ["STAT6130004", "STAT6210001"],
+  ["STAT6130005", "STAT6210003"],
+  ["STAT6130006", "STAT6210005"],
+]);
+
 const helper = createColumnHelper<Course>();
 const columns = [
   helper.display({
     id: "remove",
     cell: function Cell({ table, row }) {
       const onRemove = table.options.meta?.onRemove;
+      const onAdd = table.options.meta?.onAdd;
       const handleClick = useCallback(
         (event: MouseEvent<HTMLButtonElement>) => {
-          if (!window.confirm("Are you sure you want to waive this course?")) return;
           const id = event.currentTarget.dataset["id"];
           if (typeof id === "undefined") return;
+
+          const substitution = STAT_SUBSTITUTIONS.get(id);
+          if (typeof substitution === "undefined") {
+            if (!window.confirm("Are you sure you want to waive this course?")) return;
+          } else {
+            if (
+              !window.confirm(
+                `Are you sure you want to waive ${id}? This will be replaced with ${substitution}, which you may also waive later.`,
+              )
+            )
+              return;
+            onAdd?.(substitution);
+          }
+
           onRemove?.(id);
         },
-        [onRemove],
+        [onRemove, onAdd],
       );
       return (
         <Tooltip>
@@ -274,6 +298,7 @@ declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
     name?: string;
     onRemove?: (id: string) => void;
+    onAdd?: (id: string) => void;
   }
 }
 
@@ -281,15 +306,21 @@ interface FixedCourseCatalogTableProps {
   name?: string;
   courses: Course[];
   onRemove: (id: string) => void;
+  onAdd: (id: string) => void;
 }
 
-export function FixedCourseCatalogTable({ name, courses, onRemove }: FixedCourseCatalogTableProps) {
+export function FixedCourseCatalogTable({
+  name,
+  courses,
+  onRemove,
+  onAdd,
+}: FixedCourseCatalogTableProps) {
   const table = useReactTable({
     columns,
     data: courses,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    meta: { name, onRemove },
+    meta: { name, onRemove, onAdd },
   });
 
   const { rows } = table.getRowModel();

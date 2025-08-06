@@ -31,68 +31,67 @@ function PresetSelectionButton({ courseIds, children }: PresetSelectionButtonPro
 
 function PresetSelection() {
   // HACK: We hard-code the cohort constraints for now.
-  // TODO: Handle the STAT edge cases for mutually exclusive classes.
   return (
     <div className="space-y-2">
       <Label>Which cohort are you in?</Label>
       <div className="flex flex-wrap items-center gap-1">
         <PresetSelectionButton
-          courseIds={["STAT6130002", "STAT6210003", "MKTG6110021", "BEPP6110001", "BEPP6120001"]}
+          courseIds={["STAT6130002", "MKTG6110021", "BEPP6110001", "BEPP6120001"]}
         >
           Cohort A
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130001", "STAT6210001", "MKTG6110019", "BEPP6110002", "BEPP6120002"]}
+          courseIds={["STAT6130001", "MKTG6110019", "BEPP6110002", "BEPP6120002"]}
         >
           Cohort B
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130001", "STAT6210001", "MKTG6110017", "BEPP6110003", "BEPP6120003"]}
+          courseIds={["STAT6130001", "MKTG6110017", "BEPP6110003", "BEPP6120003"]}
         >
           Cohort C
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130004", "STAT6210001", "MKTG6110001", "BEPP6110004", "BEPP6120004"]}
+          courseIds={["STAT6130004", "MKTG6110001", "BEPP6110004", "BEPP6120004"]}
         >
           Cohort D
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130005", "STAT6210003", "MKTG6110013", "BEPP6110005", "BEPP6120005"]}
+          courseIds={["STAT6130005", "MKTG6110013", "BEPP6110005", "BEPP6120005"]}
         >
           Cohort E
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130004", "STAT6210001", "MKTG6110009", "BEPP6110006", "BEPP6120006"]}
+          courseIds={["STAT6130004", "MKTG6110009", "BEPP6110006", "BEPP6120006"]}
         >
           Cohort F
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130006", "STAT6210005", "MKTG6110005", "BEPP6110007", "BEPP6120007"]}
+          courseIds={["STAT6130006", "MKTG6110005", "BEPP6110007", "BEPP6120007"]}
         >
           Cohort G
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130006", "STAT6210005", "MKTG6110007", "BEPP6110008", "BEPP6120008"]}
+          courseIds={["STAT6130006", "MKTG6110007", "BEPP6110008", "BEPP6120008"]}
         >
           Cohort H
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130005", "STAT6210003", "MKTG6110011", "BEPP6110009", "BEPP6120009"]}
+          courseIds={["STAT6130005", "MKTG6110011", "BEPP6110009", "BEPP6120009"]}
         >
           Cohort I
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130003", "STAT6210005", "MKTG6110023", "BEPP6110010", "BEPP6120010"]}
+          courseIds={["STAT6130003", "MKTG6110023", "BEPP6110010", "BEPP6120010"]}
         >
           Cohort J
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130002", "STAT6210003", "MKTG6110003", "BEPP6110011", "BEPP6120011"]}
+          courseIds={["STAT6130002", "MKTG6110003", "BEPP6110011", "BEPP6120011"]}
         >
           Cohort K
         </PresetSelectionButton>
         <PresetSelectionButton
-          courseIds={["STAT6130003", "STAT6210005", "MKTG6110015", "BEPP6110012", "BEPP6120012"]}
+          courseIds={["STAT6130003", "MKTG6110015", "BEPP6110012", "BEPP6120012"]}
         >
           Cohort L
         </PresetSelectionButton>
@@ -108,13 +107,23 @@ interface LiveFixedCourseCatalogTableProps {
 export function LiveFixedCourseCatalogTable({ name }: LiveFixedCourseCatalogTableProps) {
   const courseStore = useCourseStore();
   const handleRemove = useStore(courseStore, state => state.removeFixedCourse);
+  const handleAdd = useStore(courseStore, state => state.addFixedCourse);
 
   const fixed = useStore(courseStore, state => state.selectedFixedCourses);
   const fixedCourses = useMemo(() => Array.from(fixed.values()), [fixed]);
 
   return fixedCourses.length === 0 ? (
-    <PresetSelection />
+    <>
+      {/* Without any selected fixed courses, we hard-code the token budget. */}
+      <input type="hidden" name="token_budget" value={4000} />
+      <PresetSelection />
+    </>
   ) : (
-    <FixedCourseCatalogTable name={name} courses={fixedCourses} onRemove={handleRemove} />
+    <FixedCourseCatalogTable
+      name={name}
+      courses={fixedCourses}
+      onRemove={handleRemove}
+      onAdd={handleAdd}
+    />
   );
 }
