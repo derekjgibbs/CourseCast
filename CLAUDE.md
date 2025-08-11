@@ -1,504 +1,495 @@
-# CLAUDE.md
+# Project Overview
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+CourseCast is a Next.js web application that runs Monte Carlo simulations in the browser to simulate possible schedule outcomes from the Course Match system of the Wharton School of the University of Pennsylvania. The simulation runs are backed by a model that predicts the closing price for all of the courses in a given semester. Each simulation run is essentially a randomly seeded linear programming solver whose output determines which classes have been selected for that run.
 
-## Project Overview
-
-CourseCast is a Streamlit-based web application that uses Monte Carlo simulation to optimize course unit allocation while minimizing waitlist risk. The application allows users to input course preferences, capacity constraints, and risk tolerances to generate optimal course schedules.
+After several simulation runs, the probabilities of obtaining a particular course and a particular schedule configuration are aggregated, computed, and displayed to the user. This allows the user to iteratively tweak and play around with their course utilities and see how their provided utilities affect their chances to obtain courses and schedules.
 
 ## Architecture
 
-### Core Components
-
-- **streamlit_app.py**: Main application entry point with Streamlit UI
-- **final_utils.py**: Core optimization algorithms and Monte Carlo simulation
-- **optimization_algorithm.py**: Alternative optimization implementation
-- **load_data.py**: Data loading and preprocessing utilities
-- **inputs.py**: Input validation and configuration handling
-
-### Key Design Patterns
-
-1. **Monte Carlo Simulation**: The core optimization uses probabilistic modeling to estimate waitlist risks
-2. **Iterative Optimization**: Algorithms use iterative refinement to find optimal solutions
-3. **Constraint-Based Modeling**: Course capacity and prerequisite constraints are enforced throughout
-4. **Risk-Based Decision Making**: Waitlist probabilities drive course selection decisions
-
-## Development Commands
-
-### Running the Application
-
-```bash
-streamlit run streamlit_app.py
-```
-
-### Testing
-
-Currently no formal test suite exists. Manual testing is done through the Streamlit interface.
-
-### Dependencies
-
-Install required packages:
-
-```bash
-pip install streamlit pandas numpy scipy matplotlib plotly
-```
-
-## Key Algorithms
-
-### Monte Carlo Optimization (final_utils.py)
-
-- **optimize_schedule()**: Main optimization function using Monte Carlo simulation
-- **run_monte_carlo()**: Core simulation engine that models waitlist scenarios
-- **calculate_waitlist_probability()**: Estimates probability of getting waitlisted
-- **select_courses()**: Intelligent course selection based on risk tolerance
-
-### Performance Considerations
-
-- Monte Carlo simulations can be computationally expensive
-- Consider caching results for repeated calculations
-- Progress bars are used for long-running operations
-
-## Data Structure
-
-### Course Data
-
-- Course information stored in pandas DataFrames
-- Key fields: course_id, capacity, demand, prerequisites
-- Waitlist probabilities calculated dynamically
-
-### User Inputs
-
-- Course preferences (ranked lists)
-- Risk tolerance levels
-- Capacity constraints
-- Minimum/maximum unit requirements
-
-## Development Guidelines
-
-### Code Style
-
-- Follow PEP 8 for Python code
-- Use descriptive variable names for complex algorithms
-- Add docstrings for all functions, especially optimization routines
-- Use type hints where appropriate
-
-### Performance Optimization
-
-- Profile Monte Carlo simulations for bottlenecks
-- Consider vectorization for large datasets
-- Use caching for expensive calculations
-- Implement progress tracking for long operations
-
-### Error Handling
-
-- Validate all user inputs before processing
-- Handle edge cases in optimization algorithms
-- Provide meaningful error messages in the UI
-- Log errors for debugging purposes
-
-## Common Issues and Solutions
-
-### Memory Issues
-
-- Large Monte Carlo simulations can consume significant memory
-- Consider reducing simulation size or implementing chunked processing
-
-### Convergence Problems
-
-- Optimization algorithms may fail to converge
-- Implement timeout mechanisms and fallback strategies
-- Monitor convergence metrics during optimization
-
-### UI Responsiveness
-
-- Long-running simulations can freeze the UI
-- Use Streamlit's progress bars and status updates
-- Consider implementing async processing for heavy computations
-
-## Future Enhancements (v2.0)
-
-The codebase is being redesigned for v2.0 with planned improvements:
-
-- Enhanced optimization algorithms
-- Better user interface design
-- Improved performance and scalability
-- More robust error handling
-- Comprehensive testing suite
-
-## File Structure Notes
-
-- Main logic concentrated in `final_utils.py` and `streamlit_app.py`
-- Data processing utilities in `load_data.py`
-- Alternative implementations in `optimization_algorithm.py`
-- Input handling centralized in `inputs.py`
-- Historical data and exports in `data/` directory
-
-### Code Clarity
-
-    Class and method names must be self-documenting, short, and descriptive
-    Remove all hardcoded values - use configuration or constants instead
-    If you have a complicated expression, put the result of the expression or parts of the expression, in a temporary variable with a name that explains the purpose of the expression.
-
-### Code Organization
-
-    Eliminate duplicate code through extraction or abstraction
-    If you have a code fragment that can be grouped together, turn the fragment into a method whose name explains the purpose of the method.
-    Enforce maximum method length of 60 lines
-    Decompose complex methods into smaller, single-purpose functions
-    Break down large classes with excessive instance variables (>7-10)
-
-### Code Quality
-
-    Add runtime assertions to critical methods (minimum 2 per critical method)
-    Assertions should validate key assumptions about state and parameters
-    Consider consolidating scattered minor changes into cohesive classes
-
-### Design Priorities (in order)
-
-    Readability - Code should be immediately understandable
-    Simplicity - Choose the least complex solution
-    Maintainability - Optimize for future changes
-    Performance - Only optimize after the above are satisfied
-
-# TypeScript Best Practices in Convex
-
-## Writing Convex Functions in TypeScript
-
-### Basic TypeScript Integration
-
-You can gradually add TypeScript to a Convex project. The first step is writing Convex functions with `.ts` extension.
-
-#### Argument Validation Example
-
-```typescript
-import { mutation } from "./_generated/server";
-import { v } from "convex/values";
-
-export default mutation({
-  args: {
-    body: v.string(),
-    author: v.string(),
-  },
-  // Convex automatically infers argument type
-  handler: async (ctx, args) => {
-    const { body, author } = args;
-    await ctx.db.insert("messages", { body, author });
-  },
-});
-```
-
-#### Manual Type Annotation
-
-```typescript
-import { internalMutation } from "./_generated/server";
-
-export default internalMutation({
-  handler: async (ctx, args: { body: string; author: string }) => {
-    const { body, author } = args;
-    await ctx.db.insert("messages", { body, author });
-  },
-});
-```
-
-## Adding a Schema
-
-When you define a schema, database method return types become more precise:
-
-```typescript
-import { query } from "./_generated/server";
-
-export const list = query({
-  args: {},
-  // Return type is now `Promise<Doc<"messages">[]>`
-  handler: ctx => {
-    return ctx.db.query("messages").collect();
-  },
-});
-```
-
-## Type Annotating Server-Side Helpers
-
-Use generated types for context and document handling:
-
-```typescript
-import { Doc, Id } from "./_generated/dataModel";
-import { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
-
-export function myReadHelper(ctx: QueryCtx, id: Id<"channels">) {
-  /* ... */
-}
-
-export function myActionHelper(ctx: ActionCtx, doc: Doc<"messages">) {
-  /* ... */
+- `public/courses.parquet`: precomputed tabulation of all course metadata, random seeds, and price prediction weights
+- `src/app`: main Next.js router code and serves as the entry points of the web application
+- `src/components/ui`: styled shadcn components for React
+- `src/convex/schema.ts`: primary data model of the app powered by Convex
+- `src/convex/_generated`: auto-generated files by Convex derived from `src/convex/schema.ts`
+- `src/data/fixed-core/index.ts`: script that processes the raw fixed core data from the curriculum
+- `src/data/regular-courses/index.ts`: script that processes the regular courses and their metadata
+- `src/data/index.ts`: script that combines the `src/data/fixed-core/index.ts` and `src/data/regular-courses/index.ts` outputs to produce the precomputed conflict groups for the `public/courses.parquet` file
+- `src/features`: imported by the routes that implement a feature end-to-end from interface to back-end business logic
+- `src/lib`: common utilities shared by many feature modules
+- `src/test/setup.ts`: initialization script for all Vitest invocations
+
+# Code Style
+
+This section discusses the strongly preferred coding practices in the Next.js + React project.
+
+## Avoid state variables as much as possible
+
+Wherever possible, prefer derived values and props when writing components. State variables should only be necessary for components that need to maintain a view over a certain piece of data. And even then, these state variables must be as locally scoped as possible to keep the rest of the component tree stateless.
+
+Avoid declaring state at the top level or too high up the component tree. Keep stateful components as low as possible in the component tree. The ideal world is having the UI be purely a function of its props with some state sprinkled in to maintain views.
+
+## Mindful component boundaries are the key to containing state
+
+Expounding on the importance of stateless components, be extra mindful about component boundaries and where state variables are declared.
+
+If a subtree of component contains a stateful component that will only be conditionally rendered, scope the state variables to within that subtree only. Do **NOT** hoist the state variables to the main component and instead refactor the component so that the stateful subtree is its own subtree. In doing so, the `useState` and other hooks will be conditionally rendered as well.
+
+```tsx
+function ShowDialogButton() {
+  // This state is too far up the component tree.
+  // Observe that this will only be used within `<DialogContent>`,
+  // a component that is conditionally rendered by the `<Dialog>`.
+  const [state, _] = useState(...);
+  return (
+    <Dialog>
+      <DialogTrigger />
+      <DialogContent>
+        {state}
+      </DialogContent>
+    </Dialog>
+  );
 }
 ```
 
-### Inferring Types from Validators
+```tsx
+function ShowDialogButton() {
+  // The correct way to implement this is to move the state lower
+  // down the component tree.
+  return (
+    <Dialog>
+      <DialogTrigger />
+      <DialogContent>
+        <InnerContent />
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-```typescript
-import { Infer, v } from "convex/values";
-
-export const courseValidator = v.object({
-  name: v.string(),
-  credits: v.number(),
-  prerequisites: v.array(v.string()),
-});
-
-export type Course = Infer<typeof courseValidator>;
+function InnerContent() {
+  // Now this is where the state belongs.
+  const [state, _] = useState(...);
+  return state;
+}
 ```
 
-## Best Practices Summary
+```tsx
+// This technique also comes up in conditional rendering with ternaries.
+function Conditional({ maybeNumber }: { maybeNumber: number | null }) {
+  return maybeNumber === null ? null : <Inner value={maybeNumber} />; // maybeNumber: number
+}
 
-1. **Use TypeScript files**: Convert `.js` files to `.ts` for better type safety
-2. **Define schemas**: Leverage Convex's schema system for automatic type inference
-3. **Use generated types**: Import `Doc`, `Id`, and context types from `_generated/`
-4. **Validate arguments**: Use `v` validators for function arguments
-5. **Type helpers**: Annotate server-side helper functions with proper context types
-6. **Infer from validators**: Use `Infer<typeof validator>` for consistent typing
-
-## Additional TypeScript Features
-
-### Optional Arguments
-
-```typescript
-export const updateMessage = mutation({
-  args: {
-    id: v.id("messages"),
-    body: v.optional(v.string()),
-    author: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    // TypeScript knows body and author are optional
-    await ctx.db.patch(args.id, {
-      ...(args.body && { body: args.body }),
-      ...(args.author && { author: args.author }),
-    });
-  },
-});
+function Inner({ value }: { value: number }) {
+  // Locally scoped state is the right way to go!
+  const [state, _] = useState(value);
+  return state;
+}
 ```
 
-### Union Types
+The only exception to this rule is when the state is intentionally hoisted outside of the conditional block so that it persists between mounts. Consider this use case as the only valid exception to the rule.
 
-```typescript
-export const statusValidator = v.union(
-  v.literal("pending"),
-  v.literal("approved"),
-  v.literal("rejected"),
+Of course, it is worth reiterating that no state at all is better than having state. Stateless components are easier to debug and maintain, but if state is necessary, we should at least keep them locally scoped and contained in the smallest possible subtree.
+
+## Try the Context API for simple sibling state sharing
+
+For simple state sharing where `useState` is sufficient, use the Context API if prop-drilling causes parent components to be dumb prop forwarders. Prop-drilling is fine if the parent components themselves use/render the prop, but if it's only required by the parent component as a means of forwarding to a child component, then the Context API is a more appropriate mechanism.
+
+```tsx
+// Not good because the `Parent` is just plainly forwarding the props.
+// Pedantically speaking, the `Parent` doesn't actually care about this value.
+function Parent(props) {
+  return <Child {...props} />;
+}
+
+// It's actually the `Child` that needs the `value` prop rather than the `Parent`.
+function Child({ value }) {
+  return <span>{value}</span>;
+}
+```
+
+```tsx
+// The better approach is to initialize a context at the top level so that the
+// prop-drilling can "skip" levels in the component tree. This results in better
+// app performance because re-renders will be more fine-grained and surgical.
+const Value = createContext(...);
+function useValue() {
+  return useContext(Value);
+}
+
+function Grandparent() {
+  const [value, _] = useState(...);
+  return (
+    <Value.Provider value={value}>
+      <Parent />
+    </Value.Provider>
+  );
+}
+
+// No more prop-drilling! Good!
+function Parent() {
+  return <Child />;
+}
+
+// Value is only subscribed to where it's needed. This lets the subscription "skip" a level.
+function Child() {
+  const value = useValue();
+  return <span>{value}</span>;
+}
+```
+
+As far as context design goes, enforce that only a single `useState` should be wrapped by the context to ensure state atomicity. You may then have as many simple actions as needed for modifying the state variable.
+
+```tsx
+const AtomicState = createContext(null);
+function AtomicStateProvider({ init, children }) {
+  const [state, setState] = useState(init); // no other `useState` allowed!
+  const derived = useMemo(..., [state]); // cached computed values here
+  const someAction = useCallback(() => setState(old => ...), []); // mutating actions
+  const otherAction = useCallback(() => setState(old => ...), []);
+
+  // Memoized so that the `value` does not create a new object instance every run
+  const value = useMemo(
+    () => ({ state, derived, someAction, otherAction }),
+    [state, derived, someAction, otherAction],
+  );
+
+  return (
+    <AtomicState.Provider value={value}>
+      {children}
+    </AtomicState.Provider>
+  );
+}
+
+/** Destructure the state for better prop stability. */
+function useAtomicState() {
+  const state = useContext(AtomicState);
+  assert(state !== null, "no state provider found");
+  return state;
+}
+```
+
+```jsx
+// The `useAtomicState` is meant to be destructured to ensure
+// the identity stability of the values.
+function Consumer() {
+  // Other props are ignored.
+  const { state, someAction } = useAtomicState();
+}
+```
+
+## Use Jotai or Zustand for complex state sharing
+
+If the Context API is too unwieldly for a use case that requires complex state sharing with coordinated state variables, use Jotai or Zustand as the state management library. Default to Jotai if Zustand is not already being used in the project. Jotai is preferred because it is more fine-grained.
+
+Instead of the Context API patterns from the previous section, use Jotai atoms or Zustand stores to support the same behavior, but with a more streamlined, ergonomic, and composable API for coordinating related state variables via actions.
+
+- For Jotai: use the idiomatic write-only atom pattern for actions.
+- For Zustand: use the regular stores to define the related variables alongside the actions.
+
+## Aggressively memoize non-constant-time operations wherever necessary
+
+All operations that perform beyond O(1) time complexity **MUST** be aggressively memoized with `useMemo`. There are no exceptions.
+
+Prefer atomically memoizing variables as much as possible to keep dependency arrays small and fine-grained. Keep the memoization tightly scoped to avoid pulling in outside variables into the closure. The fewer the dependencies, the better it is for the performance of the app.
+
+```tsx
+// This is an example of poor memoization. If any of the dependencies change,
+// the entire closure is re-executed even though the change is unrelated.
+const { httpClient, apiClient, total } = useMemo(() => {
+  const httpClient = createHttpClient(httpUrl);
+  const apiClient = new ApiClient(apiBaseUrl);
+  const total = items.reduce((total, curr) => total + curr, 0);
+  return { httpClient, apiClient, total };
+}, [httpUrl, apiBaseUrl, items]);
+```
+
+```tsx
+// This is the correct way to memoize the operation above. The memoization is
+// fine-grained and surgical. Compute is only rerun when absolutely necessary.
+const httpClient = useMemo(() => createHttpClient(httpUrl), [httpUrl]);
+const apiClient = useMemo(() => new ApiClient(apiBaseUrl), [apiBaseUrl]);
+const total = useMemo(() => items.reduce((total, curr) => total + curr, 0), [items]);
+```
+
+On the other hand, simple constant-time derived values must be recomputed to eliminate code noise and memoization boilerplate. However, if such a derived value will be used to another non-constant-time operation, use the derived value as the dependency key instead of its components.
+
+```tsx
+// This is an example of poor memoization. The memoization unnecessarily recomputes
+// the tree if any one of `query.isPending` or `mutation.isPending` changes.
+const nodes = useMemo(
+  () => render(query.isPending || mutation.isPending),
+  [query.isPending, mutation.isPending],
 );
-
-export type Status = Infer<typeof statusValidator>;
 ```
 
-### Nested Objects
-
-```typescript
-export const userValidator = v.object({
-  name: v.string(),
-  email: v.string(),
-  profile: v.object({
-    bio: v.string(),
-    avatar: v.optional(v.string()),
-  }),
-});
+```tsx
+// In reality, what we actually want is to memoize based on the derived value, not its components.
+const isPending = query.isPending || mutation.isPending;
+const nodes = useMemo(() => render(isPending), [isPending]);
 ```
 
-# The Zen of Convex
+The overarching theme is that we should minimize the length of the dependency array as much as possible so that state updates are fine-grained and surgical.
 
-## Performance Principles
+## Aggressively memoize callback functions
 
-### Sync Engine Approach
+Analogously, all callback functions must be memoized unless React Compiler is turned on in the codebase. For Next.js projects, this can be checked in the `next.config.js` file. For Vite projects, this can be checked in the `vite.config.js` file.
 
-- Center applications around the deterministic, reactive database
-- Benefits include:
-  - Easier project understanding
-  - Faster performance
-  - Simplified state management
+Otherwise, default to aggressively memoizing callback functions.
 
-### Query and Function Best Practices
+## Event handlers must strongly prefer extracting parameters from the callback argument versus extracting from the closure
 
-- Use queries for almost every app read
-- Keep sync engine functions:
-  - Working with fewer than a few hundred records
-  - Completing in under 100ms
-- Use actions sparingly and incrementally
+Instead of registering memoized closures with dependencies as an event listener, prefer to embed the arguments and metadata in the `data-*` attributes of an HTML element. That way, one can obtain the arguments via the `event.currentTarget.dataset` map—zero dependencies required.
 
-### Client-Side State Management
-
-- Leverage built-in Convex caching and consistency controls
-- Avoid creating unnecessary local cache layers
-- Be cautious with mutation return values for UI updates
-
-## Architecture Guidelines
-
-### Server-Side Development
-
-- Solve composition problems using standard TypeScript methods
-- Create frameworks using "just code"
-- Leverage community examples for complex implementations
-
-### Action Usage
-
-- Avoid direct action invocations from browsers
-- Treat actions as part of a workflow
-- Record progress incrementally
-- Chain effects and mutations strategically
-
-## Development Workflow
-
-### Recommended Practices
-
-- Actively use the Convex dashboard
-- Engage with community resources
-- Leverage developer search
-- Join the Convex community on Discord
-
-## Key Community Resources
-
-- [Documentation](https://docs.convex.dev)
-- [Stack Blog](https://stack.convex.dev)
-- [Community Portal](https://convex.dev/community)
-- [Developer Search](https://search.convex.dev)
-
-The philosophy emphasizes creating efficient, maintainable applications by leveraging Convex's built-in capabilities and community knowledge.
-
-# TypeScript Best Practices in Convex
-
-## Writing Convex Functions in TypeScript
-
-### Basic TypeScript Integration
-
-You can gradually add TypeScript to a Convex project. The first step is writing Convex functions with `.ts` extension.
-
-#### Argument Validation Example
-
-```typescript
-import { mutation } from "./_generated/server";
-import { v } from "convex/values";
-
-export default mutation({
-  args: {
-    body: v.string(),
-    author: v.string(),
-  },
-  // Convex automatically infers argument type
-  handler: async (ctx, args) => {
-    const { body, author } = args;
-    await ctx.db.insert("messages", { body, author });
-  },
-});
-```
-
-#### Manual Type Annotation
-
-```typescript
-import { internalMutation } from "./_generated/server";
-
-export default internalMutation({
-  handler: async (ctx, args: { body: string; author: string }) => {
-    const { body, author } = args;
-    await ctx.db.insert("messages", { body, author });
-  },
-});
-```
-
-## Adding a Schema
-
-When you define a schema, database method return types become more precise:
-
-```typescript
-import { query } from "./_generated/server";
-
-export const list = query({
-  args: {},
-  // Return type is now `Promise<Doc<"messages">[]>`
-  handler: ctx => {
-    return ctx.db.query("messages").collect();
-  },
-});
-```
-
-## Type Annotating Server-Side Helpers
-
-Use generated types for context and document handling:
-
-```typescript
-import { Doc, Id } from "./_generated/dataModel";
-import { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
-
-export function myReadHelper(ctx: QueryCtx, id: Id<"channels">) {
-  /* ... */
-}
-
-export function myActionHelper(ctx: ActionCtx, doc: Doc<"messages">) {
-  /* ... */
+```tsx
+// This should be avoided as much as possible to because
+// a state change can invalidate the memoized callback.
+function Button({ state, children }) {
+  const action = useCallback(..., [state]);
+  return (
+    <button type="button" onClick={action}>
+      {children}
+    </button>
+  );
 }
 ```
 
-### Inferring Types from Validators
+```tsx
+// Instead, prefer hoisting the event to the top level
+// and receiving its arguments via the `event.currentTarget`.
 
-```typescript
-import { Infer, v } from "convex/values";
+function handleClick(event) {
+  const state = event.currentTarget.dataset["state"];
+  // TODO
+}
 
-export const courseValidator = v.object({
-  name: v.string(),
-  credits: v.number(),
-  prerequisites: v.array(v.string()),
-});
-
-export type Course = Infer<typeof courseValidator>;
+function Button({ state, children }) {
+  return (
+    <button type="button" onClick={handleClick} data-state={state}>
+      {children}
+    </button>
+  );
+}
 ```
 
-## Best Practices Summary
+## Use affirmative conditional logic
 
-1. **Use TypeScript files**: Convert `.js` files to `.ts` for better type safety
-2. **Define schemas**: Leverage Convex's schema system for automatic type inference
-3. **Use generated types**: Import `Doc`, `Id`, and context types from `_generated/`
-4. **Validate arguments**: Use `v` validators for function arguments
-5. **Type helpers**: Annotate server-side helper functions with proper context types
-6. **Infer from validators**: Use `Infer<typeof validator>` for consistent typing
+In conditional logic, it's easy to accidentally introduce double negatives in the code.
 
-## Additional TypeScript Features
-
-### Optional Arguments
-
-```typescript
-export const updateMessage = mutation({
-  args: {
-    id: v.id("messages"),
-    body: v.optional(v.string()),
-    author: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    // TypeScript knows body and author are optional
-    await ctx.db.patch(args.id, {
-      ...(args.body && { body: args.body }),
-      ...(args.author && { author: args.author }),
-    });
-  },
-});
+```ts
+// Here is an example of a poorly formulated conditional branch.
+if (!condition) {
+  // Double negative: if "not condition", then "do not resolve".
+  reject();
+} else {
+  // The `else` block is already an implicit negation of the condition.
+  resolve();
+}
 ```
 
-### Union Types
-
-```typescript
-export const statusValidator = v.union(
-  v.literal("pending"),
-  v.literal("approved"),
-  v.literal("rejected"),
-);
-
-export type Status = Infer<typeof statusValidator>;
+```ts
+// For better readability, strongly prefer affirmative logic.
+if (condition) {
+  // Flipping the logic makes it much more readable!
+  resolve();
+} else {
+  // No double negation here!
+  reject();
+}
 ```
 
-### Nested Objects
+```ts
+// Ternary conditions are also prone to this.
+const bad = !condition ? b : a;
+const good = condition ? a : b;
+```
 
-```typescript
-export const userValidator = v.object({
-  name: v.string(),
-  email: v.string(),
-  profile: v.object({
-    bio: v.string(),
-    avatar: v.optional(v.string()),
+Read more about how to detect and avoid confusing conditionals from [this article](https://dev.to/somedood/please-dont-write-confusing-conditionals-2n32).
+
+## Be explicit with conditional clauses
+
+Avoid relying on JavaScript's implicit coercion. To make the intent of the code clearer, use the `typeof` operator or an explicit equality check instead of implicitly coercing the value to a boolean.
+
+```ts
+let input: number | null;
+
+if (input) {
+  // This is bad because it's not apparent that the programmer
+  // intended to exclude `0` as a valid input.
+}
+
+if (input !== null) {
+  // This is much better because the condition explicitly checks the null case.
+}
+
+if (input !== null && input !== 0) {
+  // We can restore the original behavior by explicitly checking for zero.
+  // This is more verbose, but the intent is much clearer.
+}
+```
+
+This principle also holds true for conditional rendering in React. Avoid using the `&&` operator as a means to conditionally render a component because the implicit coercion might not be what we want.
+
+```tsx
+function BadConditionalRendering({ condition }) {
+  // Avoid doing this
+  return condition && <Inner />;
+}
+```
+
+```tsx
+function GoodConditionalRendering({ condition }) {
+  // Prefer being explicit
+  return condition === null ? null : <Inner />;
+}
+```
+
+## Strongly prefer type inference wherever possible
+
+Explicitly having to annotate the types of a variable is not bad, but it is often an indication of poor interface design. Strive to write interfaces and module boundaries that are easily inferrable.
+
+Note that sometimes type annotations are unavoidable to satisfy the type safety guarantees of TypeScript. Treat these as exceptions to the rule. Examples include but are not limited to:
+
+- Casting `never[]` to `T[]` for some particular type `T`
+- Annotating the collected value of a `Array#reduce` operation
+- Annotating initially empty state such as `useState<number>()` (but do prefer an inferrable reasonable default argument whenever possible)
+- Class field annotations
+
+## Never use the non-null assertion operator
+
+Always validate unknown types at runtime. Use libraries like Valibot or Zod to assert that certain values are in the shape that they claim to be. If you are sure that a value cannot be `null` or `undefined`, do not hesitate to assert it. It is much better to crash early in development versus proceeding with unexpected state in production.
+
+Use whichever schema validation library is available in the project. Default to Valibot if none are available yet.
+
+# Libraries
+
+This section focuses on opinionated usage of certain libraries.
+
+## TanStack Query
+
+The loader logic, which includes the pending and error states, should be decoupled from the presentation logic of the data. This makes the component more testable because we can easily mock the payload as a prop without needing to mock the entire async infrastructure.
+
+```tsx
+function fetchExample({ queryKey: [_, arg] }) {
+  // TODO: use the `arg` from the `queryKey` to fetch data.
+}
+
+function useFetchExampleQuery(arg: string) {
+  // Wrap the query in a custom hook.
+  return useQuery({
+    // Note that we pass in arguments via the `queryKey`.
+    queryKey: ["example", arg],
+    queryFn: fetchExample,
+  });
+}
+
+function TestablePresentationLayer({ data }) {
+  // TODO: Render the data here somehow.
+}
+
+function DataLoader({ arg }) {
+  const query = useFetchExampleQuery(arg);
+  if (query.isPending) return <LoadingState />;
+  if (query.isError) return <ErrorState error={query.error} />;
+  return <TestablePresentationLayer data={query.data}>;
+}
+```
+
+Observe that this architecture is consistent with the previous guideline on conditional rendering. By enforcing a testable presentation component devoid of loading logic, we also gain the ability to invoke and initialize hooks only at that conditional subtree.
+
+## TanStack Table
+
+A core part of the TanStack Table API is the column definition. The `useReactTable` hook requires a `columns` prop, which is an array of `ColumnDef` objects. Ideally, the `columns` should be hoisted at the top level so that they aren't redefined for every re-render. In the simple case, it _is_ possible to hoist it as a top-level `const`. However, as soon as we need to parameterize the `columns` with some props, that's when we need to resort to `useMemo`.
+
+This is fine, but as we would like to avoid dependency arrays, we should instead rely on the `TableMeta` to pass meta arguments to each column definition.
+
+```tsx
+// This is how we tell TanStack Table that the `table.options.meta`
+// contains an optional `arg` that we can pass to the columns.
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    onClick?: string;
+  }
+}
+
+function DataTable({ data, onClick }) {
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    meta: { onClick }, // use `table.options.meta` as the means to pass props to columns
+  });
+
+  // Memoize the rows just in case they haven't changed.
+  const { rows } = table.getRowModel();
+  const nodes = useMemo(() => rows.map(...), [rows]);
+
+  return (
+    <Table>
+      <TableBody>
+        {nodes}
+      </TableBody>
+    </Table>
+  )
+}
+
+const helper = createColumnHelper<T>();
+const columns = [
+  helper.accessor("example", {
+    // We can receive the prop here even though the `columns` were
+    // defined at the top level. Just make sure to properly handle
+    // the `undefined` case. Alternatively, an assertion is possible.
+    cell: cell => (
+      <Button type="button" onClick={cell.table.options.meta?.onClick}>
+        {cell.getValue()}
+      </Button>
+    ),
   }),
-});
+]
 ```
+
+Note that the `declare module` will cause interface merging at the global namespace. That's why it has to be optional so that other users of `useReactTable` will not be required to pass in irrelevant props.
+
+# Architecture
+
+The project must be structured in accordance with the principles of vertically sliced architectures. Instead of partitioning the project structure by language, technology, or architecture layer, it should instead be partitioned by end-to-end feature modules with some shared modules between them.
+
+The following is an example of a horizontally sliced architecture, which is discouraged. Observe that editing a single feature (e.g., login) requires jumping and context-switching between multiple folders. It is also difficult to track which modules depend on which modules based on the folder structure alone.
+
+```
+.
+├── components/
+│   └── ui/
+├── hooks/
+├── models/
+│   └── login-model.ts
+├── views/
+│   └── login-view.tsx
+└── controllers/
+    └── login-controller.ts
+```
+
+Prefer a vertically sliced architecture such as the following example, where a single feature module is implemented end-to-end from the database to the server actions to the user interface. Keeping everything self-contained at the feature boundary collocates related logic and makes it easier to maintain the codebase.
+
+```
+.
+├── components/
+│   └── ui/
+├── hooks/
+├── database/
+└── features/
+    ├── login/
+    │   ├── index.tsx
+    │   ├── form.tsx
+    │   ├── schema.ts
+    │   └── actions.ts
+    └── logout/
+        └── index.tsx
+```
+
+Here are some common file names:
+
+- `index.tsx`: the entry point component that represents the feature (usually a button)
+- `form.tsx`: form-related logic (which may contain stateful components) and usually contains the `<form>` element
+- `actions.ts`: server actions related to the form submission
+- `schema.ts`: common Valibot or Zod schemas to be shared between the client and server
+
+Read more about vertically sliced architectures from [this article](https://dev.to/somedood/youre-slicing-your-architecture-wrong-4ob9).
