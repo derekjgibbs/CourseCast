@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { TutorialBanner } from "@/features/tutorial-banner";
 import type { UserScenarioDoc } from "@/convex/types";
 
 import { CreateScenarioCard, ScenarioCard } from "./card";
@@ -128,15 +129,7 @@ export function Dashboard() {
   const scenarios = useQuery(api.scenarios.list);
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-      <div className="flex items-center justify-between gap-6 rounded-lg border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-4 text-white shadow-lg">
-        <div className="grow">
-          <h1 className="text-2xl font-bold text-white">CourseCast Dashboard</h1>
-          <p className="mt-1 text-sm text-blue-50">
-            Manage your course scenarios and run Monte Carlo simulations to optimize your course
-            selection.
-          </p>
-        </div>
-      </div>
+      <TutorialBanner />
       {typeof scenarios === "undefined" ? (
         <div className="flex h-64 flex-col items-center justify-center space-y-4">
           <Loader2 className="size-16 animate-spin text-gray-400" />
