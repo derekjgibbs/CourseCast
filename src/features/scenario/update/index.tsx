@@ -270,8 +270,8 @@ function ScenarioUpdateForm({
             <Button
               type="submit"
               size="icon"
-              className="rounded-full p-8 shadow-2xl disabled:opacity-100"
               disabled={mutation.isPending}
+              className="rounded-full border-0 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 p-8 text-white shadow-2xl hover:from-blue-600 hover:via-purple-600 hover:to-indigo-600 disabled:opacity-100"
             >
               {mutation.isPending ? (
                 <Loader2 className="size-8 animate-spin" />
