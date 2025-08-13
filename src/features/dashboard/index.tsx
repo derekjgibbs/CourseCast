@@ -93,17 +93,6 @@ function DashboardContent({ scenarios }: DashboardContentProps) {
     [rows],
   );
 
-  const flatHeaders = table.getFlatHeaders();
-  const sortControls = useMemo(
-    () =>
-      flatHeaders.map(header => (
-        <SortControl key={header.id} column={header.column}>
-          {flexRender(header.column.columnDef.header, header.getContext())}
-        </SortControl>
-      )),
-    [flatHeaders],
-  );
-
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -116,7 +105,13 @@ function DashboardContent({ scenarios }: DashboardContentProps) {
           className="w-full pl-10"
         />
       </div>
-      <div className="flex items-center gap-2">{sortControls}</div>
+      <div className="flex items-center gap-2">
+        {table.getFlatHeaders().map(header => (
+          <SortControl key={header.id} column={header.column}>
+            {flexRender(header.column.columnDef.header, header.getContext())}
+          </SortControl>
+        ))}
+      </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <CreateScenarioCard onSuccess={handleSuccess} />
         {cards}
