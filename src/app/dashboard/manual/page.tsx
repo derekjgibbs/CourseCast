@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { TutorialBanner } from "@/features/tutorial-banner";
 
 export const metadata: Metadata = {
@@ -23,18 +24,18 @@ export default function Page() {
           </CardHeader>
           <CardContent>
             <p>
-              Hi there! I built this tool to help you (and me) get more out of Course Match.
-              CourseMatch is a powerful system that tries very hard to give you what it thinks you
-              want, based on the utilities you provide. The problem is that it&apos;s hard to
-              translate what you want into the right utility values. You might end up with
-              disappointing schedules simply because you didn&apos;t speak the Course Match
-              &quot;language&quot; correctly.
+              Hi there! I built this tool to help you (and me) get more out of Course Match. Course
+              Match is a powerful system that tries very hard to give you what it thinks you want,
+              based on the utilities you provide. The problem is that it&apos;s hard to translate
+              what you want into the right utility values. You might end up with disappointing
+              schedules simply because you didn&apos;t speak the Course Match &quot;language&quot;
+              correctly.
             </p>
             <p>
               This tool is designed to help bridge that gap. By showing you potential schedules,
               CourseCast helps you build better intuition about how utility values translate to
-              actual results. And unlike the &quot;Top Schedules&quot; tab in CourseMatch, this tool
-              actually accounts for prices and variability.
+              actual results. And unlike the &quot;Top Schedules&quot; tab in Course Match, this
+              tool actually accounts for prices and variability.
             </p>
             <p>
               I hope this tool helps. Life is too short for crappy class schedules. Happy
@@ -337,6 +338,45 @@ export default function Page() {
         </ul>
         <p className="text-center text-sm text-gray-600 dark:text-gray-400">
           Happy CourseCasting! 🎯
+        </p>
+        <Separator />
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          The original CourseCast 2024 was modelled and prototyped by{" "}
+          <Link
+            href="mailto:djgibbs@wharton.upenn.edu"
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            Derek Gibbs
+          </Link>{" "}
+          with the help of Owen Kwon in data wrangling. The new and improved CourseCast 2025 was
+          optimized by{" "}
+          <Link
+            href="https://bastidood.dev/"
+            target="_blank"
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            Basti Ortiz
+          </Link>{" "}
+          using multi-threaded simulation runs in the browser.
+        </p>
+        <p className="text-sm text-gray-600 italic dark:text-gray-400">
+          CourseCast 2025 is a{" "}
+          <Link
+            href="https://casperstudios.xyz/"
+            target="_blank"
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            Casper Studios
+          </Link>{" "}
+          project. We&apos;re always hiring and hoping to have conversations with smart people.
+          Let&apos;s keep in touch through{" "}
+          <Link
+            href="mailto:djgibbs@wharton.upenn.edu"
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            djgibbs@wharton.upenn.edu
+          </Link>
+          . &#x1F47B;
         </p>
       </div>
     </div>
