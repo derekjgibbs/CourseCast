@@ -371,10 +371,10 @@ export default function Page() {
           project. We&apos;re always hiring and hoping to have conversations with smart people.
           Let&apos;s keep in touch through{" "}
           <Link
-            href="mailto:djgibbs@wharton.upenn.edu"
+            href="mailto:derek@casperstudios.xyz"
             className="text-blue-600 underline hover:text-blue-800"
           >
-            djgibbs@wharton.upenn.edu
+            derek@casperstudios.xyz
           </Link>
           . &#x1F47B;
         </p>
