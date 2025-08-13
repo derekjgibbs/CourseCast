@@ -48,7 +48,7 @@ export function TutorialPlayerContent() {
       <DialogHeader>
         <DialogTitle>How to use CourseCast</DialogTitle>
       </DialogHeader>
-      <LoomVideoPlayer href="https://www.loom.com/share/912e89a68ccc42c5ab5096fec7cd63d6" />
+      <LoomVideoPlayer href="https://www.loom.com/share/98d983826bd44913879d12614cfc6a3f" />
     </DialogContent>
   );
 }
