@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Authenticated, useQuery } from "convex/react";
-import { Ellipsis, Home } from "lucide-react";
+import { Ellipsis, HelpCircle, Home } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { useParams, usePathname } from "next/navigation";
 
@@ -46,6 +46,10 @@ export function AppSidebar() {
               <Home />
               <span>Dashboard</span>
             </MenuItem>
+            <MenuItem href="/dashboard/manual">
+              <HelpCircle />
+              <span>Manual</span>
+            </MenuItem>
           </SidebarMenu>
         </SidebarGroup>
         <Authenticated>
@@ -73,13 +77,21 @@ export function AppSidebar() {
 
 export function LiveAppHeader() {
   const { scenarioId } = useParams();
-  return typeof scenarioId === "string" ? (
-    <Authenticated>
-      <LiveAppHeaderTitle scenarioId={scenarioId} />
-    </Authenticated>
-  ) : (
-    <AppHeaderBreadcrumbs />
-  );
+  const pathname = usePathname();
+
+  if (typeof scenarioId === "string") {
+    return (
+      <Authenticated>
+        <LiveAppHeaderTitle scenarioId={scenarioId} />
+      </Authenticated>
+    );
+  }
+
+  if (pathname === "/dashboard/manual") {
+    return <ManualBreadcrumbs />;
+  }
+
+  return <AppHeaderBreadcrumbs />;
 }
 
 interface LiveAppHeaderTitleProps {
@@ -112,6 +124,26 @@ function AppHeaderBreadcrumbs({ href, children }: AppHeaderBreadcrumbsProps) {
         {typeof href === "undefined" ? null : (
           <AppHeaderDynamicBreadcrumbs href={href}>{children}</AppHeaderDynamicBreadcrumbs>
         )}
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}
+
+function ManualBreadcrumbs() {
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/dashboard">Dashboard</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/dashboard/manual">Manual</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
   );
