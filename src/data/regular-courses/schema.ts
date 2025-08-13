@@ -20,7 +20,7 @@ export const RegularCourse = v.objectWithRest(
     title: v.string(),
     instructors: v.pipe(
       v.string(),
-      v.transform(val => val.trim().split(",")),
+      v.transform(val => val.trim().split("/")),
     ),
     part_of_term: v.string(),
     start_date: v.string(),

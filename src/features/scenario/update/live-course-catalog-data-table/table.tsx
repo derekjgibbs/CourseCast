@@ -15,7 +15,7 @@ import {
   HeartPlus,
   User,
 } from "lucide-react";
-import { type ChangeEvent, type MouseEvent, useCallback, useState } from "react";
+import { type ChangeEvent, type MouseEvent, useCallback, useMemo, useState } from "react";
 import {
   createColumnHelper,
   flexRender,
@@ -182,12 +182,20 @@ const columns = [
         </Button>
       );
     },
-    cell: info =>
-      info.getValue().map(instructor => (
-        <Badge key={instructor} variant="outline">
-          {instructor}
-        </Badge>
-      )),
+    cell: function Cell(info) {
+      const instructors = info.getValue();
+      const instructorBadges = useMemo(
+        () =>
+          instructors.map(instructor => (
+            <Badge key={instructor} variant="outline">
+              {instructor}
+            </Badge>
+          )),
+        [instructors],
+      );
+
+      return <div className="flex flex-wrap gap-1">{instructorBadges}</div>;
+    },
   }),
   helper.accessor(
     ({ days_code, start_time, stop_time, part_of_term }) => ({
