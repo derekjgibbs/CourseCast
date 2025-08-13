@@ -33,6 +33,9 @@ interface CourseProbabilityData {
   instructors: string[];
   sectionCode: string;
   partOfTerm: string[];
+  daysCode: string;
+  startTime: number;
+  stopTime: number;
 }
 
 interface ScheduleCourseData {
@@ -81,6 +84,9 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
         instructors: course.instructors,
         sectionCode: course.section_code,
         partOfTerm: course.part_of_term,
+        daysCode: course.days_code,
+        startTime: course.start_time,
+        stopTime: course.stop_time,
       });
     }
 
@@ -167,7 +173,7 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                 <TableHead className="text-center">Probability</TableHead>
                 <TableHead>Course</TableHead>
                 <TableHead>Department</TableHead>
-                <TableHead>Part of Term</TableHead>
+                <TableHead>Schedule</TableHead>
                 <TableHead>Instructors</TableHead>
                 <TableHead>Credits</TableHead>
               </TableRow>
@@ -214,16 +220,28 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                       <DepartmentBadge department={course.department} />
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {course.partOfTerm.length > 0 ? (
-                          course.partOfTerm.map(term => (
-                            <Badge key={term} variant="secondary">
-                              {term}
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-1">
+                          {course.partOfTerm.length > 0 ? (
+                            course.partOfTerm.map(term => (
+                              <Badge key={term} variant="secondary">
+                                {term}
+                              </Badge>
+                            ))
+                          ) : (
+                            <Badge variant="secondary">TBA</Badge>
+                          )}
+                        </div>
+                        <div className="text-muted-foreground text-sm">
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                              {course.daysCode}
                             </Badge>
-                          ))
-                        ) : (
-                          <Badge variant="secondary">TBA</Badge>
-                        )}
+                            <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                              {formatTimeRange(course.startTime, course.stopTime)}
+                            </Badge>
+                          </div>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="max-w-48">
@@ -309,11 +327,29 @@ export function SimulationSummary({ responses }: SimulationSummaryProps) {
                               <div className="text-sm font-medium">{course.title}</div>
                               <div className="text-muted-foreground text-xs">{course.courseId}</div>
                               <div className="text-muted-foreground text-xs">
-                                {course.partOfTerm.length > 0
-                                  ? course.partOfTerm.join(", ")
-                                  : "TBA"}{" "}
-                                &middot; {course.daysCode} &middot;{" "}
-                                {formatTimeRange(course.startTime, course.stopTime)}
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {course.partOfTerm.length > 0 ? (
+                                    course.partOfTerm.map(term => (
+                                      <Badge
+                                        key={term}
+                                        variant="secondary"
+                                        className="px-2 py-0.5 text-xs"
+                                      >
+                                        {term}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <Badge variant="secondary" className="px-2 py-0.5 text-xs">
+                                      TBA
+                                    </Badge>
+                                  )}
+                                  <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                                    {course.daysCode}
+                                  </Badge>
+                                  <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                                    {formatTimeRange(course.startTime, course.stopTime)}
+                                  </Badge>
+                                </div>
                               </div>
                             </div>
                           </div>
