@@ -18,7 +18,8 @@ const [fixedCore, regularCourses] = await Promise.all([
 const data = [...fixedCore, ...regularCourses];
 
 // Step 1: Find all direct time conflicts
-const directConflicts = new Map<string, string>();
+// Store as a set of sorted course-id pairs to capture all conflicts
+const directConflicts = new Set<string>();
 data.sort((a, b) => a.startTime - b.startTime);
 for (let i = 0; i < data.length; ++i) {
   const courseA = data[i];
@@ -64,7 +65,7 @@ for (let i = 0; i < data.length; ++i) {
       const [a, b] = [courseA.forecastId, courseB.forecastId].sort();
       assert(typeof a !== "undefined");
       assert(typeof b !== "undefined");
-      directConflicts.set(a, b);
+      directConflicts.add(`${a}|${b}`);
     }
   }
 }
@@ -73,7 +74,10 @@ for (let i = 0; i < data.length; ++i) {
 const timeConflictGroups = new Map<string, Set<string>>();
 
 // Process each direct conflict to create conflict groups
-for (const [courseA, courseB] of directConflicts.entries()) {
+for (const key of directConflicts) {
+  const [courseA, courseB] = key.split("|");
+  assert(typeof courseA !== "undefined");
+  assert(typeof courseB !== "undefined");
   // Get the actual course objects
   const courseAObj = data.find(c => c.forecastId === courseA);
   const courseBObj = data.find(c => c.forecastId === courseB);
