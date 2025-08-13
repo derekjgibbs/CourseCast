@@ -58,7 +58,7 @@ function getTermCode(forecastId: string) {
     case "STAT6130004":
     case "STAT6130005":
     case "STAT6130006":
-      return "F";
+      return "Full"; // Only in 1st Semester
     default:
       return "TBA";
   }

@@ -4,16 +4,17 @@ export function getTermCodes(partOfTerm: string) {
       return ["Q1"];
     case "Q2":
       return ["Q2"];
-    case "Q3":
-      return ["Q3"];
-    case "Q4":
-      return ["Q4"];
-    case "F":
-      return ["Q1", "Q2"];
-    case "S":
-      return ["Q3", "Q4"];
+    // case "Q3":
+    //   return ["Q3"];
+    // case "Q4":
+    //   return ["Q4"];
+    // case "F":
+    //   return ["Q1", "Q2"];
+    // case "S":
+    //   return ["Q3", "Q4"];
     case "Full":
-      return ["Q1", "Q2", "Q3", "Q4"];
+      // TOOD: Update this to Q3 and Q4 for next semester.
+      return ["Q1", "Q2"];
     case "Modular":
       return ["Modular"];
     case "TBA":

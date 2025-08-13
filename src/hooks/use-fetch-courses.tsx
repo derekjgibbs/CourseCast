@@ -15,7 +15,7 @@ export async function fetchCourses({ signal }: FetchCoursesOptions) {
     // HACK: Hard-coded byte length because the library needs to know this ahead of time.
     // But, if we let it do so automatically via HEAD requests, the Vercel CDN doesn't provide
     // the Content-Length header and thus fails.
-    byteLength: 62502,
+    byteLength: 62468,
     requestInit: {
       signal,
       headers: { "Content-Type": "application/octet-stream" },
