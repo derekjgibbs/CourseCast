@@ -8,10 +8,10 @@ export function TutorialBannerContent() {
     <div className="rounded-lg border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-6 text-white shadow-lg">
       <div className="flex items-center justify-between gap-6">
         <div className="grow">
-          <h1 className="text-2xl font-bold text-white">CourseCast Dashboard</h1>
+          <h1 className="text-2xl font-bold text-white">New to CourseCast?</h1>
           <p className="mt-1 text-sm text-blue-50">
-            New to CourseCast? Watch our tutorial video to learn how to optimize your course
-            selection with Monte Carlo simulation.
+            Watch our tutorial video to learn how to optimize your course selection with Monte Carlo
+            simulation.
           </p>
         </div>
         <DialogTrigger asChild>
