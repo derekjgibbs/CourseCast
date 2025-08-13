@@ -20,7 +20,7 @@ export function TutorialBannerContent() {
             className="border-white/30 bg-white/20 text-white backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/30 hover:text-white"
             variant="outline"
           >
-            <Play className="mr-2" />
+            <Play />
             <span>Watch Tutorial</span>
           </Button>
         </DialogTrigger>
