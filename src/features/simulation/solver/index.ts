@@ -47,8 +47,9 @@ export type { OptimizationResponse };
 // TODO: Allow the user to configure the concurrency limit.
 export async function spawnOptimizerPool({ courses, ...request }: OptimizationPoolRequest) {
   const workers = Array.from(
-    range(navigator.hardwareConcurrency),
-    () => new Worker(new URL("./worker.ts", import.meta.url)),
+    { length: navigator.hardwareConcurrency },
+    (_, i) =>
+      new Worker(new URL("./worker.ts", import.meta.url), { type: "module", name: `worker-${i}` }),
   );
   try {
     const promises: Promise<OptimizationResponse>[] = [];
