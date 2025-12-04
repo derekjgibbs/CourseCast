@@ -27,8 +27,34 @@ interface Term {
   suffix: TermSuffix;
 }
 
+/** Terms with available course data files */
+export const enum SupportedTerm {
+  Fall2025 = "2025C",
+}
+
 /** The current active term for new scenarios */
-export const CURRENT_TERM = "2025C" as const;
+export const CURRENT_TERM = SupportedTerm.Fall2025;
+
+/**
+ * Returns the byte length of the parquet file for a term.
+ * HACK: Hard-coded because the library needs to know this ahead of time.
+ * Vercel CDN doesn't provide Content-Length headers via HEAD requests.
+ */
+export function getTermByteLength(term: SupportedTerm) {
+  switch (term) {
+    case SupportedTerm.Fall2025:
+      return 98826;
+  }
+}
+
+/** Validates and narrows a string to a SupportedTerm */
+export function toSupportedTerm(term: string): SupportedTerm {
+  switch (term) {
+    case SupportedTerm.Fall2025:
+      return term;
+  }
+  throw new Error(`Unsupported term: ${term}`);
+}
 
 /**
  * Parses a term string into its components.

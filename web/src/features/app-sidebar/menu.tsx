@@ -96,7 +96,7 @@ function TermGroupSection({ group, defaultOpen }: TermGroupSectionProps) {
         <ChevronDown className="size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <SidebarMenu className="border-sidebar-border ml-2 mt-1 border-l pl-2">
+        <SidebarMenu className="border-sidebar-border mt-1 ml-2 border-l pl-2">
           {group.scenarios.map(scenario => (
             <ScenarioMenuItem key={scenario._id} {...scenario} />
           ))}

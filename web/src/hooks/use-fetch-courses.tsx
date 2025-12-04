@@ -4,18 +4,17 @@ import { parse } from "valibot";
 import { useQuery } from "@tanstack/react-query";
 
 import { Course } from "@/lib/schema/course";
+import { getTermByteLength, type SupportedTerm } from "@/lib/term";
 
 interface FetchCoursesOptions {
+  term: SupportedTerm;
   signal?: AbortSignal;
 }
 
-export async function fetchCourses({ signal }: FetchCoursesOptions) {
+export async function fetchCourses({ term, signal }: FetchCoursesOptions) {
   const file = await asyncBufferFromUrl({
-    url: "/courses.parquet",
-    // HACK: Hard-coded byte length because the library needs to know this ahead of time.
-    // But, if we let it do so automatically via HEAD requests, the Vercel CDN doesn't provide
-    // the Content-Length header and thus fails.
-    byteLength: 98826,
+    url: `/${term}-courses.parquet`,
+    byteLength: getTermByteLength(term),
     requestInit: {
       signal,
       headers: { "Content-Type": "application/octet-stream" },
@@ -30,10 +29,10 @@ export async function fetchCourses({ signal }: FetchCoursesOptions) {
   );
 }
 
-export function useFetchCourses() {
+export function useFetchCourses(term: SupportedTerm) {
   return useQuery({
-    queryFn: fetchCourses,
-    queryKey: ["courses"],
+    queryFn: async ({ signal, queryKey: [, term] }) => await fetchCourses({ term, signal }),
+    queryKey: ["courses", term] as const,
     staleTime: Infinity,
     gcTime: Infinity,
   });

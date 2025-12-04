@@ -1,5 +1,7 @@
 import { Infer, v } from "convex/values";
 
+import { CURRENT_TERM } from "@/lib/term";
+
 import { Doc, Id } from "./_generated/dataModel";
 
 // Validator definitions for type inference
@@ -100,7 +102,7 @@ export const CONSTRAINTS = {
     MAX_VALUE: 100n,
   },
   TERM: {
-    CURRENT: "2025C",
+    CURRENT: CURRENT_TERM,
   },
 } as const;
 

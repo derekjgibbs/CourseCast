@@ -54,7 +54,7 @@ pnpm start
 - `src/features/` - Feature modules (vertically sliced architecture)
 - `src/hooks/` - Custom React hooks
 - `src/lib/` - Shared utilities
-- `public/courses.parquet` - Precomputed course data and price prediction weights
+- `public/2025C-courses.parquet` - Precomputed course data and price prediction weights for Fall 2025
 
 ## Development Guidelines
 

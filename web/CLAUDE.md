@@ -6,14 +6,14 @@ After several simulation runs, the probabilities of obtaining a particular cours
 
 ## Architecture
 
-- `public/courses.parquet`: precomputed tabulation of all course metadata, random seeds, and price prediction weights
+- `public/<term>-courses.parquet`: precomputed tabulation of all course metadata, random seeds, and price prediction weights (e.g., `2025C-courses.parquet` for Fall 2025)
 - `src/app`: main Next.js router code and serves as the entry points of the web application
 - `src/components/ui`: styled shadcn components for React
 - `src/convex/schema.ts`: primary data model of the app powered by Convex
 - `src/convex/_generated`: auto-generated files by Convex derived from `src/convex/schema.ts`
 - `src/data/fixed-core/index.ts`: script that processes the raw fixed core data from the curriculum
 - `src/data/regular-courses/index.ts`: script that processes the regular courses and their metadata
-- `src/data/index.ts`: script that combines the `src/data/fixed-core/index.ts` and `src/data/regular-courses/index.ts` outputs to produce the precomputed conflict groups for the `public/courses.parquet` file
+- `src/data/index.ts`: script that combines the `src/data/fixed-core/index.ts` and `src/data/regular-courses/index.ts` outputs to produce the precomputed conflict groups for the `public/<term>-courses.parquet` file
 - `src/features`: imported by the routes that implement a feature end-to-end from interface to back-end business logic
 - `src/lib`: common utilities shared by many feature modules
 - `src/test/setup.ts`: initialization script for all Vitest invocations

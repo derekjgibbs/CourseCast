@@ -158,7 +158,7 @@ for (const course of data) {
 // Sort the courses by title in alphabetical order initially.
 data.sort((a, b) => a.title.localeCompare(b.title));
 parquetWriteFile({
-  filename: "public/courses.parquet",
+  filename: "public/2025C-courses.parquet",
   columnData: [
     { name: "type", data: data.map(c => c.type), type: "STRING" },
     { name: "forecast_id", data: data.map(c => c.forecastId), type: "STRING" },
