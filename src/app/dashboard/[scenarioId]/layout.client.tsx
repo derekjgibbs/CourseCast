@@ -48,7 +48,7 @@ function RedirectToDashboardHome() {
   useEffect(() => router.push("/dashboard"), [router]);
   return (
     <div className="relative mx-auto w-full max-w-7xl grow justify-center space-y-8 px-6 py-8">
-      <div className="flex items-center justify-between gap-6 rounded-lg border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-4 text-white shadow-lg">
+      <div className="flex items-center justify-between gap-6 rounded-lg border-0 bg-linear-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-4 text-white shadow-lg">
         <div className="grow">
           <Skeleton className="h-6 w-64 bg-blue-200" />
           <Skeleton className="mt-1 h-4 w-96 bg-blue-200" />

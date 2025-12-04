@@ -15,6 +15,9 @@
 /.next/
 /out/
 
+# eslint
+.eslintcache
+
 # prettier
 .prettiercache
 
@@ -41,3 +44,5 @@ next-env.d.ts
 # environment variables
 .env
 .env.*
+
+**/.claude/**.local.json
