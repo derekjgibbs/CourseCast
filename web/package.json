@@ -60,7 +60,6 @@
   },
   "devDependencies": {
     "@bastidood/eslint-plugin-imsort": "^0.10.1",
-    "@convex-dev/migrations": "^0.3.1",
     "@tailwindcss/postcss": "^4.1.17",
     "@tailwindcss/typography": "^0.5.19",
     "@testing-library/jest-dom": "^6.9.1",

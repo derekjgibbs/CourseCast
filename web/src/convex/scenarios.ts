@@ -61,7 +61,7 @@ export const duplicate = mutation({
       max_credits: scenario.max_credits,
       utilities: scenario.utilities,
       fixed_courses: scenario.fixed_courses,
-      term: scenario.term ?? CONSTRAINTS.TERM.CURRENT,
+      term: scenario.term,
       created_at: now,
       updated_at: now,
     });

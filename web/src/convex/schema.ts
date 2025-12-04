@@ -13,8 +13,8 @@ export default defineSchema({
     max_credits: v.number(),
     utilities: v.record(v.string(), v.int64()),
     fixed_courses: v.array(v.string()),
-    /** Term in YYYYX format (e.g., "2025C" for Fall 2025). Optional during migration. */
-    term: v.optional(v.string()),
+    /** Term in YYYYX format (e.g., "2025C" for Fall 2025). */
+    term: v.string(),
     created_at: v.int64(),
     updated_at: v.int64(),
   })

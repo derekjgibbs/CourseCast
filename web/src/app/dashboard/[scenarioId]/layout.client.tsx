@@ -7,10 +7,10 @@ import { useRouter } from "next/navigation";
 
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CURRENT_TERM, type SupportedTerm, toSupportedTerm } from "@/lib/term";
 import { FetchedCoursesProvider, useFetchCourses } from "@/hooks/use-fetch-courses";
 import { ScenarioProvider } from "@/features/scenario/get";
 import { Skeleton } from "@/components/ui/skeleton";
+import { type SupportedTerm, toSupportedTerm } from "@/lib/term";
 import type { UserScenarioId } from "@/convex/types";
 
 interface ScenarioProviderWrapperProps {
@@ -25,7 +25,7 @@ export function ScenarioProviderWrapper({ scenarioId, children }: ScenarioProvid
   ) : scenario === null ? (
     <RedirectToDashboardHome />
   ) : (
-    <FetchedCoursesProviderWrapper term={toSupportedTerm(scenario.term ?? CURRENT_TERM)}>
+    <FetchedCoursesProviderWrapper term={toSupportedTerm(scenario.term)}>
       <ScenarioProvider scenario={scenario}>{children}</ScenarioProvider>
     </FetchedCoursesProviderWrapper>
   );

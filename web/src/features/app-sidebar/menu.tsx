@@ -46,7 +46,7 @@ function groupScenariosByTerm(scenarios: ReadonlyArray<UserScenarioDoc>) {
   const groups = new Map<string, Array<Pick<UserScenarioDoc, "_id" | "name">>>();
 
   for (const scenario of scenarios) {
-    const term = scenario.term ?? CURRENT_TERM;
+    const term = scenario.term;
     const existing = groups.get(term);
     if (typeof existing === "undefined")
       groups.set(term, [{ _id: scenario._id, name: scenario.name }]);
