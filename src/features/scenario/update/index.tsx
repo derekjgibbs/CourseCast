@@ -271,7 +271,7 @@ function ScenarioUpdateForm({
               type="submit"
               size="icon"
               disabled={mutation.isPending}
-              className="rounded-full border-0 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 p-8 text-white shadow-2xl hover:from-blue-600 hover:via-purple-600 hover:to-indigo-600 disabled:opacity-100"
+              className="rounded-full border-0 bg-linear-to-br from-blue-500 via-purple-500 to-indigo-500 p-8 text-white shadow-2xl hover:from-blue-600 hover:via-purple-600 hover:to-indigo-600 disabled:opacity-100"
             >
               {mutation.isPending ? (
                 <Loader2 className="size-8 animate-spin" />
@@ -295,7 +295,7 @@ export function LiveScenarioUpdate({ scenario }: LiveScenarioUpdateProps) {
   const data = useFetchedCourses();
   return (
     <div className="relative mx-auto w-full max-w-7xl grow justify-center space-y-8 px-6 py-8">
-      <div className="flex items-center justify-between gap-6 rounded-lg border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-4 text-white shadow-lg">
+      <div className="flex items-center justify-between gap-6 rounded-lg border-0 bg-linear-to-r from-blue-600 via-purple-600 to-indigo-600 px-6 py-4 text-white shadow-lg">
         <div className="grow">
           <h3 className="font-semibold text-white">Ready to run a simulation?</h3>
           <p className="mt-1 text-sm text-blue-50">
