@@ -99,6 +99,9 @@ export const CONSTRAINTS = {
     MIN_VALUE: 0n,
     MAX_VALUE: 100n,
   },
+  TERM: {
+    CURRENT: "2025C",
+  },
 } as const;
 
 // Type guards for runtime validation

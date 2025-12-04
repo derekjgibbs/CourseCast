@@ -33,6 +33,7 @@ export const create = mutation({
       max_credits: CONSTRAINTS.USER_SCENARIO.MAX_CREDITS_DEFAULT,
       utilities: {},
       fixed_courses: [],
+      term: CONSTRAINTS.TERM.CURRENT,
       created_at: now,
       updated_at: now,
     });
@@ -60,6 +61,7 @@ export const duplicate = mutation({
       max_credits: scenario.max_credits,
       utilities: scenario.utilities,
       fixed_courses: scenario.fixed_courses,
+      term: scenario.term ?? CONSTRAINTS.TERM.CURRENT,
       created_at: now,
       updated_at: now,
     });

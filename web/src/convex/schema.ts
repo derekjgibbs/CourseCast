@@ -13,9 +13,12 @@ export default defineSchema({
     max_credits: v.number(),
     utilities: v.record(v.string(), v.int64()),
     fixed_courses: v.array(v.string()),
+    /** Term in YYYYX format (e.g., "2025C" for Fall 2025). Optional during migration. */
+    term: v.optional(v.string()),
     created_at: v.int64(),
     updated_at: v.int64(),
   })
     .index("by_user_id", ["user_id"])
-    .index("by_created_at", ["created_at"]),
+    .index("by_created_at", ["created_at"])
+    .index("by_user_id_and_term", ["user_id", "term"]),
 });
