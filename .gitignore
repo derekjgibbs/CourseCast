@@ -44,3 +44,5 @@ next-env.d.ts
 # environment variables
 .env
 .env.*
+
+**/.claude/**.local.json
