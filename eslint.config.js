@@ -1,16 +1,15 @@
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-
 import imsort from "@bastidood/eslint-plugin-imsort";
-import { FlatCompat } from "@eslint/eslintrc";
-import { defineConfig } from "eslint/config";
+import nextTypeScript from "eslint-config-next/typescript";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import prettier from "eslint-config-prettier/flat";
+import { defineConfig, globalIgnores } from "eslint/config";
 
-const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta.url)) });
-export default defineConfig(
-  { ignores: ["src/convex/_generated/**/*"] },
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+export default defineConfig([
+  ...nextVitals,
+  ...nextTypeScript,
+  prettier,
   {
-    files: ["src/**/*.{j,t}s{x,}"],
+    files: ["**/*.{js,jsx,ts,tsx}"],
     extends: [imsort.configs.all],
     plugins: { "@bastidood/imsort": imsort },
     rules: {
@@ -18,6 +17,8 @@ export default defineConfig(
         "error",
         { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
       ],
+      "import/no-anonymous-default-export": "off",
     },
   },
-);
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "src/convex/_generated/**/*"]),
+]);
