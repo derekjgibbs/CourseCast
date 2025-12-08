@@ -30,10 +30,11 @@ interface Term {
 /** Terms with available course data files */
 export const enum SupportedTerm {
   Fall2025 = "2025C",
+  Spring2026 = "2026A",
 }
 
 /** The current active term for new scenarios */
-export const CURRENT_TERM = SupportedTerm.Fall2025;
+export const CURRENT_TERM = SupportedTerm.Spring2026;
 
 /**
  * Returns the byte length of the parquet file for a term.
@@ -44,6 +45,8 @@ export function getTermByteLength(term: SupportedTerm) {
   switch (term) {
     case SupportedTerm.Fall2025:
       return 98826;
+    case SupportedTerm.Spring2026:
+      return 93665;
   }
 }
 
@@ -51,6 +54,7 @@ export function getTermByteLength(term: SupportedTerm) {
 export function toSupportedTerm(term: string): SupportedTerm {
   switch (term) {
     case SupportedTerm.Fall2025:
+    case SupportedTerm.Spring2026:
       return term;
   }
   throw new Error(`Unsupported term: ${term}`);

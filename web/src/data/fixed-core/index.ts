@@ -77,7 +77,13 @@ export async function readFixedCoreAssignments(now: Date) {
   for (const error of errors) console.error(error);
   strictEqual(errors.length, 0);
 
-  return data.map(row => {
+  // Filter out rows where all fields are empty
+  const validData = data.filter(row => {
+    const values = Object.values(row);
+    return values.some(val => val !== "" && val !== null && val !== undefined);
+  });
+
+  return validData.map(row => {
     const {
       Term,
       "Term Code": TermCode,
