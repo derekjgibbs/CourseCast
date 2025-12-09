@@ -170,12 +170,17 @@ function DashboardContent({ scenarios }: DashboardContentProps) {
     [],
   );
 
-  // Render grouped rows with collapsible term headers
-  const groupedContent = useMemo(
-    () =>
-      rows.map(row => {
-        if (!row.getIsGrouped()) return null;
+  // Check if CURRENT_TERM has any scenarios (i.e., has a group row)
+  const hasCurrentTermGroup = useMemo(
+    () => rows.some(row => row.getIsGrouped() && row.getValue("term") === CURRENT_TERM),
+    [rows],
+  );
 
+  // Render grouped rows with collapsible term headers
+  const groupedContent = useMemo(() => {
+    const groups = rows
+      .filter(row => row.getIsGrouped())
+      .map(row => {
         const termValue = row.getValue("term");
         if (typeof termValue !== "string") throw new Error("Term value is not a string");
 
@@ -194,9 +199,24 @@ function DashboardContent({ scenarios }: DashboardContentProps) {
             ))}
           </TermGroupHeader>
         );
-      }),
-    [rows, handleSuccess, handleToggleExpanded],
-  );
+      });
+
+    // If no scenarios exist for CURRENT_TERM, prepend a standalone section.
+    if (!hasCurrentTermGroup)
+      groups.unshift(
+        <TermGroupHeader
+          key={`term:${CURRENT_TERM}`}
+          rowId={`term:${CURRENT_TERM}`}
+          term={CURRENT_TERM}
+          isExpanded={expanded === true || (expanded[`term:${CURRENT_TERM}`] ?? true)}
+          onToggle={handleToggleExpanded}
+        >
+          <CreateScenarioCard onSuccess={handleSuccess} />
+        </TermGroupHeader>,
+      );
+
+    return groups;
+  }, [rows, hasCurrentTermGroup, expanded, handleSuccess, handleToggleExpanded]);
 
   const sortControls = useMemo(() => {
     return sortableHeaders.map(header => (

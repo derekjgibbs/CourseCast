@@ -30,7 +30,7 @@ function convertTimeToMinutes(now: Date, timeStr: string) {
 
 export async function readRegularCourses(now: Date) {
   const { promise, resolve, reject } = Promise.withResolvers<papa.ParseResult<unknown>>();
-  papa.parse(createReadStream(join(import.meta.dirname, "courses.csv")), {
+  papa.parse(createReadStream(join(import.meta.dirname, "2026A-courses.csv")), {
     header: true,
     skipEmptyLines: true,
     error: e => reject(e),
