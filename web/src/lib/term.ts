@@ -31,14 +31,14 @@ export const CURRENT_TERM = SupportedTerm.Spring2026;
  * Vercel CDN doesn't provide Content-Length headers via HEAD requests.
  */
 export function getTermByteLength(term: SupportedTerm.Fall2025): 98_826;
-export function getTermByteLength(term: SupportedTerm.Spring2026): 109_829;
+export function getTermByteLength(term: SupportedTerm.Spring2026): 93_686;
 export function getTermByteLength(term: SupportedTerm): number;
 export function getTermByteLength(term: SupportedTerm) {
   switch (term) {
     case SupportedTerm.Fall2025:
       return 98_826;
     case SupportedTerm.Spring2026:
-      return 109_829;
+      return 93_686;
   }
 }
 
