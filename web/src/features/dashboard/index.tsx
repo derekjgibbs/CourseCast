@@ -153,6 +153,7 @@ function DashboardContent({ scenarios }: DashboardContentProps) {
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     autoResetExpanded: false,
+    autoResetPageIndex: false,
     globalFilterFn: "includesString",
     state: tableState,
     onGlobalFilterChange: setGlobalFilter,
