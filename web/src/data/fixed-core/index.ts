@@ -79,6 +79,8 @@ export async function readFixedCoreAssignments(now: Date) {
 
   // Filter out rows where all fields are empty
   const validData = data.filter(row => {
+    assert(typeof row === "object");
+    assert(row !== null);
     const values = Object.values(row);
     return values.some(val => val !== "" && val !== null && val !== undefined);
   });
