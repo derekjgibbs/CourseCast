@@ -127,7 +127,7 @@ for (const course of data) {
   sections.push(course.forecastId);
 }
 
-// HACK: Hard-code conflicts on cross-listed courses
+/* HACK: Hard-code conflicts on cross-listed courses for 2025C.
 getOrInitValues(courseSectionGroups, "ACCT6110").push("ACCT6130");
 getOrInitValues(courseSectionGroups, "FNCE6130").push("FNCE6230");
 getOrInitValues(courseSectionGroups, "LGST6110").push("LGST6120", "LGST6130");
@@ -136,6 +136,24 @@ getOrInitValues(courseSectionGroups, "LGST8060").push("MGMT6910", "OIDD6910");
 getOrInitValues(courseSectionGroups, "MGMT6910").push("OIDD6910");
 getOrInitValues(courseSectionGroups, "MGMT6110").push("MGMT6120");
 getOrInitValues(courseSectionGroups, "WHCP6160").push("WHCP6180");
+*/
+
+// HACK: Hard-code conflicts on cross-listed courses for 2026A.
+getOrInitValues(courseSectionGroups, "ACCT7970").push("FNCE7970");
+getOrInitValues(courseSectionGroups, "BEPP7640").push("ACCT7640");
+getOrInitValues(courseSectionGroups, "BEPP8050").push("OIDD8050");
+getOrInitValues(courseSectionGroups, "FNCE7610").push("BEPP7610", "OIDD7610");
+getOrInitValues(courseSectionGroups, "BEPP7610").push("OIDD7610");
+getOrInitValues(courseSectionGroups, "LGST8060").push("MGMT6910", "OIDD6910");
+getOrInitValues(courseSectionGroups, "MGMT6910").push("OIDD6910");
+getOrInitValues(courseSectionGroups, "LGST8090").push("MGMT8150");
+getOrInitValues(courseSectionGroups, "MGMT7290").push("LGST7290");
+getOrInitValues(courseSectionGroups, "MKTG7760").push("STAT7760");
+getOrInitValues(courseSectionGroups, "OIDD6900").push("MGMT6900");
+getOrInitValues(courseSectionGroups, "REAL7080").push("BEPP7080");
+getOrInitValues(courseSectionGroups, "REAL7210").push("FNCE7210");
+getOrInitValues(courseSectionGroups, "REAL8360").push("BEPP8360");
+getOrInitValues(courseSectionGroups, "STAT7770").push("OIDD7770");
 
 // Step 4: Add conflict groups to each course
 for (const course of data) {
@@ -158,7 +176,7 @@ for (const course of data) {
 // Sort the courses by title in alphabetical order initially.
 data.sort((a, b) => a.title.localeCompare(b.title));
 parquetWriteFile({
-  filename: "public/2025C-courses.parquet",
+  filename: "public/2026A-courses.parquet",
   columnData: [
     { name: "type", data: data.map(c => c.type), type: "STRING" },
     { name: "forecast_id", data: data.map(c => c.forecastId), type: "STRING" },

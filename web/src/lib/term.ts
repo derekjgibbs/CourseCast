@@ -8,17 +8,6 @@ const enum TermSuffix {
   Fall = "C",
 }
 
-export function termSuffixToNumber(suffix: TermSuffix) {
-  switch (suffix) {
-    case TermSuffix.Spring:
-      return 0;
-    case TermSuffix.Summer:
-      return 1;
-    case TermSuffix.Fall:
-      return 2;
-  }
-}
-
 /**
  * Represents a parsed term with year and suffix components.
  */
@@ -41,12 +30,15 @@ export const CURRENT_TERM = SupportedTerm.Spring2026;
  * HACK: Hard-coded because the library needs to know this ahead of time.
  * Vercel CDN doesn't provide Content-Length headers via HEAD requests.
  */
+export function getTermByteLength(term: SupportedTerm.Fall2025): 98_826;
+export function getTermByteLength(term: SupportedTerm.Spring2026): 93_686;
+export function getTermByteLength(term: SupportedTerm): number;
 export function getTermByteLength(term: SupportedTerm) {
   switch (term) {
     case SupportedTerm.Fall2025:
-      return 98826;
+      return 98_826;
     case SupportedTerm.Spring2026:
-      return 93665;
+      return 93_686;
   }
 }
 
@@ -56,8 +48,9 @@ export function toSupportedTerm(term: string): SupportedTerm {
     case SupportedTerm.Fall2025:
     case SupportedTerm.Spring2026:
       return term;
+    default:
+      throw new Error(`Unsupported term: ${term}`);
   }
-  throw new Error(`Unsupported term: ${term}`);
 }
 
 /**
@@ -118,4 +111,15 @@ export function compareTermsDescending(a: string, b: string) {
 
   // Suffix order: C (Fall) > B (Summer) > A (Spring)
   return termSuffixToNumber(termB.suffix) - termSuffixToNumber(termA.suffix);
+}
+
+export function termSuffixToNumber(suffix: TermSuffix) {
+  switch (suffix) {
+    case TermSuffix.Spring:
+      return 0;
+    case TermSuffix.Summer:
+      return 1;
+    case TermSuffix.Fall:
+      return 2;
+  }
 }
